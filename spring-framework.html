@@ -1,0 +1,1363 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Spring Framework — Prezentatsiya</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0a0a14; --surface: rgba(255, 255, 255, 0.04); --border: rgba(255, 255, 255, 0.08);
+      --text: #f8fafc; --text-dim: #94a3b8; --text-muted: #64748b;
+      --primary: #8b5cf6; --primary-2: #6366f1; --accent: #f472b6;
+      --slide-bg: #ffffff; --slide-bg-2: #fafafe;
+      --code-bg: #0f172a; --code-text: #e2e8f0;
+    }
+    html, body { height: 100%; overflow: hidden; }
+    body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
+    .bg-effects { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+    .blob { position: absolute; border-radius: 50%; filter: blur(140px); opacity: 0.4; }
+    .blob-1 { width: 500px; height: 500px; background: #8b5cf6; top: -100px; left: -150px; }
+    .blob-2 { width: 400px; height: 400px; background: #f472b6; bottom: -100px; right: -100px; }
+    .top { position: fixed; top: 0; left: 0; right: 0; z-index: 100; backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); background: rgba(10, 10, 20, 0.7); border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+    .top-left { display: flex; align-items: center; gap: 14px; }
+    .back-btn { display: inline-flex; align-items: center; gap: 8px; color: var(--text); text-decoration: none; background: var(--surface); border: 1px solid var(--border); padding: 9px 16px; border-radius: 10px; font-weight: 600; font-size: 14px; transition: all 0.2s; }
+    .back-btn:hover { background: rgba(139, 92, 246, 0.15); border-color: rgba(139, 92, 246, 0.4); }
+    .topic-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); color: #c4b5fd; padding: 8px 14px; border-radius: 50px; font-size: 12px; font-weight: 600; }
+    .pulse-dot { width: 6px; height: 6px; border-radius: 50%; background: #c4b5fd; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+    .slide-counter { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--border); padding: 9px 16px; border-radius: 10px; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; color: var(--text-dim); }
+    .slide-counter .current { color: var(--text); }
+    .presentation { position: fixed; top: 72px; bottom: 86px; left: 0; right: 0; display: flex; align-items: center; justify-content: center; padding: 24px; z-index: 1; }
+    .slide { display: none; background: linear-gradient(135deg, var(--slide-bg) 0%, var(--slide-bg-2) 100%); color: #0f172a; width: 100%; max-width: 1180px; height: 100%; max-height: 100%; padding: 56px 64px; border-radius: 28px; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05); flex-direction: column; justify-content: center; overflow-y: auto; position: relative; }
+    .slide.active { display: flex; animation: slideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+    .slide > * { min-width: 0; max-width: 100%; }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(30px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    .slide::before { content: ''; position: absolute; top: 0; right: 0; width: 280px; height: 280px; background: radial-gradient(circle, rgba(139, 92, 246, 0.08), transparent 70%); border-radius: 50%; pointer-events: none; }
+    .slide::after { content: ''; position: absolute; bottom: 0; left: 0; width: 240px; height: 240px; background: radial-gradient(circle, rgba(244, 114, 182, 0.08), transparent 70%); border-radius: 50%; pointer-events: none; }
+    .slide h1 { font-size: clamp(36px, 5vw, 60px); font-weight: 900; letter-spacing: -0.03em; margin-bottom: 24px; line-height: 1.1; background: linear-gradient(135deg, #1e1b4b 0%, #6366f1 50%, #8b5cf6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; position: relative; z-index: 1; }
+    .slide h2 { font-size: clamp(28px, 4vw, 44px); font-weight: 800; letter-spacing: -0.02em; margin-bottom: 28px; color: #1e1b4b; line-height: 1.15; position: relative; z-index: 1; }
+    .slide h2::before { content: ''; display: inline-block; width: 6px; height: 32px; background: linear-gradient(180deg, var(--primary), var(--accent)); border-radius: 4px; margin-right: 16px; vertical-align: middle; transform: translateY(-3px); }
+    .slide p { font-size: 19px; margin-bottom: 18px; color: #334155; position: relative; z-index: 1; line-height: 1.7; }
+    .slide ul { font-size: 18px; list-style: none; padding-left: 0; position: relative; z-index: 1; }
+    .slide li { position: relative; padding: 10px 0 10px 32px; color: #1e293b; line-height: 1.6; }
+    .slide li::before { content: ''; position: absolute; left: 8px; top: 20px; width: 8px; height: 8px; background: linear-gradient(135deg, var(--primary), var(--accent)); border-radius: 50%; box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.12); }
+    .slide b { color: var(--primary-2); font-weight: 700; }
+    .slide-title { text-align: center; justify-content: center; }
+    .slide-title h1 { font-size: clamp(48px, 8vw, 88px); text-align: center; }
+    .slide-title p { text-align: center; max-width: 700px; margin-left: auto; margin-right: auto; font-size: 22px; }
+    .topic-pill { display: inline-flex; align-items: center; gap: 10px; background: linear-gradient(135deg, rgba(139, 92, 246, 0.12), rgba(244, 114, 182, 0.12)); border: 1px solid rgba(139, 92, 246, 0.3); color: var(--primary); padding: 10px 22px; border-radius: 50px; font-weight: 700; font-size: 14px; margin: 0 auto 32px; width: fit-content; text-transform: uppercase; letter-spacing: 0.08em; }
+    .code-window { background: var(--code-bg); border-radius: 14px; margin: 20px 0; position: relative; z-index: 1; border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05); max-width: 100%; min-width: 0; display: flex; flex-direction: column; overflow: hidden; }
+    .code-header { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: linear-gradient(180deg, #2d3548 0%, #1e2536 100%); border-bottom: 1px solid rgba(255, 255, 255, 0.08); user-select: none; }
+    .traffic-lights { display: flex; gap: 8px; align-items: center; }
+    .light { width: 12px; height: 12px; border-radius: 50%; border: 0.5px solid rgba(0, 0, 0, 0.2); cursor: pointer; transition: filter 0.2s; }
+    .light:hover { filter: brightness(1.15); }
+    .light.close { background: #ff5f57; } .light.minimize { background: #febc2e; } .light.maximize { background: #28c840; }
+    .code-filename { flex: 1; text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: #94a3b8; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .code-filename::before { content: '🌱'; font-size: 12px; }
+    .code-actions { display: flex; gap: 6px; align-items: center; }
+    .code-btn { display: inline-flex; align-items: center; gap: 5px; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.08); color: #cbd5e1; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; }
+    .code-btn:hover { background: rgba(139, 92, 246, 0.2); border-color: rgba(139, 92, 246, 0.4); color: white; }
+    .code-btn.copied { background: rgba(16, 185, 129, 0.2); border-color: rgba(16, 185, 129, 0.4); color: #6ee7b7; }
+    .code-btn svg { width: 12px; height: 12px; }
+    .code-body { position: relative; background: var(--code-bg); min-width: 0; max-width: 100%; overflow: hidden; }
+    pre { background: transparent; color: var(--code-text); padding: 22px 24px; overflow-x: auto; overflow-y: auto; max-height: 50vh; font-size: 15px; margin: 0; font-family: 'JetBrains Mono', 'Consolas', monospace; line-height: 1.7; tab-size: 4; outline: none; white-space: pre; word-wrap: normal; scrollbar-width: thin; scrollbar-color: rgba(139, 92, 246, 0.4) rgba(255, 255, 255, 0.04); }
+    pre::-webkit-scrollbar { height: 10px; width: 10px; }
+    pre::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.04); border-radius: 5px; }
+    pre::-webkit-scrollbar-thumb { background: linear-gradient(135deg, rgba(139, 92, 246, 0.5), rgba(244, 114, 182, 0.5)); border-radius: 5px; border: 2px solid transparent; background-clip: padding-box; }
+    pre[contenteditable="true"] { caret-color: #c084fc; }
+    pre[contenteditable="true"]:focus { background: rgba(139, 92, 246, 0.04); }
+    pre code { display: block; font-family: inherit; }
+    code { font-family: 'JetBrains Mono', monospace; font-size: 0.95em; }
+    p code, li code, .note code, td code, th code { background: rgba(139, 92, 246, 0.1); color: var(--primary); padding: 2px 8px; border-radius: 6px; font-size: 0.9em; font-weight: 600; }
+    .toast { position: fixed; bottom: 110px; left: 50%; transform: translateX(-50%) translateY(20px); background: rgba(16, 185, 129, 0.95); color: white; padding: 10px 20px; border-radius: 10px; font-size: 13px; font-weight: 600; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4); opacity: 0; pointer-events: none; transition: all 0.3s; z-index: 200; backdrop-filter: blur(10px); }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .problem-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; position: relative; z-index: 1; }
+    .problem-num { display: inline-flex; align-items: center; gap: 6px; background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: white; padding: 5px 14px; border-radius: 50px; font-size: 12px; font-weight: 700; letter-spacing: 0.05em; font-family: 'JetBrains Mono', monospace; }
+    .difficulty { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 50px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+    .difficulty.easy { background: rgba(16, 185, 129, 0.12); color: #059669; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .difficulty.medium { background: rgba(245, 158, 11, 0.12); color: #d97706; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .difficulty.hard { background: rgba(239, 68, 68, 0.12); color: #dc2626; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .difficulty .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .example-block { background: #f1f5f9; border-left: 4px solid var(--primary); padding: 14px 18px; border-radius: 10px; margin: 12px 0; font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #1e293b; line-height: 1.7; position: relative; z-index: 1; }
+    .example-title { font-family: 'Inter', sans-serif; font-weight: 700; color: var(--primary); font-size: 13px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .example-block b { color: var(--primary); }
+    .constraints { background: rgba(99, 102, 241, 0.05); border: 1px dashed rgba(99, 102, 241, 0.3); padding: 12px 18px; border-radius: 10px; font-size: 14px; color: #475569; margin: 12px 0; position: relative; z-index: 1; }
+    .constraints b { color: var(--primary); }
+    .solution-wrap { margin-top: 18px; position: relative; z-index: 1; }
+    .show-solution-btn { display: inline-flex; align-items: center; gap: 10px; background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: white; border: none; padding: 12px 22px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.3s; font-family: 'Inter', sans-serif; box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3); }
+    .show-solution-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(139, 92, 246, 0.45); }
+    .show-solution-btn svg { width: 16px; height: 16px; }
+    .show-solution-btn.active { background: linear-gradient(135deg, #ec4899, #f43f5e); box-shadow: 0 8px 20px rgba(244, 63, 94, 0.3); }
+    .solution-content { max-height: 0; overflow: hidden; opacity: 0; margin-top: 0; transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, margin-top 0.3s ease; }
+    .solution-content.shown { max-height: 2500px; opacity: 1; margin-top: 16px; }
+    .note { background: linear-gradient(135deg, #fef3c7, #fef9c3); border-left: 4px solid #f59e0b; padding: 18px 22px; border-radius: 14px; margin-top: 24px; font-size: 17px; color: #78350f; position: relative; z-index: 1; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15); }
+    .note::before { content: '💡'; margin-right: 8px; }
+    .note b { color: #92400e; } .note code { background: rgba(245, 158, 11, 0.2); color: #78350f; }
+    .warning { background: linear-gradient(135deg, #fee2e2, #fecaca); border-left: 4px solid #ef4444; padding: 18px 22px; border-radius: 14px; margin-top: 24px; font-size: 17px; color: #7f1d1d; position: relative; z-index: 1; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15); }
+    .warning::before { content: '⚠️'; margin-right: 8px; }
+    .warning b { color: #991b1b; } .warning code { background: rgba(239, 68, 68, 0.2); color: #7f1d1d; }
+    .def-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 16px; position: relative; z-index: 1; }
+    .def-card { background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px 24px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04); transition: all 0.3s; }
+    .def-card:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(139, 92, 246, 0.12); }
+    .def-card h3 { font-family: 'JetBrains Mono', monospace; font-size: 22px; color: var(--primary); margin-bottom: 8px; font-weight: 700; }
+    .def-card p { font-size: 15px; margin: 0; color: #475569; }
+    .theory-box { background: linear-gradient(135deg, #ede9fe, #fce7f3); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 16px; padding: 22px 26px; margin: 18px 0; position: relative; z-index: 1; box-shadow: 0 8px 20px rgba(139, 92, 246, 0.08); }
+    .theory-box::before { content: '🧠 NAZARIYA'; display: block; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; color: var(--primary); letter-spacing: 0.1em; margin-bottom: 10px; }
+    .theory-box p { font-size: 17px; margin-bottom: 8px; color: #1e1b4b; }
+    .theory-box p:last-child { margin-bottom: 0; }
+    .compare-table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); position: relative; z-index: 1; margin-top: 12px; }
+    .compare-table th { background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: white; padding: 14px 16px; text-align: left; font-weight: 700; font-size: 14px; }
+    .compare-table td { padding: 12px 16px; border-bottom: 1px solid #e2e8f0; font-size: 15px; color: #334155; }
+    .compare-table tr:last-child td { border-bottom: none; }
+    .compare-table tr:hover td { background: #f8fafc; }
+    .controls { position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; backdrop-filter: blur(20px) saturate(180%); background: rgba(10, 10, 20, 0.75); border-top: 1px solid var(--border); padding: 14px 20px; display: flex; justify-content: center; align-items: center; gap: 12px; }
+    .nav-arrow { display: inline-flex; align-items: center; justify-content: center; background: var(--surface); color: var(--text); border: 1px solid var(--border); width: 38px; height: 38px; border-radius: 10px; cursor: pointer; transition: all 0.2s; flex-shrink: 0; }
+    .nav-arrow:hover:not(:disabled) { background: linear-gradient(135deg, var(--primary), var(--primary-2)); border-color: transparent; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(139, 92, 246, 0.4); }
+    .nav-arrow:disabled { opacity: 0.3; cursor: not-allowed; }
+    .nav-arrow svg { width: 16px; height: 16px; }
+    .pagination { display: flex; align-items: center; gap: 6px; overflow-x: auto; scrollbar-width: none; max-width: calc(100vw - 200px); padding: 4px; scroll-behavior: smooth; }
+    .pagination::-webkit-scrollbar { display: none; }
+    .page-dot { display: inline-flex; align-items: center; justify-content: center; min-width: 34px; height: 34px; padding: 0 10px; background: var(--surface); color: var(--text-dim); border: 1px solid var(--border); border-radius: 9px; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; font-weight: 600; cursor: pointer; transition: all 0.2s; flex-shrink: 0; }
+    .page-dot:hover { color: var(--text); border-color: rgba(139, 92, 246, 0.4); background: rgba(139, 92, 246, 0.1); transform: translateY(-1px); }
+    .page-dot.active { background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: white; border-color: transparent; box-shadow: 0 6px 16px rgba(139, 92, 246, 0.45); transform: scale(1.08); }
+    .page-dot.visited { color: var(--text); background: rgba(139, 92, 246, 0.08); border-color: rgba(139, 92, 246, 0.2); }
+    .progress-line { position: absolute; top: 0; left: 0; height: 3px; background: linear-gradient(90deg, var(--primary), var(--accent)); transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 12px rgba(139, 92, 246, 0.6); border-radius: 0 3px 3px 0; }
+    @media (max-width: 768px) {
+      .top { padding: 12px 16px; } .topic-badge { display: none; }
+      .slide { padding: 32px 24px; border-radius: 20px; }
+      pre { font-size: 13px; padding: 18px; }
+      .nav-arrow { width: 36px; height: 36px; }
+      .pagination { max-width: calc(100vw - 110px); gap: 4px; }
+      .page-dot { min-width: 30px; height: 30px; font-size: 11.5px; padding: 0 6px; }
+      .slide h2::before { width: 4px; height: 24px; }
+    }
+    @media print {
+      html, body { height: auto; overflow: visible; } body { background: white; }
+      .top, .controls, .bg-effects { display: none; }
+      .presentation { position: static; display: block; padding: 0; }
+      .slide { display: flex !important; page-break-after: always; box-shadow: none; border: 1px solid #ddd; max-width: 100%; height: auto; max-height: none; margin-bottom: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-effects">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+</div>
+
+<div class="top">
+  <div class="top-left">
+    <a href="index.html" class="back-btn">
+      <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+      Roadmap
+    </a>
+    <div class="topic-badge">
+      <span class="pulse-dot"></span>
+      7-Mavzu · Spring Framework
+    </div>
+  </div>
+  <div class="slide-counter">
+    <span class="current" id="currentSlide">1</span>
+    <span>/</span>
+    <span id="totalSlides">0</span>
+  </div>
+</div>
+
+<div class="presentation">
+
+  <section class="slide slide-title">
+    <div class="topic-pill">⚡ 7-Mavzu</div>
+    <h1>Spring Framework</h1>
+    <p>
+      Java backend dasturchining <b>asosiy quroli</b>. IoC, Dependency Injection, Bean'lar va kuchli ekosistema.
+    </p>
+    <div class="note">
+      <b>Dars maqsadi:</b> Spring'ning falsafasi (IoC, DI), Bean lifecycle, asosiy annotatsiyalar (@Component, @Service, @Repository, @Controller, @Autowired), AOP va konfiguratsiyalarni chuqur o'rganamiz.
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>Spring nima va nima uchun?</h2>
+    <p>
+      <b>Spring</b> — Java uchun eng mashhur va kuchli enterprise framework. 2003-yilda Rod Johnson tomonidan yaratilgan.
+    </p>
+    <div class="theory-box">
+      <p><b>Asosiy falsafasi:</b> Dasturchi <b>"WHAT"</b>ni yozadi, Spring <b>"HOW"</b>ni hal qiladi.</p>
+      <p>Boilerplate kodni <b>kamaytirish</b>, modulli arxitektura va sinab ko'rishni osonlashtirish.</p>
+    </div>
+    <ul>
+      <li><b>Lightweight</b> — ortiqcha narsa yo'q, kerakli moduli olasiz</li>
+      <li><b>Modulli</b> — Core, MVC, Data, Security, Cloud va h.k.</li>
+      <li><b>Testlash oson</b> — har bir komponent mustaqil sinaladi</li>
+      <li><b>POJO-asosida</b> — oddiy Java obyektlar bilan ishlaydi</li>
+      <li><b>Ko'p integratsiya</b> — JPA, Hibernate, Kafka, Redis va h.k.</li>
+    </ul>
+  </section>
+
+  <section class="slide">
+    <h2>Spring ekosistemasi</h2>
+    <div class="def-grid">
+      <div class="def-card">
+        <h3>Spring Core</h3>
+        <p>IoC container, DI, Bean lifecycle — barchasining negizi.</p>
+      </div>
+      <div class="def-card">
+        <h3>Spring MVC</h3>
+        <p>Web ilovalar uchun Model-View-Controller framework.</p>
+      </div>
+      <div class="def-card">
+        <h3>Spring Data</h3>
+        <p>Database bilan ishlash — JPA, MongoDB, Redis, JDBC.</p>
+      </div>
+      <div class="def-card">
+        <h3>Spring Security</h3>
+        <p>Auth, authorization, JWT, OAuth2 — xavfsizlik.</p>
+      </div>
+      <div class="def-card">
+        <h3>Spring Cloud</h3>
+        <p>Microservice'lar — Config Server, Discovery, Gateway.</p>
+      </div>
+      <div class="def-card">
+        <h3>Spring Boot</h3>
+        <p>Hamma narsani <b>tayyor sozlash</b> bilan birga olib keluvchi qatlam.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>IoC — Inversion of Control</h2>
+    <div class="theory-box">
+      <p><b>An'anaviy yondashuv:</b> Dastur o'zi obyektlarni yaratadi, ularni bog'laydi, hayot davrini boshqaradi.</p>
+      <p><b>IoC bilan:</b> Bu vazifani <b>framework (container)</b> ga topshiramiz. Biz faqat e'lon qilamiz: "menga shu obyekt kerak". Spring uni yaratib beradi.</p>
+      <p>"Don't call us, we'll call you" — <b>Hollywood Principle</b>.</p>
+    </div>
+    <pre data-filename="WithoutIoC.java"><code>// IoC SIZ — o'zimiz boshqaramiz
+public class OrderService {
+    private final UserRepository userRepo;
+    private final EmailService email;
+
+    public OrderService() {
+        // Qattiq bog'liqlik (tight coupling)
+        this.userRepo = new UserRepository();
+        this.email = new EmailService();
+    }
+}
+
+// Muammolar:
+// - Boshqa UserRepository qo'yib bo'lmaydi
+// - Mock qilib test yozish qiyin
+// - Bog'liqliklar yashirin</code></pre>
+    <pre data-filename="WithIoC.java"><code>// IoC bilan — Spring boshqaradi
+@Service
+public class OrderService {
+    private final UserRepository userRepo;
+    private final EmailService email;
+
+    public OrderService(UserRepository userRepo, EmailService email) {
+        this.userRepo = userRepo;
+        this.email = email;  // Spring beradi!
+    }
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>DI — Dependency Injection</h2>
+    <p>
+      <b>DI</b> — IoC ning amaliy ifodasi. Bog'liqliklarni <b>tashqaridan berish</b>.
+    </p>
+    <div class="theory-box">
+      <p>DI 3 ta usulda ishlaydi: <b>Constructor</b>, <b>Setter</b>, <b>Field</b>.</p>
+      <p><b>Constructor Injection</b> — eng tavsiya etilgan: <code>final</code> qilib bo'ladi, mock qilish oson, NPE'ga olib kelmaydi.</p>
+    </div>
+    <pre data-filename="DiTypes.java"><code>// 1. CONSTRUCTOR INJECTION (TAVSIYA)
+@Service
+public class UserService {
+    private final UserRepository repo;
+
+    public UserService(UserRepository repo) {  // @Autowired ixtiyoriy
+        this.repo = repo;
+    }
+}
+
+// 2. SETTER INJECTION (kam ishlatiladi)
+@Service
+public class UserService {
+    private UserRepository repo;
+
+    @Autowired
+    public void setRepo(UserRepository repo) {
+        this.repo = repo;
+    }
+}
+
+// 3. FIELD INJECTION (TAVSIYA ETILMAYDI)
+@Service
+public class UserService {
+    @Autowired
+    private UserRepository repo;  // final emas, mock qiyin
+}</code></pre>
+    <div class="note">
+      Lombok bilan: <code>@RequiredArgsConstructor</code> + <code>final</code> field — eng qulay yo'l!
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>ApplicationContext va Bean</h2>
+    <div class="theory-box">
+      <p><b>ApplicationContext</b> — Spring'ning <b>IoC container</b>i. Bean'larni yaratadi, ularni boshqaradi.</p>
+      <p><b>Bean</b> — Spring boshqaruvidagi <b>obyekt</b>. Spring uni yaratib, lifecycle'ini olib boradi, kerakli joyga inject qiladi.</p>
+    </div>
+    <pre data-filename="Bean.java"><code>// Bean yaratish — bir nechta yo'l
+
+// 1. Stereotype annotatsiyalar
+@Component
+public class MyService { /* ... */ }
+
+// 2. @Bean metod konfiguratsiyada
+@Configuration
+public class AppConfig {
+    @Bean
+    public MyService myService() {
+        return new MyService();
+    }
+}
+
+// 3. XML (eski usul, hozir kam)
+&lt;bean id="myService" class="com.example.MyService"/&gt;
+
+// Bean'ni olish (odatda DI orqali, qo'lda kam)
+ApplicationContext ctx = SpringApplication.run(App.class, args);
+MyService service = ctx.getBean(MyService.class);</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>Stereotype annotatsiyalar</h2>
+    <p>
+      Spring'da <code>@Component</code>'ning <b>maxsus versiyalari</b> bor — har biri biznes mantiqi qatlami uchun.
+    </p>
+    <div class="def-grid">
+      <div class="def-card">
+        <h3>@Component</h3>
+        <p>Umumiy bean. Boshqalarining "ota"si.</p>
+      </div>
+      <div class="def-card">
+        <h3>@Service</h3>
+        <p>Biznes mantiqi qatlami (Service layer).</p>
+      </div>
+      <div class="def-card">
+        <h3>@Repository</h3>
+        <p>Ma'lumotlar bilan ishlash (DAO). DB exception'larini Spring exception'lariga aylantiradi.</p>
+      </div>
+      <div class="def-card">
+        <h3>@Controller</h3>
+        <p>Web qatlam (MVC). HTTP so'rovlarni qabul qiladi.</p>
+      </div>
+    </div>
+    <div class="note">
+      <b>Texnik jihatdan</b> ular bir xil — barchasi <code>@Component</code>. Lekin <b>semantik jihatdan</b> kodning maqsadini ko'rsatadi (clean architecture).
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>Bean Scope'lar</h2>
+    <table class="compare-table">
+      <thead><tr><th>Scope</th><th>Tavsif</th><th>Qachon?</th></tr></thead>
+      <tbody>
+        <tr><td><code>singleton</code> <i>(default)</i></td><td>Container'da <b>bitta</b> instance</td><td>99% holatda</td></tr>
+        <tr><td><code>prototype</code></td><td>Har murojaatda <b>yangi</b> instance</td><td>State saqlovchi bean'lar</td></tr>
+        <tr><td><code>request</code></td><td>HTTP request davomida bitta</td><td>Web app — request scope ma'lumot</td></tr>
+        <tr><td><code>session</code></td><td>HTTP session davomida bitta</td><td>Foydalanuvchi sessiyasi</td></tr>
+        <tr><td><code>application</code></td><td>ServletContext darajasida</td><td>Global resurs</td></tr>
+      </tbody>
+    </table>
+    <pre data-filename="Scope.java"><code>@Service
+@Scope("singleton")  // default
+public class SingletonService { }
+
+@Component
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+public class PrototypeService { }
+
+// Web scope
+@Component
+@Scope(value = WebApplicationContext.SCOPE_REQUEST,
+       proxyMode = ScopedProxyMode.TARGET_CLASS)
+public class RequestScoped { }</code></pre>
+    <div class="warning">
+      <b>Diqqat:</b> Singleton bean ichiga prototype bean inject qilsangiz — u faqat <b>bir marta</b> yaratiladi! Injection vaqtida. Bu bug'lar manbai.
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 1</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>UserService yaratish</h2>
+    <p>
+      <code>UserService</code> klassini Spring bean qiling: <code>UserRepository</code>'ga bog'liq, <code>findById</code> va <code>save</code> metodlari bor.
+    </p>
+    <pre data-filename="UserServiceTask.java"><code>@Service
+public class UserService {
+    private final UserRepository userRepository;
+
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    public User findById(Long id) {
+        return userRepository.findById(id)
+            .orElseThrow(() -&gt; new RuntimeException("User not found"));
+    }
+
+    public User save(User user) {
+        return userRepository.save(user);
+    }
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 2</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>Service-Repository-Controller chain</h2>
+    <p>
+      To'liq qatlam: <code>UserController</code> → <code>UserService</code> → <code>UserRepository</code>. <b>HTTP GET /users/{id}</b> orqali foydalanuvchi olish.
+    </p>
+    <pre data-filename="FullChain.java"><code>@Repository
+public class UserRepository {
+    public Optional&lt;User&gt; findById(Long id) {
+        return Optional.of(new User(id, "Akobir"));
+    }
+}
+
+@Service
+public class UserService {
+    private final UserRepository repo;
+
+    public UserService(UserRepository repo) {
+        this.repo = repo;
+    }
+
+    public User get(Long id) {
+        return repo.findById(id).orElseThrow();
+    }
+}
+
+@RestController
+@RequestMapping("/users")
+public class UserController {
+    private final UserService service;
+
+    public UserController(UserService service) {
+        this.service = service;
+    }
+
+    @GetMapping("/{id}")
+    public User getUser(@PathVariable Long id) {
+        return service.get(id);
+    }
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 3</span>
+      <span class="difficulty medium"><span class="dot"></span>Medium</span>
+    </div>
+    <h2>Prototype Bean Counter</h2>
+    <p>
+      <code>Counter</code> klassini <b>prototype</b> scope qiling. Har inject qilinganda <b>yangi instance</b> kelishini ko'rsating.
+    </p>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      ctx.getBean(Counter.class) == ctx.getBean(Counter.class) → <b>false</b><br>
+      (har safar yangi obyekt)
+    </div>
+    <pre data-filename="PrototypeCounter.java"><code>@Component
+@Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+public class Counter {
+    private int value = 0;
+
+    public void increment() { value++; }
+    public int get() { return value; }
+}
+
+@Service
+public class CounterService {
+    private final ApplicationContext ctx;
+
+    public CounterService(ApplicationContext ctx) {
+        this.ctx = ctx;
+    }
+
+    public Counter newCounter() {
+        return ctx.getBean(Counter.class);  // har safar yangi
+    }
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 4</span>
+      <span class="difficulty hard"><span class="dot"></span>Hard</span>
+    </div>
+    <h2>Strategy Pattern + Bean'lar</h2>
+    <p>
+      <code>PaymentStrategy</code> interfeysi bor: <code>CashPayment</code>, <code>CardPayment</code>, <code>CryptoPayment</code> bean'lari. Foydalanuvchi tanlagan turdagi bean'ni dynamic tarzda oling.
+    </p>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      pay("CARD", 100) → CardPayment.process(100)<br>
+      pay("CRYPTO", 100) → CryptoPayment.process(100)
+    </div>
+    <pre data-filename="PaymentStrategy.java"><code>public interface PaymentStrategy {
+    String type();
+    void process(double amount);
+}
+
+@Component
+public class CardPayment implements PaymentStrategy {
+    public String type() { return "CARD"; }
+    public void process(double amount) { /* ... */ }
+}
+
+@Component
+public class CashPayment implements PaymentStrategy {
+    public String type() { return "CASH"; }
+    public void process(double amount) { /* ... */ }
+}
+
+@Service
+public class PaymentService {
+    private final Map&lt;String, PaymentStrategy&gt; strategies;
+
+    public PaymentService(List&lt;PaymentStrategy&gt; list) {
+        this.strategies = list.stream()
+            .collect(Collectors.toMap(PaymentStrategy::type, s -&gt; s));
+    }
+
+    public void pay(String type, double amount) {
+        PaymentStrategy s = strategies.get(type);
+        if (s == null) throw new IllegalArgumentException("Unknown: " + type);
+        s.process(amount);
+    }
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>@Qualifier va @Primary</h2>
+    <p>Agar bir nechta bean bir interface'ni implement qilsa — <b>qaysi birini inject qilish</b>ni aytish kerak.</p>
+    <pre data-filename="QualifierPrimary.java"><code>public interface MessageService {
+    void send(String msg);
+}
+
+@Component
+@Primary  // standart bo'yicha shuni inject qil
+public class EmailService implements MessageService {
+    public void send(String msg) { /* email */ }
+}
+
+@Component("sms")
+public class SmsService implements MessageService {
+    public void send(String msg) { /* sms */ }
+}
+
+@Component("push")
+public class PushService implements MessageService {
+    public void send(String msg) { /* push */ }
+}
+
+// Foydalanish
+@Service
+public class NotificationService {
+    private final MessageService email;     // Primary — EmailService
+    private final MessageService sms;
+    private final MessageService push;
+
+    public NotificationService(
+            MessageService email,                    // EmailService (Primary)
+            @Qualifier("sms") MessageService sms,    // SmsService
+            @Qualifier("push") MessageService push   // PushService
+    ) {
+        this.email = email; this.sms = sms; this.push = push;
+    }
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala</span>
+      <span class="difficulty medium"><span class="dot"></span>Medium</span>
+    </div>
+    <h2>Conditional Bean</h2>
+    <p>
+      <code>Notifier</code> interface bor. Agar <code>application.properties</code> da <code>notifier.type=email</code> bo'lsa — EmailNotifier, <code>sms</code> bo'lsa — SmsNotifier inject qilinsin.
+    </p>
+    <pre data-filename="Conditional.java"><code>public interface Notifier { void send(String msg); }
+
+@Component
+@ConditionalOnProperty(name = "notifier.type", havingValue = "email")
+public class EmailNotifier implements Notifier {
+    public void send(String msg) { System.out.println("Email: " + msg); }
+}
+
+@Component
+@ConditionalOnProperty(name = "notifier.type", havingValue = "sms")
+public class SmsNotifier implements Notifier {
+    public void send(String msg) { System.out.println("SMS: " + msg); }
+}
+
+// application.properties:
+// notifier.type=email
+
+@Service
+public class NotificationService {
+    private final Notifier notifier;
+    public NotificationService(Notifier notifier) {
+        this.notifier = notifier;
+    }
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>Bean Lifecycle</h2>
+    <div class="theory-box">
+      <p>Spring'da har bir bean quyidagi <b>hayot bosqichlari</b>dan o'tadi:</p>
+    </div>
+    <pre data-filename="Lifecycle.txt"><code>1. Container ishga tushadi
+   ↓
+2. Bean instantsiyalanadi (constructor)
+   ↓
+3. Dependency injection (Setter, Field)
+   ↓
+4. @PostConstruct chaqiriladi
+   ↓
+5. InitializingBean.afterPropertiesSet() (agar implementatsiya qilingan bo'lsa)
+   ↓
+6. Custom init metod (agar @Bean(initMethod="..."))
+   ↓
+7. ✅ BEAN TAYYOR — foydalanish mumkin
+   ↓
+8. Container yopilganda:
+   - @PreDestroy chaqiriladi
+   - DisposableBean.destroy()
+   - Custom destroy metod</code></pre>
+    <pre data-filename="LifecycleHooks.java"><code>@Component
+public class MyBean {
+    public MyBean() {
+        System.out.println("1. Constructor");
+    }
+
+    @PostConstruct
+    public void init() {
+        System.out.println("2. PostConstruct — bean tayyor");
+        // resurslarni ochish, cache to'ldirish, va h.k.
+    }
+
+    @PreDestroy
+    public void cleanup() {
+        System.out.println("3. PreDestroy — yopilmoqda");
+        // resurslarni yopish
+    }
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>@Configuration va @Bean</h2>
+    <p>
+      Tashqi kutubxonalardan kelgan klasslarni bean qilish uchun.
+    </p>
+    <pre data-filename="Config.java"><code>@Configuration
+public class AppConfig {
+
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate();  // Spring'dan tashqari klass
+    }
+
+    @Bean
+    public ObjectMapper objectMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        return mapper;
+    }
+
+    @Bean
+    public DataSource dataSource(
+            @Value("${db.url}") String url,
+            @Value("${db.user}") String user) {
+        HikariDataSource ds = new HikariDataSource();
+        ds.setJdbcUrl(url);
+        ds.setUsername(user);
+        return ds;
+    }
+
+    // Boshqa bean'ni inject qilib ishlatish
+    @Bean
+    public MyService myService(RestTemplate restTemplate) {
+        return new MyService(restTemplate);
+    }
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>@Value va properties</h2>
+    <p>
+      Konfiguratsiya qiymatlarini <code>application.properties</code> dan olish.
+    </p>
+    <pre data-filename="application.properties"><code># application.properties
+app.name=My Backend
+app.version=1.0.0
+app.max-users=100
+
+server.port=8080
+spring.datasource.url=jdbc:postgresql://localhost:5432/mydb
+spring.datasource.username=admin
+spring.datasource.password=${DB_PASSWORD:default_pass}</code></pre>
+    <pre data-filename="ValueUsage.java"><code>@Service
+public class AppService {
+    @Value("${app.name}")
+    private String appName;
+
+    @Value("${app.max-users:50}")  // default qiymat bilan
+    private int maxUsers;
+
+    @Value("${server.port}")
+    private int port;
+
+    // Constructor injection (yaxshiroq)
+    public AppService(@Value("${app.name}") String name) {
+        this.appName = name;
+    }
+}
+
+// @ConfigurationProperties — tip-safe konfiguratsiya
+@Component
+@ConfigurationProperties(prefix = "app")
+public class AppProps {
+    private String name;
+    private String version;
+    private int maxUsers;
+    // getter/setter
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>@Profile — muhit bo'yicha</h2>
+    <p>
+      Bir xil kod, lekin muhitga (dev/test/prod) qarab turli bean'lar.
+    </p>
+    <pre data-filename="Profiles.java"><code>@Service
+@Profile("dev")
+public class DevEmailService implements EmailService {
+    public void send(String to, String msg) {
+        System.out.println("FAKE EMAIL: " + to + " - " + msg);
+    }
+}
+
+@Service
+@Profile("prod")
+public class RealEmailService implements EmailService {
+    public void send(String to, String msg) {
+        // haqiqiy SMTP serverga jo'natish
+    }
+}
+
+@Service
+@Profile({"dev", "test"})
+public class InMemoryRepo { /* ... */ }
+
+// application.properties:
+// spring.profiles.active=dev
+
+// Yoki environment variable bilan:
+// SPRING_PROFILES_ACTIVE=prod java -jar app.jar</code></pre>
+    <div class="note">
+      Profile-specific properties: <code>application-dev.properties</code>, <code>application-prod.properties</code>.
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 1</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>@PostConstruct bilan log</h2>
+    <p>
+      Service ishga tushganda log yozsin va boshqa bean inject qilinganini ko'rsatsin.
+    </p>
+    <pre data-filename="StartupLog.java"><code>@Service
+public class StartupLogger {
+    private final UserRepository userRepo;
+
+    public StartupLogger(UserRepository userRepo) {
+        this.userRepo = userRepo;
+    }
+
+    @PostConstruct
+    public void onStartup() {
+        System.out.println("✅ StartupLogger ishga tushdi");
+        System.out.println("Total users: " + userRepo.count());
+    }
+
+    @PreDestroy
+    public void onShutdown() {
+        System.out.println("👋 StartupLogger to'xtamoqda");
+    }
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 2</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>@ConfigurationProperties</h2>
+    <p>
+      <code>app.smtp.host</code>, <code>app.smtp.port</code>, <code>app.smtp.username</code> qiymatlarini bitta klassga to'plang.
+    </p>
+    <pre data-filename="SmtpProps.java"><code>// application.properties
+// app.smtp.host=smtp.gmail.com
+// app.smtp.port=587
+// app.smtp.username=admin@mail.com
+
+@Component
+@ConfigurationProperties(prefix = "app.smtp")
+public class SmtpProps {
+    private String host;
+    private int port;
+    private String username;
+
+    // Getter / Setter
+    public String getHost() { return host; }
+    public void setHost(String host) { this.host = host; }
+    public int getPort() { return port; }
+    public void setPort(int port) { this.port = port; }
+    public String getUsername() { return username; }
+    public void setUsername(String u) { this.username = u; }
+}
+
+// Foydalanish
+@Service
+public class EmailService {
+    private final SmtpProps smtp;
+    public EmailService(SmtpProps smtp) {
+        this.smtp = smtp;
+        System.out.println("Host: " + smtp.getHost());
+    }
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 3</span>
+      <span class="difficulty medium"><span class="dot"></span>Medium</span>
+    </div>
+    <h2>Multi-profile config</h2>
+    <p>
+      <code>DataSource</code> bean'i: <b>dev</b> profilida H2 (in-memory), <b>prod</b> profilida PostgreSQL bo'lsin.
+    </p>
+    <pre data-filename="MultiProfileDS.java"><code>@Configuration
+public class DataSourceConfig {
+
+    @Bean
+    @Profile("dev")
+    public DataSource h2DataSource() {
+        return new EmbeddedDatabaseBuilder()
+            .setType(EmbeddedDatabaseType.H2)
+            .build();
+    }
+
+    @Bean
+    @Profile("prod")
+    public DataSource postgresDataSource(
+            @Value("${db.url}") String url,
+            @Value("${db.user}") String user,
+            @Value("${db.password}") String password) {
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl(url);
+        config.setUsername(user);
+        config.setPassword(password);
+        return new HikariDataSource(config);
+    }
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 4</span>
+      <span class="difficulty hard"><span class="dot"></span>Hard</span>
+    </div>
+    <h2>@Conditional + Custom Annotation</h2>
+    <p>
+      Custom annotation <code>@FeatureFlag("dark-mode")</code> yarating. Faqat <code>features.dark-mode=true</code> bo'lsa bean yaratilsin.
+    </p>
+    <pre data-filename="FeatureFlag.java"><code>@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@Conditional(FeatureFlagCondition.class)
+public @interface FeatureFlag {
+    String value();
+}
+
+public class FeatureFlagCondition implements Condition {
+    @Override
+    public boolean matches(ConditionContext ctx,
+                          AnnotatedTypeMetadata meta) {
+        Map&lt;String, Object&gt; attrs = meta.getAnnotationAttributes(
+            FeatureFlag.class.getName());
+        String flagName = (String) attrs.get("value");
+
+        String key = "features." + flagName;
+        return "true".equals(ctx.getEnvironment().getProperty(key));
+    }
+}
+
+@Service
+@FeatureFlag("dark-mode")
+public class DarkModeService {
+    // faqat features.dark-mode=true bo'lganda yaratiladi
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>AOP — Aspect-Oriented Programming</h2>
+    <div class="theory-box">
+      <p><b>Muammo:</b> Logging, transaction, security, cache — bu kod <b>har joyda</b> takrorlanadi (cross-cutting concerns).</p>
+      <p><b>Yechim:</b> AOP — bu kodni alohida joyga (<b>Aspect</b>) chiqarib, kerakli metodlarga avtomatik <b>"yopishtirish"</b>.</p>
+    </div>
+    <table class="compare-table">
+      <thead><tr><th>Atama</th><th>Tavsif</th></tr></thead>
+      <tbody>
+        <tr><td><b>Aspect</b></td><td>Cross-cutting concern (logging, sec)</td></tr>
+        <tr><td><b>Join Point</b></td><td>Metod chaqiruv nuqtasi</td></tr>
+        <tr><td><b>Pointcut</b></td><td>Qaysi metodlar uchun (naqsh)</td></tr>
+        <tr><td><b>Advice</b></td><td>Nima qilish (before, after, around)</td></tr>
+        <tr><td><b>Weaving</b></td><td>Kodga aspect'ni bog'lash jarayoni</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="slide">
+    <h2>AOP Annotatsiyalari</h2>
+    <pre data-filename="Aspect.java"><code>@Aspect
+@Component
+public class LoggingAspect {
+
+    // Pointcut — qaysi metodlar
+    @Pointcut("execution(* com.example.service.*.*(..))")
+    public void serviceMethods() {}
+
+    // BEFORE — metoddan oldin
+    @Before("serviceMethods()")
+    public void logBefore(JoinPoint jp) {
+        System.out.println("➡ " + jp.getSignature().getName());
+    }
+
+    // AFTER — metoddan keyin (har doim)
+    @After("serviceMethods()")
+    public void logAfter(JoinPoint jp) {
+        System.out.println("⬅ " + jp.getSignature().getName());
+    }
+
+    // AROUND — eng kuchli, hammasini boshqaradi
+    @Around("serviceMethods()")
+    public Object measure(ProceedingJoinPoint pjp) throws Throwable {
+        long start = System.currentTimeMillis();
+        try {
+            Object result = pjp.proceed();  // asl metodni chaqirish
+            return result;
+        } finally {
+            long time = System.currentTimeMillis() - start;
+            System.out.println("⏱ " + pjp.getSignature().getName() + ": " + time + "ms");
+        }
+    }
+
+    // AFTER RETURNING — faqat muvaffaqiyatli tugaganda
+    @AfterReturning(pointcut = "serviceMethods()", returning = "result")
+    public void logReturn(Object result) {
+        System.out.println("Result: " + result);
+    }
+
+    // AFTER THROWING — exception bo'lganda
+    @AfterThrowing(pointcut = "serviceMethods()", throwing = "ex")
+    public void logError(Exception ex) {
+        System.out.println("Error: " + ex.getMessage());
+    }
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 1</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>@LogTime aspect</h2>
+    <p>
+      Custom annotation <code>@LogTime</code> yarating. Bu annotatsiyaga ega bo'lgan har bir metod bajariladigan vaqtini log qilsin.
+    </p>
+    <pre data-filename="LogTime.java"><code>@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface LogTime { }
+
+@Aspect
+@Component
+public class TimingAspect {
+
+    @Around("@annotation(LogTime)")
+    public Object logTime(ProceedingJoinPoint pjp) throws Throwable {
+        long start = System.currentTimeMillis();
+        try {
+            return pjp.proceed();
+        } finally {
+            long ms = System.currentTimeMillis() - start;
+            System.out.println("⏱ " + pjp.getSignature().getName() + ": " + ms + "ms");
+        }
+    }
+}
+
+@Service
+public class MyService {
+    @LogTime
+    public void slowOperation() {
+        // ...
+    }
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 2</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>Service argumentlarini log</h2>
+    <p>
+      Hamma <code>@Service</code> bean'larining barcha public metodlari uchun argumentlarni log qilsin.
+    </p>
+    <pre data-filename="ArgLogger.java"><code>@Aspect
+@Component
+public class ArgLogger {
+
+    @Before("@within(org.springframework.stereotype.Service)")
+    public void logArgs(JoinPoint jp) {
+        String method = jp.getSignature().toShortString();
+        Object[] args = jp.getArgs();
+        System.out.println("→ " + method + " args: " + Arrays.toString(args));
+    }
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 3</span>
+      <span class="difficulty medium"><span class="dot"></span>Medium</span>
+    </div>
+    <h2>Cache aspect</h2>
+    <p>
+      Custom <code>@Cacheable</code> aspect yarating — metod natijasini <code>Map</code>'da saqlasin va keyingi safarlarda qaytarsin.
+    </p>
+    <pre data-filename="CacheAspect.java"><code>@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface SimpleCache { }
+
+@Aspect
+@Component
+public class SimpleCacheAspect {
+    private final Map&lt;String, Object&gt; cache = new ConcurrentHashMap&lt;&gt;();
+
+    @Around("@annotation(SimpleCache)")
+    public Object cacheResult(ProceedingJoinPoint pjp) throws Throwable {
+        String key = pjp.getSignature().toString() + Arrays.toString(pjp.getArgs());
+
+        if (cache.containsKey(key)) {
+            System.out.println("HIT: " + key);
+            return cache.get(key);
+        }
+
+        System.out.println("MISS: " + key);
+        Object result = pjp.proceed();
+        cache.put(key, result);
+        return result;
+    }
+}
+
+@Service
+public class ProductService {
+    @SimpleCache
+    public Product findById(Long id) {
+        // sekin operatsiya
+        return new Product(id, "Item");
+    }
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>Spring vs Spring Boot</h2>
+    <table class="compare-table">
+      <thead><tr><th>Xususiyat</th><th>Spring</th><th>Spring Boot</th></tr></thead>
+      <tbody>
+        <tr><td>Konfiguratsiya</td><td>Qo'lda (XML, Java config)</td><td>Avto (convention-over-config)</td></tr>
+        <tr><td>Server</td><td>Tashqi (Tomcat, Jetty)</td><td>O'rnatilgan (embedded)</td></tr>
+        <tr><td>Boshlash</td><td>WAR fayl → server</td><td><code>java -jar app.jar</code></td></tr>
+        <tr><td>Dependencies</td><td>Har birini alohida</td><td>Starter'lar (boshlovchi paket)</td></tr>
+        <tr><td>Boshlash vaqti</td><td>Ko'p sozlash kerak</td><td>Daqiqada tayyor</td></tr>
+        <tr><td>Production-ready</td><td>Qo'lda yig'ish</td><td>Actuator, monitoring tayyor</td></tr>
+      </tbody>
+    </table>
+    <div class="theory-box">
+      <p><b>Spring Boot — Spring ustiga yozilgan qatlam</b>. Spring'ning hamma narsasini qo'llab-quvvatlaydi, lekin <b>auto-configuration</b> va <b>opinionated defaults</b> beradi.</p>
+      <p>Hozir Java backend = 99% Spring Boot.</p>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">📝 Amaliy topshiriqlar</span>
+      <span class="difficulty hard"><span class="dot"></span>Mustaqil</span>
+    </div>
+    <h2>10 ta murakkab vazifa</h2>
+    <p>Quyidagi vazifalarni Spring Boot loyihasi yaratib bajaring:</p>
+    <ul style="font-size: 16px;">
+      <li>
+        <b>1. To'liq Service-Repository chain.</b> <code>ProductController → ProductService → ProductRepository</code>. <code>findAll</code>, <code>findById</code>, <code>save</code>, <code>delete</code>.
+      </li>
+      <li>
+        <b>2. Constructor injection + Lombok.</b> <code>@RequiredArgsConstructor</code> va <code>final</code> field'lar bilan.
+      </li>
+      <li>
+        <b>3. Multi-implementation Strategy.</b> 3 ta <code>Notifier</code> (Email, SMS, Push) — <code>List&lt;Notifier&gt;</code> orqali aniqlash.
+      </li>
+      <li>
+        <b>4. @Profile dev vs prod.</b> Dev'da console'ga log, prod'da real serverga jo'natish.
+      </li>
+      <li>
+        <b>5. @ConfigurationProperties.</b> Murakkab konfiguratsiyani tip-safe class'ga to'plang (nested obyektlar bilan).
+      </li>
+      <li>
+        <b>6. @PostConstruct cache loader.</b> Application ishga tushganda DB'dan ma'lumotni o'qib, cache'ga to'ldirish.
+      </li>
+      <li>
+        <b>7. @Async metod.</b> Email yuborishni async qiling. <code>@EnableAsync</code> + <code>@Async</code> annotatsiyalari.
+      </li>
+      <li>
+        <b>8. AOP Audit Aspect.</b> Hamma <code>@Repository</code> metodlari uchun audit log (kim, qachon, qaysi argumentlar bilan).
+      </li>
+      <li>
+        <b>9. Custom Validation.</b> <code>@ValidPhone</code> annotatsiya yarating — Uzbekiston raqamlarini tekshiruvchi <code>ConstraintValidator</code>.
+      </li>
+      <li>
+        <b>10. Event-driven communication.</b> <code>ApplicationEventPublisher</code> bilan UserRegisteredEvent — bir nechta listener (email, log, metric) reaksiya qilsin.
+      </li>
+    </ul>
+    <div class="note">
+      Har bir vazifa uchun: <b>SOLID tamoyillariga rioya qiling</b>, <code>final</code> field'lar ishlatib bog'liqliklarni aniq ko'rsating, <b>Constructor Injection</b> bilan yozing.
+    </div>
+  </section>
+
+  <section class="slide slide-title">
+    <div class="topic-pill">🎯 Yakun</div>
+    <h1>Dars yakuni</h1>
+    <p>
+      Spring Framework — endi siz Java backend'ning <b>asosiy quroli</b>ni egalladingiz. IoC, DI, Bean'lar va AOP — bu zamonaviy enterprise dasturlashning asoslari.
+    </p>
+    <div class="note">
+      <b>Keyingi mavzu:</b> Spring Boot — auto-configuration, starter'lar, embedded server, application.yml, profiles, logging va validation.
+    </div>
+  </section>
+
+</div>
+
+<div class="toast" id="toast">✓ Kod nusxalandi!</div>
+
+<div class="controls">
+  <div class="progress-line" id="progressLine"></div>
+  <button class="nav-arrow" id="prevBtn" onclick="prevSlide()" title="Oldingi (←)">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+  </button>
+  <div class="pagination" id="pagination"></div>
+  <button class="nav-arrow" id="nextBtn" onclick="nextSlide()" title="Keyingi (→)">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+  </button>
+</div>
+
+<script>
+  function wrapCodeBlocks() {
+    document.querySelectorAll('pre').forEach(pre => {
+      if (pre.closest('.code-window')) return;
+      const filename = pre.dataset.filename || 'Example.java';
+      const wrapper = document.createElement('div');
+      wrapper.className = 'code-window';
+      wrapper.innerHTML = `
+        <div class="code-header">
+          <div class="traffic-lights">
+            <span class="light close"></span><span class="light minimize"></span><span class="light maximize"></span>
+          </div>
+          <div class="code-filename">${filename}</div>
+          <div class="code-actions">
+            <button class="code-btn reset-btn">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              Reset
+            </button>
+            <button class="code-btn copy-btn">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+              Copy
+            </button>
+          </div>
+        </div>
+        <div class="code-body"></div>
+      `;
+      pre.setAttribute('contenteditable', 'true');
+      pre.setAttribute('spellcheck', 'false');
+      const original = pre.innerHTML;
+      pre.dataset.original = original;
+      pre.parentNode.insertBefore(wrapper, pre);
+      wrapper.querySelector('.code-body').appendChild(pre);
+      wrapper.querySelector('.copy-btn').addEventListener('click', () => {
+        navigator.clipboard.writeText(pre.textContent).then(() => {
+          const btn = wrapper.querySelector('.copy-btn');
+          btn.classList.add('copied');
+          btn.innerHTML = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg> Nusxalandi`;
+          showToast('✓ Kod nusxalandi!');
+          setTimeout(() => {
+            btn.classList.remove('copied');
+            btn.innerHTML = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg> Copy`;
+          }, 2000);
+        });
+      });
+      wrapper.querySelector('.reset-btn').addEventListener('click', () => {
+        pre.innerHTML = original;
+        showToast('↺ Kod tiklandi');
+      });
+    });
+  }
+  function showToast(message) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.classList.add('show');
+    clearTimeout(window._toastTimer);
+    window._toastTimer = setTimeout(() => toast.classList.remove('show'), 1800);
+  }
+  wrapCodeBlocks();
+
+  function wrapSolutions() {
+    const eyeIcon = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>`;
+    const eyeOffIcon = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"/></svg>`;
+    document.querySelectorAll('.slide').forEach(slide => {
+      if (!slide.querySelector('.problem-header')) return;
+      slide.querySelectorAll('.code-window').forEach(cw => {
+        if (cw.parentNode.classList.contains('solution-content')) return;
+        const wrap = document.createElement('div');
+        wrap.className = 'solution-wrap';
+        const btn = document.createElement('button');
+        btn.className = 'show-solution-btn';
+        btn.innerHTML = eyeIcon + ' Yechimni ko\'rsatish';
+        const content = document.createElement('div');
+        content.className = 'solution-content';
+        cw.parentNode.insertBefore(wrap, cw);
+        content.appendChild(cw);
+        wrap.appendChild(btn);
+        wrap.appendChild(content);
+        btn.addEventListener('click', () => {
+          const isShown = content.classList.toggle('shown');
+          btn.classList.toggle('active', isShown);
+          btn.innerHTML = isShown ? eyeOffIcon + ' Yechimni yashirish' : eyeIcon + ' Yechimni ko\'rsatish';
+        });
+      });
+    });
+  }
+  wrapSolutions();
+
+  const slides = document.querySelectorAll('.slide');
+  const totalSlides = slides.length;
+  const pagination = document.getElementById('pagination');
+  let currentIndex = 0;
+  document.getElementById('totalSlides').textContent = totalSlides;
+  const pageDots = [];
+  for (let i = 0; i < totalSlides; i++) {
+    const dot = document.createElement('button');
+    dot.className = 'page-dot';
+    dot.textContent = String(i + 1).padStart(2, '0');
+    dot.addEventListener('click', () => { currentIndex = i; showSlide(i); });
+    pagination.appendChild(dot);
+    pageDots.push(dot);
+  }
+  function showSlide(index) {
+    slides.forEach(s => s.classList.remove('active'));
+    slides[index].classList.add('active');
+    document.getElementById('currentSlide').textContent = index + 1;
+    pageDots.forEach((d, i) => { d.classList.toggle('active', i === index); d.classList.toggle('visited', i < index); });
+    const percent = ((index + 1) / totalSlides * 100);
+    document.getElementById('progressLine').style.width = percent + '%';
+    document.getElementById('prevBtn').disabled = index === 0;
+    document.getElementById('nextBtn').disabled = index === totalSlides - 1;
+    slides[index].scrollTop = 0;
+    const activeDot = pageDots[index];
+    if (activeDot) activeDot.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  }
+  function nextSlide() { if (currentIndex < totalSlides - 1) { currentIndex++; showSlide(currentIndex); } }
+  function prevSlide() { if (currentIndex > 0) { currentIndex--; showSlide(currentIndex); } }
+  document.addEventListener('keydown', (e) => {
+    if (e.target.isContentEditable) return;
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); nextSlide(); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); prevSlide(); }
+    else if (e.key === 'Home') { currentIndex = 0; showSlide(0); }
+    else if (e.key === 'End') { currentIndex = totalSlides - 1; showSlide(currentIndex); }
+  });
+  showSlide(0);
+</script>
+
+<script>
+(function(_0x){
+  var _a=String.fromCharCode,
+      _b=[169,32,77,117,97,108,108,105,102,58,32,82,117,115,116,97,109,111,118,32,65,107,111,98,105,114],
+      _c=[95,120,57,52,107,55,116,57,114,53,95,115,105,103],
+      _d=[95,120,57,52,104,53,100,55],
+      _t='',_n='',_h='';
+  for(var i=0;i<_b.length;i++)_t+=_a(_b[i]);
+  for(var i=0;i<_c.length;i++)_n+=_a(_c[i]);
+  for(var i=0;i<_d.length;i++)_h+=_a(_d[i]);
+  function _mk(visible){
+    var d=document.createElement('div');
+    d.setAttribute('data-x',_t);
+    if(visible){
+      d.id=_n; d.textContent=_t;
+      d.style.cssText='position:fixed;bottom:96px;right:16px;z-index:99999;background:rgba(15,15,25,0.75);color:rgba(255,255,255,0.85);padding:6px 14px;border-radius:20px;font-family:system-ui,-apple-system,sans-serif;font-size:11px;font-weight:600;backdrop-filter:blur(10px);border:1px solid rgba(139,92,246,0.3);pointer-events:none;user-select:none;letter-spacing:0.03em;box-shadow:0 4px 12px rgba(0,0,0,0.3);';
+    }else{
+      d.className=_h+Math.random().toString(36).slice(2,7); d.textContent=_t;
+      d.style.cssText='position:absolute;left:-99999px;top:-99999px;opacity:0;pointer-events:none;width:1px;height:1px;overflow:hidden;';
+    }
+    return d;
+  }
+  function _ensure(){
+    if(!document.body)return;
+    if(!document.getElementById(_n)){ document.body.appendChild(_mk(true)); }
+    var hidden=document.querySelectorAll('[class^="'+_h+'"]');
+    if(hidden.length<5){ for(var i=hidden.length;i<5;i++){ document.body.appendChild(_mk(false)); } }
+  }
+  function _setup(){
+    _ensure();
+    try{
+      new MutationObserver(function(muts){
+        for(var i=0;i<muts.length;i++){
+          var m=muts[i];
+          if(m.removedNodes.length>0||m.type==='attributes'){ _ensure(); break; }
+        }
+      }).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['id','class','style']});
+    }catch(e){}
+    setInterval(_ensure,1500);
+  }
+  if(document.body)_setup();
+  else document.addEventListener('DOMContentLoaded',_setup);
+  try{
+    console.log('%c '+_t+' ','background:linear-gradient(135deg,#8b5cf6,#f472b6);color:white;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:bold;');
+    Object.defineProperty(window,_n+'_lock',{value:_t,writable:false,configurable:false});
+  }catch(e){}
+})();
+</script>
+
+</body>
+</html>

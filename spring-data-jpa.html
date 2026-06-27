@@ -1,0 +1,1302 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Spring Data JPA — Prezentatsiya</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0a0a14; --surface: rgba(255, 255, 255, 0.04); --border: rgba(255, 255, 255, 0.08);
+      --text: #f8fafc; --text-dim: #94a3b8; --text-muted: #64748b;
+      --primary: #8b5cf6; --primary-2: #6366f1; --accent: #f472b6;
+      --slide-bg: #ffffff; --slide-bg-2: #fafafe;
+      --code-bg: #0f172a; --code-text: #e2e8f0;
+    }
+    html, body { height: 100%; overflow: hidden; }
+    body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
+    .bg-effects { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+    .blob { position: absolute; border-radius: 50%; filter: blur(140px); opacity: 0.4; }
+    .blob-1 { width: 500px; height: 500px; background: #8b5cf6; top: -100px; left: -150px; }
+    .blob-2 { width: 400px; height: 400px; background: #f472b6; bottom: -100px; right: -100px; }
+    .top { position: fixed; top: 0; left: 0; right: 0; z-index: 100; backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); background: rgba(10, 10, 20, 0.7); border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+    .top-left { display: flex; align-items: center; gap: 14px; }
+    .back-btn { display: inline-flex; align-items: center; gap: 8px; color: var(--text); text-decoration: none; background: var(--surface); border: 1px solid var(--border); padding: 9px 16px; border-radius: 10px; font-weight: 600; font-size: 14px; transition: all 0.2s; }
+    .back-btn:hover { background: rgba(139, 92, 246, 0.15); border-color: rgba(139, 92, 246, 0.4); }
+    .topic-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); color: #c4b5fd; padding: 8px 14px; border-radius: 50px; font-size: 12px; font-weight: 600; }
+    .pulse-dot { width: 6px; height: 6px; border-radius: 50%; background: #c4b5fd; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+    .slide-counter { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--border); padding: 9px 16px; border-radius: 10px; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; color: var(--text-dim); }
+    .slide-counter .current { color: var(--text); }
+    .presentation { position: fixed; top: 72px; bottom: 86px; left: 0; right: 0; display: flex; align-items: center; justify-content: center; padding: 24px; z-index: 1; }
+    .slide { display: none; background: linear-gradient(135deg, var(--slide-bg) 0%, var(--slide-bg-2) 100%); color: #0f172a; width: 100%; max-width: 1180px; height: 100%; max-height: 100%; padding: 56px 64px; border-radius: 28px; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05); flex-direction: column; justify-content: center; overflow-y: auto; position: relative; }
+    .slide.active { display: flex; animation: slideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+    .slide > * { min-width: 0; max-width: 100%; }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(30px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    .slide::before { content: ''; position: absolute; top: 0; right: 0; width: 280px; height: 280px; background: radial-gradient(circle, rgba(139, 92, 246, 0.08), transparent 70%); border-radius: 50%; pointer-events: none; }
+    .slide::after { content: ''; position: absolute; bottom: 0; left: 0; width: 240px; height: 240px; background: radial-gradient(circle, rgba(244, 114, 182, 0.08), transparent 70%); border-radius: 50%; pointer-events: none; }
+    .slide h1 { font-size: clamp(36px, 5vw, 60px); font-weight: 900; letter-spacing: -0.03em; margin-bottom: 24px; line-height: 1.1; background: linear-gradient(135deg, #1e1b4b 0%, #6366f1 50%, #8b5cf6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; position: relative; z-index: 1; }
+    .slide h2 { font-size: clamp(28px, 4vw, 44px); font-weight: 800; letter-spacing: -0.02em; margin-bottom: 28px; color: #1e1b4b; line-height: 1.15; position: relative; z-index: 1; }
+    .slide h2::before { content: ''; display: inline-block; width: 6px; height: 32px; background: linear-gradient(180deg, var(--primary), var(--accent)); border-radius: 4px; margin-right: 16px; vertical-align: middle; transform: translateY(-3px); }
+    .slide p { font-size: 19px; margin-bottom: 18px; color: #334155; position: relative; z-index: 1; line-height: 1.7; }
+    .slide ul { font-size: 18px; list-style: none; padding-left: 0; position: relative; z-index: 1; }
+    .slide li { position: relative; padding: 10px 0 10px 32px; color: #1e293b; line-height: 1.6; }
+    .slide li::before { content: ''; position: absolute; left: 8px; top: 20px; width: 8px; height: 8px; background: linear-gradient(135deg, var(--primary), var(--accent)); border-radius: 50%; box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.12); }
+    .slide b { color: var(--primary-2); font-weight: 700; }
+    .slide-title { text-align: center; justify-content: center; }
+    .slide-title h1 { font-size: clamp(48px, 8vw, 88px); text-align: center; }
+    .slide-title p { text-align: center; max-width: 700px; margin-left: auto; margin-right: auto; font-size: 22px; }
+    .topic-pill { display: inline-flex; align-items: center; gap: 10px; background: linear-gradient(135deg, rgba(139, 92, 246, 0.12), rgba(244, 114, 182, 0.12)); border: 1px solid rgba(139, 92, 246, 0.3); color: var(--primary); padding: 10px 22px; border-radius: 50px; font-weight: 700; font-size: 14px; margin: 0 auto 32px; width: fit-content; text-transform: uppercase; letter-spacing: 0.08em; }
+    .code-window { background: var(--code-bg); border-radius: 14px; margin: 20px 0; position: relative; z-index: 1; border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05); max-width: 100%; min-width: 0; display: flex; flex-direction: column; overflow: hidden; }
+    .code-header { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: linear-gradient(180deg, #2d3548 0%, #1e2536 100%); border-bottom: 1px solid rgba(255, 255, 255, 0.08); user-select: none; }
+    .traffic-lights { display: flex; gap: 8px; align-items: center; }
+    .light { width: 12px; height: 12px; border-radius: 50%; border: 0.5px solid rgba(0, 0, 0, 0.2); cursor: pointer; transition: filter 0.2s; }
+    .light:hover { filter: brightness(1.15); }
+    .light.close { background: #ff5f57; } .light.minimize { background: #febc2e; } .light.maximize { background: #28c840; }
+    .code-filename { flex: 1; text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: #94a3b8; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .code-filename::before { content: '💾'; font-size: 12px; }
+    .code-actions { display: flex; gap: 6px; align-items: center; }
+    .code-btn { display: inline-flex; align-items: center; gap: 5px; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.08); color: #cbd5e1; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; }
+    .code-btn:hover { background: rgba(139, 92, 246, 0.2); border-color: rgba(139, 92, 246, 0.4); color: white; }
+    .code-btn.copied { background: rgba(16, 185, 129, 0.2); border-color: rgba(16, 185, 129, 0.4); color: #6ee7b7; }
+    .code-btn svg { width: 12px; height: 12px; }
+    .code-body { position: relative; background: var(--code-bg); min-width: 0; max-width: 100%; overflow: hidden; }
+    pre { background: transparent; color: var(--code-text); padding: 22px 24px; overflow-x: auto; overflow-y: auto; max-height: 50vh; font-size: 15px; margin: 0; font-family: 'JetBrains Mono', 'Consolas', monospace; line-height: 1.7; tab-size: 4; outline: none; white-space: pre; word-wrap: normal; scrollbar-width: thin; scrollbar-color: rgba(139, 92, 246, 0.4) rgba(255, 255, 255, 0.04); }
+    pre::-webkit-scrollbar { height: 10px; width: 10px; }
+    pre::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.04); border-radius: 5px; }
+    pre::-webkit-scrollbar-thumb { background: linear-gradient(135deg, rgba(139, 92, 246, 0.5), rgba(244, 114, 182, 0.5)); border-radius: 5px; border: 2px solid transparent; background-clip: padding-box; }
+    pre[contenteditable="true"] { caret-color: #c084fc; }
+    pre[contenteditable="true"]:focus { background: rgba(139, 92, 246, 0.04); }
+    pre code { display: block; font-family: inherit; }
+    code { font-family: 'JetBrains Mono', monospace; font-size: 0.95em; }
+    p code, li code, .note code, td code, th code { background: rgba(139, 92, 246, 0.1); color: var(--primary); padding: 2px 8px; border-radius: 6px; font-size: 0.9em; font-weight: 600; }
+    .toast { position: fixed; bottom: 110px; left: 50%; transform: translateX(-50%) translateY(20px); background: rgba(16, 185, 129, 0.95); color: white; padding: 10px 20px; border-radius: 10px; font-size: 13px; font-weight: 600; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4); opacity: 0; pointer-events: none; transition: all 0.3s; z-index: 200; backdrop-filter: blur(10px); }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .problem-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; position: relative; z-index: 1; }
+    .problem-num { display: inline-flex; align-items: center; gap: 6px; background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: white; padding: 5px 14px; border-radius: 50px; font-size: 12px; font-weight: 700; letter-spacing: 0.05em; font-family: 'JetBrains Mono', monospace; }
+    .difficulty { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 50px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+    .difficulty.easy { background: rgba(16, 185, 129, 0.12); color: #059669; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .difficulty.medium { background: rgba(245, 158, 11, 0.12); color: #d97706; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .difficulty.hard { background: rgba(239, 68, 68, 0.12); color: #dc2626; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .difficulty .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .example-block { background: #f1f5f9; border-left: 4px solid var(--primary); padding: 14px 18px; border-radius: 10px; margin: 12px 0; font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #1e293b; line-height: 1.7; position: relative; z-index: 1; }
+    .example-title { font-family: 'Inter', sans-serif; font-weight: 700; color: var(--primary); font-size: 13px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .example-block b { color: var(--primary); }
+    .constraints { background: rgba(99, 102, 241, 0.05); border: 1px dashed rgba(99, 102, 241, 0.3); padding: 12px 18px; border-radius: 10px; font-size: 14px; color: #475569; margin: 12px 0; position: relative; z-index: 1; }
+    .constraints b { color: var(--primary); }
+    .solution-wrap { margin-top: 18px; position: relative; z-index: 1; }
+    .show-solution-btn { display: inline-flex; align-items: center; gap: 10px; background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: white; border: none; padding: 12px 22px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.3s; font-family: 'Inter', sans-serif; box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3); }
+    .show-solution-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(139, 92, 246, 0.45); }
+    .show-solution-btn svg { width: 16px; height: 16px; }
+    .show-solution-btn.active { background: linear-gradient(135deg, #ec4899, #f43f5e); box-shadow: 0 8px 20px rgba(244, 63, 94, 0.3); }
+    .solution-content { max-height: 0; overflow: hidden; opacity: 0; margin-top: 0; transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, margin-top 0.3s ease; }
+    .solution-content.shown { max-height: 2500px; opacity: 1; margin-top: 16px; }
+    .note { background: linear-gradient(135deg, #fef3c7, #fef9c3); border-left: 4px solid #f59e0b; padding: 18px 22px; border-radius: 14px; margin-top: 24px; font-size: 17px; color: #78350f; position: relative; z-index: 1; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15); }
+    .note::before { content: '💡'; margin-right: 8px; }
+    .note b { color: #92400e; } .note code { background: rgba(245, 158, 11, 0.2); color: #78350f; }
+    .warning { background: linear-gradient(135deg, #fee2e2, #fecaca); border-left: 4px solid #ef4444; padding: 18px 22px; border-radius: 14px; margin-top: 24px; font-size: 17px; color: #7f1d1d; position: relative; z-index: 1; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15); }
+    .warning::before { content: '⚠️'; margin-right: 8px; }
+    .warning b { color: #991b1b; } .warning code { background: rgba(239, 68, 68, 0.2); color: #7f1d1d; }
+    .def-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 16px; position: relative; z-index: 1; }
+    .def-card { background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px 24px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04); transition: all 0.3s; }
+    .def-card:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(139, 92, 246, 0.12); }
+    .def-card h3 { font-family: 'JetBrains Mono', monospace; font-size: 22px; color: var(--primary); margin-bottom: 8px; font-weight: 700; }
+    .def-card p { font-size: 15px; margin: 0; color: #475569; }
+    .theory-box { background: linear-gradient(135deg, #ede9fe, #fce7f3); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 16px; padding: 22px 26px; margin: 18px 0; position: relative; z-index: 1; box-shadow: 0 8px 20px rgba(139, 92, 246, 0.08); }
+    .theory-box::before { content: '🧠 NAZARIYA'; display: block; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; color: var(--primary); letter-spacing: 0.1em; margin-bottom: 10px; }
+    .theory-box p { font-size: 17px; margin-bottom: 8px; color: #1e1b4b; }
+    .theory-box p:last-child { margin-bottom: 0; }
+    .compare-table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); position: relative; z-index: 1; margin-top: 12px; }
+    .compare-table th { background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: white; padding: 14px 16px; text-align: left; font-weight: 700; font-size: 14px; }
+    .compare-table td { padding: 12px 16px; border-bottom: 1px solid #e2e8f0; font-size: 15px; color: #334155; }
+    .compare-table tr:last-child td { border-bottom: none; }
+    .compare-table tr:hover td { background: #f8fafc; }
+    .controls { position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; backdrop-filter: blur(20px) saturate(180%); background: rgba(10, 10, 20, 0.75); border-top: 1px solid var(--border); padding: 14px 20px; display: flex; justify-content: center; align-items: center; gap: 12px; }
+    .nav-arrow { display: inline-flex; align-items: center; justify-content: center; background: var(--surface); color: var(--text); border: 1px solid var(--border); width: 38px; height: 38px; border-radius: 10px; cursor: pointer; transition: all 0.2s; flex-shrink: 0; }
+    .nav-arrow:hover:not(:disabled) { background: linear-gradient(135deg, var(--primary), var(--primary-2)); border-color: transparent; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(139, 92, 246, 0.4); }
+    .nav-arrow:disabled { opacity: 0.3; cursor: not-allowed; }
+    .nav-arrow svg { width: 16px; height: 16px; }
+    .pagination { display: flex; align-items: center; gap: 6px; overflow-x: auto; scrollbar-width: none; max-width: calc(100vw - 200px); padding: 4px; scroll-behavior: smooth; }
+    .pagination::-webkit-scrollbar { display: none; }
+    .page-dot { display: inline-flex; align-items: center; justify-content: center; min-width: 34px; height: 34px; padding: 0 10px; background: var(--surface); color: var(--text-dim); border: 1px solid var(--border); border-radius: 9px; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; font-weight: 600; cursor: pointer; transition: all 0.2s; flex-shrink: 0; }
+    .page-dot:hover { color: var(--text); border-color: rgba(139, 92, 246, 0.4); background: rgba(139, 92, 246, 0.1); transform: translateY(-1px); }
+    .page-dot.active { background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: white; border-color: transparent; box-shadow: 0 6px 16px rgba(139, 92, 246, 0.45); transform: scale(1.08); }
+    .page-dot.visited { color: var(--text); background: rgba(139, 92, 246, 0.08); border-color: rgba(139, 92, 246, 0.2); }
+    .progress-line { position: absolute; top: 0; left: 0; height: 3px; background: linear-gradient(90deg, var(--primary), var(--accent)); transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 12px rgba(139, 92, 246, 0.6); border-radius: 0 3px 3px 0; }
+    @media (max-width: 768px) {
+      .top { padding: 12px 16px; } .topic-badge { display: none; }
+      .slide { padding: 32px 24px; border-radius: 20px; }
+      pre { font-size: 13px; padding: 18px; }
+      .nav-arrow { width: 36px; height: 36px; }
+      .pagination { max-width: calc(100vw - 110px); gap: 4px; }
+      .page-dot { min-width: 30px; height: 30px; font-size: 11.5px; padding: 0 6px; }
+      .slide h2::before { width: 4px; height: 24px; }
+    }
+    @media print {
+      html, body { height: auto; overflow: visible; } body { background: white; }
+      .top, .controls, .bg-effects { display: none; }
+      .presentation { position: static; display: block; padding: 0; }
+      .slide { display: flex !important; page-break-after: always; box-shadow: none; border: 1px solid #ddd; max-width: 100%; height: auto; max-height: none; margin-bottom: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-effects">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+</div>
+
+<div class="top">
+  <div class="top-left">
+    <a href="index.html" class="back-btn">
+      <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+      Roadmap
+    </a>
+    <div class="topic-badge">
+      <span class="pulse-dot"></span>
+      10-Mavzu · Spring Data JPA
+    </div>
+  </div>
+  <div class="slide-counter">
+    <span class="current" id="currentSlide">1</span>
+    <span>/</span>
+    <span id="totalSlides">0</span>
+  </div>
+</div>
+
+<div class="presentation">
+
+  <section class="slide slide-title">
+    <div class="topic-pill">⚡ 10-Mavzu</div>
+    <h1>Spring Data JPA</h1>
+    <p>
+      <b>Java obyektlari va relatsion bazalar</b> o'rtasidagi sehrli ko'prik. ORM, Entity, Repository, Relationships va kuchli query'lar.
+    </p>
+    <div class="note">
+      <b>Dars maqsadi:</b> ORM tushunchasi, Entity Lifecycle, Persistence Context, Repositories, Relationships (OneToMany, ManyToMany), JPQL, N+1 Problem va Transactions'ni chuqur o'rganamiz.
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>ORM nima va nima uchun?</h2>
+    <p>
+      <b>ORM (Object-Relational Mapping)</b> — Java obyektlari va relatsion DB jadval'lari o'rtasida <b>avtomatik moslik</b> o'rnatuvchi texnologiya.
+    </p>
+    <div class="theory-box">
+      <p><b>Muammo:</b> Java obyektlar bilan, DB jadval bilan ishlaydi. Ular orasida <b>"impedance mismatch"</b> bor.</p>
+      <p><b>Yechim:</b> ORM — har bir <b>class</b>'ni jadval bilan, <b>field</b>'ni ustun bilan bog'laydi. SQL yozish o'rniga, obyektlar bilan ishlaysiz.</p>
+    </div>
+    <pre data-filename="without-orm.java"><code>// ORM SIZ — har SQL'ni qo'lda yozish
+String sql = "SELECT id, name, email FROM users WHERE id = ?";
+PreparedStatement ps = conn.prepareStatement(sql);
+ps.setLong(1, 42);
+ResultSet rs = ps.executeQuery();
+User user = null;
+if (rs.next()) {
+    user = new User();
+    user.setId(rs.getLong("id"));
+    user.setName(rs.getString("name"));
+    user.setEmail(rs.getString("email"));
+}
+rs.close(); ps.close();</code></pre>
+    <pre data-filename="with-orm.java"><code>// ORM bilan — bir qator!
+User user = userRepository.findById(42L).orElseThrow();</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>JPA stack — uchta qatlam</h2>
+    <div class="def-grid">
+      <div class="def-card">
+        <h3>JPA</h3>
+        <p><b>Spetsifikatsiya</b> (Jakarta Persistence API). Java EE standart. Faqat interfacelar va annotatsiyalar.</p>
+      </div>
+      <div class="def-card">
+        <h3>Hibernate</h3>
+        <p>JPA ning eng mashhur <b>implementatsiyasi</b>. Aslida JPA'dan oldin (2001) chiqqan.</p>
+      </div>
+      <div class="def-card">
+        <h3>Spring Data JPA</h3>
+        <p><b>Soddalashtiruvchi qatlam</b>. Repository'larni avtomatik generate qiladi, boilerplate'ni kamaytiradi.</p>
+      </div>
+    </div>
+    <pre data-filename="stack.txt"><code>┌──────────────────────────────┐
+│   Your Code                   │   ← @Service, @Repository
+│   userRepository.findById()   │
+└──────────────┬───────────────┘
+               ↓
+┌──────────────────────────────┐
+│   Spring Data JPA             │   ← Repository'larni generate qiladi
+│   JpaRepository&lt;T, ID&gt;        │
+└──────────────┬───────────────┘
+               ↓
+┌──────────────────────────────┐
+│   JPA Specification           │   ← EntityManager, @Entity, @Query
+└──────────────┬───────────────┘
+               ↓
+┌──────────────────────────────┐
+│   Hibernate                   │   ← JPA implementatsiyasi
+│   Session, SQL generator      │
+└──────────────┬───────────────┘
+               ↓
+┌──────────────────────────────┐
+│   JDBC + Database (PostgreSQL)│
+└──────────────────────────────┘</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>Entity — asoslari</h2>
+    <pre data-filename="User.java"><code>@Entity                              // bu klass entity
+@Table(name = "users")               // qaysi jadval (default: class nomi)
+public class User {
+
+    @Id                              // primary key
+    @GeneratedValue(strategy = GenerationType.IDENTITY)  // auto-increment
+    private Long id;
+
+    @Column(name = "full_name", nullable = false, length = 100)
+    private String name;
+
+    @Column(unique = true)
+    private String email;
+
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @Enumerated(EnumType.STRING)     // enum'ni string sifatida saqlash
+    private UserStatus status;
+
+    @Transient                       // DB'ga saqlanmaydi
+    private String fullDisplayName;
+
+    // Constructor, getter/setter (Lombok ishlatish tavsiya)
+}
+
+@Entity
+@Table(name = "users")
+@Getter @Setter @NoArgsConstructor   // Lombok
+public class User {
+    // field'lar...
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>Entity Lifecycle — 4 ta holat</h2>
+    <div class="theory-box">
+      <p>JPA'da har bir obyekt quyidagi 4 ta holatdan birida bo'ladi:</p>
+    </div>
+    <pre data-filename="lifecycle.txt"><code>┌─────────────┐
+│  TRANSIENT  │  new User()
+│ (yangi obyekt) │  DB'da yo'q, JPA bilmaydi
+└──────┬──────┘
+       │ persist() yoki save()
+       ↓
+┌─────────────┐
+│  PERSISTENT │  Persistence Context'da, DB'da bor
+│  (managed)  │  Field o'zgartirilsa — DB ga avtomatik yoziladi!
+└──┬──────┬───┘
+   │      │ detach() / close()
+   │      ↓
+   │ ┌─────────────┐
+   │ │  DETACHED   │  PC'dan chiqdi, DB'da hali ham bor
+   │ │  (uzilgan)  │  O'zgarishlar saqlanmaydi
+   │ └─────────────┘
+   │
+   │ remove() / delete()
+   ↓
+┌─────────────┐
+│   REMOVED   │  O'chirilishi belgilangan
+│             │  Transaction commit'da DB'dan o'chadi
+└─────────────┘</code></pre>
+    <div class="note">
+      <b>Dirty checking</b> — PERSISTENT holatda obyektning field'lari o'zgartirilsa, JPA buni sezadi va transaction oxirida UPDATE SQL'ni avtomatik chaqiradi. <code>save()</code> chaqirish shart emas!
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>Persistence Context — 1st level cache</h2>
+    <div class="theory-box">
+      <p><b>Persistence Context (PC)</b> — JPA'ning xotirada saqlanadigan <b>entity'lar to'plami</b>. EntityManager bilan birga yashaydi (odatda transaction davomida).</p>
+      <p><b>Xususiyatlari:</b></p>
+      <p>1️⃣ <b>1st level cache</b> — bir transaction ichida bir xil ID bo'yicha murojaat — DB ga faqat 1 marta boradi</p>
+      <p>2️⃣ <b>Dirty checking</b> — entity field'lari o'zgarishini kuzatib boradi</p>
+      <p>3️⃣ <b>Lazy loading</b> — kerakli vaqtda DB'dan qo'shimcha ma'lumot oladi</p>
+      <p>4️⃣ <b>Write-behind</b> — INSERT/UPDATE/DELETE'ni transaction oxirida birga jo'natadi</p>
+    </div>
+    <pre data-filename="PCExample.java"><code>@Transactional
+public void example() {
+    User u1 = userRepo.findById(42L).orElseThrow();  // SQL: SELECT
+    User u2 = userRepo.findById(42L).orElseThrow();  // SQL chaqirilmaydi! Cache'dan
+
+    System.out.println(u1 == u2);  // true — bir xil obyekt!
+
+    u1.setName("New Name");        // save() chaqirish SHART EMAS
+    // Transaction oxirida — SQL: UPDATE
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>JpaRepository va Derived Queries</h2>
+    <pre data-filename="UserRepository.java"><code>@Repository
+public interface UserRepository extends JpaRepository&lt;User, Long&gt; {
+
+    // 1. JpaRepository tayyor metodlar bilan keladi:
+    // findById(id), findAll(), save(entity), delete(entity), count(), ...
+
+    // 2. DERIVED QUERIES — metod nomidan SQL generate qilinadi
+    Optional&lt;User&gt; findByEmail(String email);
+    List&lt;User&gt; findByNameContainingIgnoreCase(String name);
+    List&lt;User&gt; findByAgeGreaterThan(int age);
+    List&lt;User&gt; findByStatusAndAgeBetween(UserStatus s, int min, int max);
+    List&lt;User&gt; findTop10ByOrderByCreatedAtDesc();
+    boolean existsByEmail(String email);
+    long countByStatus(UserStatus status);
+    int deleteByStatus(UserStatus status);
+
+    // 3. PROJECTIONS — faqat ba'zi field'lar
+    interface UserSummary {
+        Long getId();
+        String getName();
+    }
+    List&lt;UserSummary&gt; findAllProjectedBy();
+}</code></pre>
+    <div class="note">
+      <b>Konvensiya:</b> <code>findBy</code>, <code>countBy</code>, <code>existsBy</code>, <code>deleteBy</code> + field nomi + operator. Operator'lar: <code>Containing</code>, <code>StartingWith</code>, <code>GreaterThan</code>, <code>Between</code>, <code>In</code>, <code>OrderBy</code> va h.k.
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>@Query — JPQL va Native</h2>
+    <pre data-filename="CustomQueries.java"><code>@Repository
+public interface UserRepository extends JpaRepository&lt;User, Long&gt; {
+
+    // JPQL — Entity nomlari ishlatiladi (DB jadvallari emas!)
+    @Query("SELECT u FROM User u WHERE u.email = :email")
+    Optional&lt;User&gt; findByEmailQuery(@Param("email") String email);
+
+    @Query("SELECT u FROM User u WHERE u.age &gt; :age ORDER BY u.name")
+    List&lt;User&gt; findOlderThan(@Param("age") int age);
+
+    // UPDATE/DELETE uchun @Modifying kerak
+    @Modifying
+    @Query("UPDATE User u SET u.status = :status WHERE u.lastLogin &lt; :before")
+    int markInactive(@Param("status") UserStatus s, @Param("before") LocalDateTime before);
+
+    // Native SQL — DB-specific imkoniyatlar uchun
+    @Query(value = "SELECT * FROM users WHERE created_at &gt; NOW() - INTERVAL '7 days'",
+           nativeQuery = true)
+    List&lt;User&gt; findRecentNative();
+
+    // Constructor DTO projection
+    @Query("""
+        SELECT new com.example.UserDto(u.id, u.name, u.email)
+        FROM User u
+        WHERE u.status = 'ACTIVE'
+    """)
+    List&lt;UserDto&gt; findActiveDtos();
+}</code></pre>
+    <div class="warning">
+      <b>JPQL vs SQL farqi:</b> JPQL <b>Entity klass va field</b> nomlarini ishlatadi (case-sensitive). Native SQL — <b>jadval va ustun</b> nomlarini.
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 1</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>Derived queries</h2>
+    <p>
+      <code>ProductRepository</code>: kategoriya, narx oraliq va saralash bilan qidirish.
+    </p>
+    <pre data-filename="ProductRepository.java"><code>@Repository
+public interface ProductRepository extends JpaRepository&lt;Product, Long&gt; {
+
+    List&lt;Product&gt; findByCategory(String category);
+
+    List&lt;Product&gt; findByPriceBetween(BigDecimal min, BigDecimal max);
+
+    List&lt;Product&gt; findByCategoryAndPriceBetweenOrderByPriceAsc(
+            String category, BigDecimal min, BigDecimal max);
+
+    List&lt;Product&gt; findTop10ByOrderBySoldCountDesc();
+
+    Optional&lt;Product&gt; findFirstByCategoryOrderByCreatedAtDesc(String category);
+
+    long countByCategory(String category);
+
+    boolean existsByName(String name);
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 2</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>@Query bilan custom</h2>
+    <p>
+      So'nggi 30 kunda ro'yxatdan o'tgan foydalanuvchilar va eng faollar (login soni bo'yicha top-10).
+    </p>
+    <pre data-filename="CustomQueriesProblem.java"><code>@Query("SELECT u FROM User u WHERE u.createdAt &gt;= :since")
+List&lt;User&gt; findRecentlyRegistered(@Param("since") LocalDateTime since);
+
+// Foydalanish:
+List&lt;User&gt; recent = userRepo.findRecentlyRegistered(
+    LocalDateTime.now().minusDays(30)
+);
+
+@Query("""
+    SELECT u FROM User u
+    WHERE u.status = 'ACTIVE'
+    ORDER BY u.loginCount DESC
+""")
+List&lt;User&gt; findTop10ActiveByLogin(Pageable pageable);
+
+// Foydalanish:
+List&lt;User&gt; topActive = userRepo.findTop10ActiveByLogin(PageRequest.of(0, 10));</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 3</span>
+      <span class="difficulty medium"><span class="dot"></span>Medium</span>
+    </div>
+    <h2>Bulk Update with @Modifying</h2>
+    <p>
+      Hamma <b>1 yildan ortiq passiv</b> foydalanuvchilarning <code>status</code>'ini "ARCHIVED" qiling.
+    </p>
+    <pre data-filename="BulkUpdate.java"><code>@Modifying
+@Transactional
+@Query("""
+    UPDATE User u
+    SET u.status = :newStatus, u.updatedAt = CURRENT_TIMESTAMP
+    WHERE u.lastLoginAt &lt; :threshold
+       AND u.status != :newStatus
+""")
+int archiveInactiveUsers(
+    @Param("newStatus") UserStatus newStatus,
+    @Param("threshold") LocalDateTime threshold
+);
+
+// Foydalanish:
+int updated = userRepo.archiveInactiveUsers(
+    UserStatus.ARCHIVED,
+    LocalDateTime.now().minusYears(1)
+);
+log.info("Archived {} inactive users", updated);</code></pre>
+    <div class="warning">
+      <b>Diqqat:</b> <code>@Modifying</code> query'lar Persistence Context'ni <b>yangilamaydi</b>! Cache'dagi eski qiymatlar bo'lishi mumkin. Kerak bo'lsa <code>clearAutomatically=true</code> qo'shing.
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 4</span>
+      <span class="difficulty hard"><span class="dot"></span>Hard</span>
+    </div>
+    <h2>Specification — dynamic query</h2>
+    <p>
+      Frontend turli filter'lar yuborishi mumkin. Hech qaysi field majburiy emas. <b>Specification API</b> bilan dinamik so'rov.
+    </p>
+    <pre data-filename="ProductSpec.java"><code>public class ProductSpec {
+
+    public static Specification&lt;Product&gt; hasCategory(String category) {
+        return (root, query, cb) -&gt;
+            category == null ? null : cb.equal(root.get("category"), category);
+    }
+
+    public static Specification&lt;Product&gt; priceBetween(BigDecimal min, BigDecimal max) {
+        return (root, query, cb) -&gt; {
+            if (min == null &amp;&amp; max == null) return null;
+            if (min == null) return cb.lessThanOrEqualTo(root.get("price"), max);
+            if (max == null) return cb.greaterThanOrEqualTo(root.get("price"), min);
+            return cb.between(root.get("price"), min, max);
+        };
+    }
+
+    public static Specification&lt;Product&gt; nameContains(String name) {
+        return (root, query, cb) -&gt;
+            name == null ? null : cb.like(cb.lower(root.get("name")), "%" + name.toLowerCase() + "%");
+    }
+}
+
+// Repository
+public interface ProductRepository extends JpaRepository&lt;Product, Long&gt;,
+                                            JpaSpecificationExecutor&lt;Product&gt; { }
+
+// Foydalanish — har xil filter'larni birlashtirish
+Page&lt;Product&gt; result = productRepo.findAll(
+    Specification.where(ProductSpec.hasCategory(filter.getCategory()))
+        .and(ProductSpec.priceBetween(filter.getMin(), filter.getMax()))
+        .and(ProductSpec.nameContains(filter.getName())),
+    PageRequest.of(0, 20)
+);</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>Relationships — 4 ta turi</h2>
+    <table class="compare-table">
+      <thead><tr><th>Turi</th><th>Misol</th><th>Annotation</th></tr></thead>
+      <tbody>
+        <tr><td><b>@OneToOne</b></td><td>User ↔ Profile</td><td><code>@OneToOne</code></td></tr>
+        <tr><td><b>@OneToMany</b></td><td>User → ko'p Order</td><td><code>@OneToMany(mappedBy)</code></td></tr>
+        <tr><td><b>@ManyToOne</b></td><td>Order → bitta User</td><td><code>@ManyToOne</code> + <code>@JoinColumn</code></td></tr>
+        <tr><td><b>@ManyToMany</b></td><td>User ↔ Role</td><td><code>@ManyToMany</code> + <code>@JoinTable</code></td></tr>
+      </tbody>
+    </table>
+    <div class="theory-box">
+      <p><b>Owner side va Inverse side:</b></p>
+      <p><b>Owner</b> — Foreign key'ga ega tomon. Database'da bog'liqlikni saqlaydi.</p>
+      <p><b>Inverse</b> — <code>mappedBy</code> orqali ko'rsatiladi. Owner side'ga "qarab turadi".</p>
+      <p>Bidirectional relationship'da: owner side — ko'pincha <code>@ManyToOne</code>.</p>
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>@OneToMany / @ManyToOne</h2>
+    <pre data-filename="OneToMany.java"><code>@Entity
+public class User {
+    @Id @GeneratedValue
+    private Long id;
+    private String name;
+
+    // INVERSE side — DB'da column yo'q, faqat navigatsiya uchun
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List&lt;Order&gt; orders = new ArrayList&lt;&gt;();
+
+    // Helper metod — bog'lashni to'g'ri saqlash uchun
+    public void addOrder(Order order) {
+        orders.add(order);
+        order.setUser(this);
+    }
+}
+
+@Entity
+public class Order {
+    @Id @GeneratedValue
+    private Long id;
+    private BigDecimal total;
+
+    // OWNER side — FK shu yerda
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
+}
+
+// DB:
+// users (id, name)
+// orders (id, total, user_id ← FK)</code></pre>
+    <div class="warning">
+      <b>Diqqat:</b> <code>@ManyToOne</code> default <b>EAGER</b> yuklash bilan keladi — bu yomon! Har doim <code>fetch = LAZY</code> qo'ying.
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>@ManyToMany — User ↔ Role</h2>
+    <pre data-filename="ManyToMany.java"><code>@Entity
+public class User {
+    @Id @GeneratedValue
+    private Long id;
+    private String name;
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "user_roles",
+        joinColumns = @JoinColumn(name = "user_id"),
+        inverseJoinColumns = @JoinColumn(name = "role_id")
+    )
+    private Set&lt;Role&gt; roles = new HashSet&lt;&gt;();
+}
+
+@Entity
+public class Role {
+    @Id @GeneratedValue
+    private Long id;
+    private String name;
+
+    @ManyToMany(mappedBy = "roles")
+    private Set&lt;User&gt; users = new HashSet&lt;&gt;();
+}
+
+// DB strukturasi (3 ta jadval):
+// users (id, name)
+// roles (id, name)
+// user_roles (user_id, role_id)   ← Junction (bog'lovchi) jadval</code></pre>
+    <div class="note">
+      <b>Maslahat:</b> Junction jadvalga qo'shimcha field qo'shish kerak bo'lsa (masalan: <code>assigned_at</code>), uni alohida entity qiling: <code>UserRole</code> + ikkita <code>@ManyToOne</code>.
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>Cascade Types</h2>
+    <div class="theory-box">
+      <p><b>Cascade</b> — parent entity'da bajarilgan amalni child'larga "tarqatish".</p>
+    </div>
+    <table class="compare-table">
+      <thead><tr><th>Cascade</th><th>Tavsif</th></tr></thead>
+      <tbody>
+        <tr><td><code>PERSIST</code></td><td>save() parent → child ham save</td></tr>
+        <tr><td><code>MERGE</code></td><td>update() parent → child ham update</td></tr>
+        <tr><td><code>REMOVE</code></td><td>delete() parent → child ham delete</td></tr>
+        <tr><td><code>REFRESH</code></td><td>DB'dan qayta o'qish — child'lar ham</td></tr>
+        <tr><td><code>DETACH</code></td><td>PC'dan chiqarish — child'lar ham</td></tr>
+        <tr><td><code>ALL</code></td><td>Hammasini birga</td></tr>
+      </tbody>
+    </table>
+    <pre data-filename="Cascade.java"><code>@OneToMany(mappedBy = "user",
+           cascade = CascadeType.ALL,
+           orphanRemoval = true)    // child'ni list'dan olib tashlasak — DB'dan ham
+private List&lt;Order&gt; orders;
+
+// Misol:
+User user = new User("Akobir");
+user.addOrder(new Order(100));
+user.addOrder(new Order(200));
+userRepo.save(user);
+// CASCADE.PERSIST — user va 2 ta order birga saqlanadi
+
+userRepo.delete(user);
+// CASCADE.REMOVE — user va uning orderlari birga o'chadi</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala</span>
+      <span class="difficulty medium"><span class="dot"></span>Medium</span>
+    </div>
+    <h2>Blog: Post + Comments + Tags</h2>
+    <p>
+      <b>Post</b> ko'p <b>Comment</b>ga ega, va <b>Tag</b>'lar bilan ManyToMany bog'langan.
+    </p>
+    <pre data-filename="BlogModels.java"><code>@Entity
+@Getter @Setter
+public class Post {
+    @Id @GeneratedValue
+    private Long id;
+    private String title;
+    private String content;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "author_id")
+    private User author;
+
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List&lt;Comment&gt; comments = new ArrayList&lt;&gt;();
+
+    @ManyToMany(cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+    @JoinTable(
+        name = "post_tags",
+        joinColumns = @JoinColumn(name = "post_id"),
+        inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
+    private Set&lt;Tag&gt; tags = new HashSet&lt;&gt;();
+
+    public void addComment(Comment c) {
+        comments.add(c); c.setPost(this);
+    }
+}
+
+@Entity
+public class Comment {
+    @Id @GeneratedValue private Long id;
+    private String text;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "post_id")
+    private Post post;
+}
+
+@Entity
+public class Tag {
+    @Id @GeneratedValue private Long id;
+    @Column(unique = true)
+    private String name;
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>Lazy vs Eager Loading</h2>
+    <div class="theory-box">
+      <p><b>Lazy</b> — relation'ni <b>kerakli vaqtda</b> DB'dan oladi. Default'da <code>@OneToMany</code> va <code>@ManyToMany</code> uchun.</p>
+      <p><b>Eager</b> — relation'ni entity'ni o'qish bilan birga DB'dan oladi. Default'da <code>@ManyToOne</code> va <code>@OneToOne</code> uchun (LEKIN BU YOMON!).</p>
+    </div>
+    <pre data-filename="LazyExample.java"><code>// LAZY — child'lar darhol yuklanmaydi
+@Entity
+public class User {
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    private List&lt;Order&gt; orders;
+}
+
+@Transactional
+public void example() {
+    User user = userRepo.findById(42L).orElseThrow();
+    // SQL: SELECT * FROM users WHERE id = 42
+    // Bu yerda orders YUKLANMAGAN — proxy obyekt
+
+    System.out.println(user.getOrders().size());
+    // SQL: SELECT * FROM orders WHERE user_id = 42
+    // Aniq foydalanilganda yuklanadi
+}</code></pre>
+    <div class="warning">
+      <b>LazyInitializationException</b> — transaction tugagandan keyin lazy field'ga murojaat qilsangiz! Hamma kerakli ma'lumotni transaction ichida oling yoki JOIN FETCH ishlating.
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>N+1 Query Problem — ENG MUHIM!</h2>
+    <div class="theory-box">
+      <p><b>N+1 Problem</b> — JPA'da eng ko'p uchraydigan performance muammosi.</p>
+      <p>1 ta query parent'larni oladi → keyin <b>har bir parent uchun 1 ta query</b> child'larni oladi = <b>N+1 ta query</b>!</p>
+      <p><b>100 ta user uchun — 101 ta SQL!</b></p>
+    </div>
+    <pre data-filename="NPlus1.java"><code>// YOMON KOD — N+1
+@Transactional
+public void badExample() {
+    List&lt;User&gt; users = userRepo.findAll();
+    // SQL #1: SELECT * FROM users    (100 ta user)
+
+    for (User u : users) {
+        System.out.println(u.getOrders().size());
+        // SQL #2..#101: SELECT * FROM orders WHERE user_id = ?
+        // 100 ta SQL!
+    }
+}
+
+// LOG'da ko'rinishi:
+// Hibernate: SELECT u.* FROM users u
+// Hibernate: SELECT o.* FROM orders o WHERE o.user_id = 1
+// Hibernate: SELECT o.* FROM orders o WHERE o.user_id = 2
+// ... (98 marta yana) ...
+// Hibernate: SELECT o.* FROM orders o WHERE o.user_id = 100</code></pre>
+    <div class="note">
+      <b>Yechim:</b> <code>JOIN FETCH</code>, <code>@EntityGraph</code>, yoki <code>@BatchSize</code>.
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>JOIN FETCH va @EntityGraph — N+1 yechimi</h2>
+    <pre data-filename="JoinFetch.java"><code>// YECHIM 1: JOIN FETCH (JPQL)
+@Query("SELECT DISTINCT u FROM User u LEFT JOIN FETCH u.orders")
+List&lt;User&gt; findAllWithOrders();
+// SQL: SELECT * FROM users u
+//      LEFT JOIN orders o ON o.user_id = u.id
+// Bitta SQL — hamma narsa keladi!
+
+// YECHIM 2: @EntityGraph
+@EntityGraph(attributePaths = {"orders"})
+@Query("SELECT u FROM User u")
+List&lt;User&gt; findAllGraph();
+
+// Yoki tayyor metodga
+@EntityGraph(attributePaths = {"orders", "profile"})
+List&lt;User&gt; findByStatus(UserStatus status);
+
+// YECHIM 3: @BatchSize — pessimistic
+@Entity
+public class User {
+    @OneToMany(mappedBy = "user", fetch = LAZY)
+    @BatchSize(size = 50)
+    private List&lt;Order&gt; orders;
+}
+// 100 ta user → 100 + (100/50) = 102 ta SQL emas, 1+2=3 ta!</code></pre>
+    <div class="warning">
+      <b>JOIN FETCH'da DISTINCT</b> kerak bo'lishi mumkin — chunki LEFT JOIN parent'larni dublikat qilib qaytaradi.
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 1</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>LazyInitializationException'ni qanday tuzatish</h2>
+    <p>
+      Quyidagi kod <b>LazyInitializationException</b> beradi. Tuzating.
+    </p>
+    <pre data-filename="LazyBug.java"><code>// XATO KOD
+public User getUserWithOrders(Long id) {
+    User user = userRepo.findById(id).orElseThrow();
+    return user;
+}
+
+// Controller'da
+@GetMapping("/users/{id}")
+public User get(@PathVariable Long id) {
+    User user = service.getUserWithOrders(id);
+    return user; // JSON serializatsiyada — LazyInitializationException!
+}
+
+// YECHIM 1: @Transactional + JOIN FETCH
+@Transactional(readOnly = true)
+public User getUserWithOrders(Long id) {
+    return userRepo.findByIdWithOrders(id).orElseThrow();
+}
+
+@Query("SELECT u FROM User u LEFT JOIN FETCH u.orders WHERE u.id = :id")
+Optional&lt;User&gt; findByIdWithOrders(@Param("id") Long id);
+
+// YECHIM 2: DTO ga aylantirish transaction ichida
+@Transactional(readOnly = true)
+public UserDto getUserDto(Long id) {
+    User user = userRepo.findById(id).orElseThrow();
+    return new UserDto(user, user.getOrders()); // lazy yuklanadi
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 2</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>List of users + their order count</h2>
+    <p>
+      Har bir foydalanuvchi va uning buyurtmalari sonini chiqaring — <b>SQL minimal</b>.
+    </p>
+    <pre data-filename="UserCount.java"><code>// XATO: N+1 problem
+List&lt;User&gt; users = userRepo.findAll();
+Map&lt;Long, Long&gt; counts = new HashMap&lt;&gt;();
+for (User u : users) {
+    counts.put(u.getId(), (long) u.getOrders().size()); // har user uchun SQL!
+}
+
+// TO'G'RI: DTO projection
+public interface UserWithCount {
+    Long getId();
+    String getName();
+    Long getOrderCount();
+}
+
+@Query("""
+    SELECT u.id AS id, u.name AS name, COUNT(o) AS orderCount
+    FROM User u LEFT JOIN u.orders o
+    GROUP BY u.id, u.name
+""")
+List&lt;UserWithCount&gt; findAllWithOrderCount();
+
+// 1 ta SQL!</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 3</span>
+      <span class="difficulty medium"><span class="dot"></span>Medium</span>
+    </div>
+    <h2>Multi-level fetching</h2>
+    <p>
+      <code>Post</code> + uning <code>author</code> + barcha <code>comments</code> + har commentning <code>user</code>'i — bitta query'da.
+    </p>
+    <pre data-filename="MultiFetch.java"><code>// XATO: 1 + N (posts uchun author) + N (comments) + M (comment authors)
+List&lt;Post&gt; posts = postRepo.findAll();
+
+// TO'G'RI: multi-level JOIN FETCH
+@Query("""
+    SELECT DISTINCT p FROM Post p
+    LEFT JOIN FETCH p.author
+    LEFT JOIN FETCH p.comments c
+    LEFT JOIN FETCH c.user
+    WHERE p.status = :status
+""")
+List&lt;Post&gt; findAllPublishedWithDetails(@Param("status") PostStatus status);
+
+// Yoki @EntityGraph bilan
+@EntityGraph(attributePaths = { "author", "comments", "comments.user" })
+List&lt;Post&gt; findByStatus(PostStatus status);</code></pre>
+    <div class="warning">
+      <b>Cheklov:</b> Bitta query'da faqat <b>bitta @OneToMany / @ManyToMany</b> JOIN FETCH qilish mumkin. Bir nechta bo'lsa — MultipleBagFetchException. Yechim: Set ishlatish yoki ikki bosqichli query.
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 4</span>
+      <span class="difficulty hard"><span class="dot"></span>Hard</span>
+    </div>
+    <h2>Pagination + JOIN FETCH muammosi</h2>
+    <p>
+      <code>Page&lt;Post&gt; + JOIN FETCH comments</code> — Hibernate ogohlantiradi: "in-memory pagination". Yechim?
+    </p>
+    <pre data-filename="PaginateFetch.java"><code>// YOMON: HHH000104: firstResult/maxResults specified with collection fetch
+@Query("SELECT p FROM Post p LEFT JOIN FETCH p.comments")
+Page&lt;Post&gt; findAllBad(Pageable pageable);
+// Hibernate barcha post'larni yuklab, JAVA xotirasida slice qiladi!
+
+// TO'G'RI: 2 bosqichli yondashuv
+// Bosqich 1: ID'larni pagination bilan olish (collection FETCH'siz)
+@Query("SELECT p.id FROM Post p")
+Page&lt;Long&gt; findPostIds(Pageable pageable);
+
+// Bosqich 2: ID'lar bo'yicha to'liq ma'lumotni FETCH qilish
+@Query("""
+    SELECT DISTINCT p FROM Post p
+    LEFT JOIN FETCH p.comments
+    WHERE p.id IN :ids
+    ORDER BY p.createdAt DESC
+""")
+List&lt;Post&gt; findByIdsWithComments(@Param("ids") List&lt;Long&gt; ids);
+
+// Service
+@Transactional(readOnly = true)
+public Page&lt;Post&gt; getPostsPaginated(Pageable pageable) {
+    Page&lt;Long&gt; idsPage = postRepo.findPostIds(pageable);
+    List&lt;Post&gt; posts = postRepo.findByIdsWithComments(idsPage.getContent());
+    return new PageImpl&lt;&gt;(posts, pageable, idsPage.getTotalElements());
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>Pagination, Sorting va Auditing</h2>
+    <pre data-filename="PaginationSort.java"><code>// Repository methodlari Pageable qabul qiladi
+@Repository
+public interface UserRepository extends JpaRepository&lt;User, Long&gt; {
+    Page&lt;User&gt; findByStatus(UserStatus status, Pageable pageable);
+}
+
+// Foydalanish
+Pageable pageable = PageRequest.of(0, 20, Sort.by("createdAt").descending());
+Page&lt;User&gt; result = userRepo.findByStatus(UserStatus.ACTIVE, pageable);
+
+result.getContent();        // List&lt;User&gt;
+result.getTotalElements();  // jami soni
+result.getTotalPages();
+result.hasNext();</code></pre>
+    <pre data-filename="Auditing.java"><code>// Auditing — created/updated maydonlarini avtomatik to'ldirish
+@SpringBootApplication
+@EnableJpaAuditing
+public class App { }
+
+@MappedSuperclass
+@EntityListeners(AuditingEntityListener.class)
+public abstract class BaseEntity {
+    @CreatedDate
+    @Column(updatable = false)
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    private LocalDateTime updatedAt;
+
+    @CreatedBy
+    private String createdBy;
+}
+
+@Entity
+public class User extends BaseEntity {
+    // createdAt va updatedAt avtomatik to'ldiriladi
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>@Transactional — chuqurroq nazariya</h2>
+    <div class="theory-box">
+      <p><b>@Transactional</b> — metod boshlanishida transaction ochadi, tugashida commit yoki rollback qiladi.</p>
+      <p><b>Propagation</b> — joriy transaction bo'lsa nima qilish kerak (REQUIRED — qo'shilish, REQUIRES_NEW — yangi ochish, SUPPORTS — bor bo'lsa qo'shilish).</p>
+      <p><b>Isolation</b> — boshqa transaction'larga qanday munosabat (READ_COMMITTED, REPEATABLE_READ va h.k.).</p>
+      <p><b>RollbackFor</b> — qaysi exception'larda rollback qilish (default: faqat RuntimeException!).</p>
+    </div>
+    <pre data-filename="Transactional.java"><code>@Service
+public class OrderService {
+
+    @Transactional
+    public Order create(OrderRequest req) {
+        // ↑ default: REQUIRED + READ_COMMITTED + faqat RuntimeException uchun rollback
+    }
+
+    @Transactional(readOnly = true)
+    public List&lt;Order&gt; findAll() {
+        // read-only — optimizatsiya: Hibernate dirty checking'ni o'chiradi
+    }
+
+    @Transactional(
+        propagation = Propagation.REQUIRES_NEW,
+        isolation = Isolation.SERIALIZABLE,
+        rollbackFor = Exception.class,
+        timeout = 10
+    )
+    public void criticalPayment() { /* ... */ }
+}</code></pre>
+    <div class="warning">
+      <b>Eslatma:</b> <code>@Transactional</code> faqat <b>boshqa bean'dan chaqirilganda</b> ishlaydi (proxy)! Bir xil klass ichida <code>this.method()</code> chaqirsangiz — transaction <b>boshlanmaydi</b>.
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>Soft Delete va @SQLDelete</h2>
+    <p>
+      Ko'p loyihalarda <b>haqiqiy DELETE</b> o'rniga "soft delete" ishlatiladi — flag o'rnatiladi, ma'lumot saqlanadi.
+    </p>
+    <pre data-filename="SoftDelete.java"><code>@Entity
+@SQLDelete(sql = "UPDATE users SET deleted = true WHERE id = ?")
+@Where(clause = "deleted = false")
+public class User {
+    @Id @GeneratedValue
+    private Long id;
+
+    @Column(nullable = false)
+    private boolean deleted = false;
+
+    private LocalDateTime deletedAt;
+    private String deletedBy;
+}
+
+// Foydalanish
+userRepo.delete(user);
+// SQL: UPDATE users SET deleted = true WHERE id = 42
+// User DB'da qoladi, lekin findById qaytarmaydi
+
+userRepo.findAll();
+// SQL: SELECT * FROM users WHERE deleted = false (avtomatik)
+
+// Hard delete uchun alohida native query
+@Modifying
+@Query(value = "DELETE FROM users WHERE id = :id", nativeQuery = true)
+void hardDelete(@Param("id") Long id);</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">📝 Amaliy topshiriqlar</span>
+      <span class="difficulty hard"><span class="dot"></span>Mustaqil</span>
+    </div>
+    <h2>10 ta murakkab vazifa</h2>
+    <p>Quyidagi vazifalarni Spring Data JPA bilan bajaring:</p>
+    <ul style="font-size: 16px;">
+      <li>
+        <b>1. E-commerce data model.</b> User, Product, Category, Order, OrderItem, Cart — to'liq bog'lanishlar bilan.
+      </li>
+      <li>
+        <b>2. Multi-level JOIN FETCH.</b> Post → author → comments → comment-author hammasini bitta query'da. Pagination ham.
+      </li>
+      <li>
+        <b>3. Specification API.</b> Frontend 10+ filter yuborishi mumkin. Hech qaysi majburiy emas. Dynamic.
+      </li>
+      <li>
+        <b>4. Audit Log.</b> AbstractAuditable + custom AuditorAware (Spring Security'dagi user'ni olish).
+      </li>
+      <li>
+        <b>5. Soft Delete + Restore.</b> @SQLDelete + @Where + native query bilan tiklash.
+      </li>
+      <li>
+        <b>6. Bulk Operations.</b> 10000 ta yozuvni saqlash (saveAll). JDBC batch'ni yoqish.
+      </li>
+      <li>
+        <b>7. Native Query + DTO.</b> Complex SQL (window functions, CTE) → DTO projection.
+      </li>
+      <li>
+        <b>8. Versioning (@Version).</b> Optimistic Locking bilan concurrent update muammosini hal qilish.
+      </li>
+      <li>
+        <b>9. Transactional Outbox Pattern.</b> Event'larni jadval orqali jo'natish — distributed system'lar uchun.
+      </li>
+      <li>
+        <b>10. Performance optimization.</b> Slow query'ni profile qilish, EXPLAIN ANALYZE, index'lar qo'shish.
+      </li>
+    </ul>
+    <div class="note">
+      <b>Maslahat:</b> <code>spring.jpa.show-sql=true</code> + <code>logging.level.org.hibernate.SQL=DEBUG</code> bilan SQL'larni ko'rib turing — N+1 va ortiqcha so'rovlarni darhol sezasiz.
+    </div>
+  </section>
+
+  <section class="slide slide-title">
+    <div class="topic-pill">🎯 Yakun</div>
+    <h1>Dars yakuni</h1>
+    <p>
+      Spring Data JPA — endi siz JPA Entity, Repository, Relationship'lar va <b>N+1 muammo</b>ni bilasiz. Performance va kod sifati endi sizning qo'lingizda.
+    </p>
+    <div class="note">
+      <b>Keyingi mavzu:</b> Spring Security — Authentication, Authorization, JWT, Refresh Token, Roles va Password Encryption.
+    </div>
+  </section>
+
+</div>
+
+<div class="toast" id="toast">✓ Kod nusxalandi!</div>
+
+<div class="controls">
+  <div class="progress-line" id="progressLine"></div>
+  <button class="nav-arrow" id="prevBtn" onclick="prevSlide()" title="Oldingi (←)">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+  </button>
+  <div class="pagination" id="pagination"></div>
+  <button class="nav-arrow" id="nextBtn" onclick="nextSlide()" title="Keyingi (→)">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+  </button>
+</div>
+
+<script>
+  function wrapCodeBlocks() {
+    document.querySelectorAll('pre').forEach(pre => {
+      if (pre.closest('.code-window')) return;
+      const filename = pre.dataset.filename || 'Example.java';
+      const wrapper = document.createElement('div');
+      wrapper.className = 'code-window';
+      wrapper.innerHTML = `
+        <div class="code-header">
+          <div class="traffic-lights">
+            <span class="light close"></span><span class="light minimize"></span><span class="light maximize"></span>
+          </div>
+          <div class="code-filename">${filename}</div>
+          <div class="code-actions">
+            <button class="code-btn reset-btn">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              Reset
+            </button>
+            <button class="code-btn copy-btn">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+              Copy
+            </button>
+          </div>
+        </div>
+        <div class="code-body"></div>
+      `;
+      pre.setAttribute('contenteditable', 'true');
+      pre.setAttribute('spellcheck', 'false');
+      const original = pre.innerHTML;
+      pre.dataset.original = original;
+      pre.parentNode.insertBefore(wrapper, pre);
+      wrapper.querySelector('.code-body').appendChild(pre);
+      wrapper.querySelector('.copy-btn').addEventListener('click', () => {
+        navigator.clipboard.writeText(pre.textContent).then(() => {
+          const btn = wrapper.querySelector('.copy-btn');
+          btn.classList.add('copied');
+          btn.innerHTML = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg> Nusxalandi`;
+          showToast('✓ Kod nusxalandi!');
+          setTimeout(() => {
+            btn.classList.remove('copied');
+            btn.innerHTML = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg> Copy`;
+          }, 2000);
+        });
+      });
+      wrapper.querySelector('.reset-btn').addEventListener('click', () => {
+        pre.innerHTML = original;
+        showToast('↺ Kod tiklandi');
+      });
+    });
+  }
+  function showToast(message) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.classList.add('show');
+    clearTimeout(window._toastTimer);
+    window._toastTimer = setTimeout(() => toast.classList.remove('show'), 1800);
+  }
+  wrapCodeBlocks();
+
+  function wrapSolutions() {
+    const eyeIcon = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>`;
+    const eyeOffIcon = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"/></svg>`;
+    document.querySelectorAll('.slide').forEach(slide => {
+      if (!slide.querySelector('.problem-header')) return;
+      slide.querySelectorAll('.code-window').forEach(cw => {
+        if (cw.parentNode.classList.contains('solution-content')) return;
+        const wrap = document.createElement('div');
+        wrap.className = 'solution-wrap';
+        const btn = document.createElement('button');
+        btn.className = 'show-solution-btn';
+        btn.innerHTML = eyeIcon + ' Yechimni ko\'rsatish';
+        const content = document.createElement('div');
+        content.className = 'solution-content';
+        cw.parentNode.insertBefore(wrap, cw);
+        content.appendChild(cw);
+        wrap.appendChild(btn);
+        wrap.appendChild(content);
+        btn.addEventListener('click', () => {
+          const isShown = content.classList.toggle('shown');
+          btn.classList.toggle('active', isShown);
+          btn.innerHTML = isShown ? eyeOffIcon + ' Yechimni yashirish' : eyeIcon + ' Yechimni ko\'rsatish';
+        });
+      });
+    });
+  }
+  wrapSolutions();
+
+  const slides = document.querySelectorAll('.slide');
+  const totalSlides = slides.length;
+  const pagination = document.getElementById('pagination');
+  let currentIndex = 0;
+  document.getElementById('totalSlides').textContent = totalSlides;
+  const pageDots = [];
+  for (let i = 0; i < totalSlides; i++) {
+    const dot = document.createElement('button');
+    dot.className = 'page-dot';
+    dot.textContent = String(i + 1).padStart(2, '0');
+    dot.addEventListener('click', () => { currentIndex = i; showSlide(i); });
+    pagination.appendChild(dot);
+    pageDots.push(dot);
+  }
+  function showSlide(index) {
+    slides.forEach(s => s.classList.remove('active'));
+    slides[index].classList.add('active');
+    document.getElementById('currentSlide').textContent = index + 1;
+    pageDots.forEach((d, i) => { d.classList.toggle('active', i === index); d.classList.toggle('visited', i < index); });
+    const percent = ((index + 1) / totalSlides * 100);
+    document.getElementById('progressLine').style.width = percent + '%';
+    document.getElementById('prevBtn').disabled = index === 0;
+    document.getElementById('nextBtn').disabled = index === totalSlides - 1;
+    slides[index].scrollTop = 0;
+    const activeDot = pageDots[index];
+    if (activeDot) activeDot.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  }
+  function nextSlide() { if (currentIndex < totalSlides - 1) { currentIndex++; showSlide(currentIndex); } }
+  function prevSlide() { if (currentIndex > 0) { currentIndex--; showSlide(currentIndex); } }
+  document.addEventListener('keydown', (e) => {
+    if (e.target.isContentEditable) return;
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); nextSlide(); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); prevSlide(); }
+    else if (e.key === 'Home') { currentIndex = 0; showSlide(0); }
+    else if (e.key === 'End') { currentIndex = totalSlides - 1; showSlide(currentIndex); }
+  });
+  showSlide(0);
+</script>
+
+<script>
+(function(_0x){
+  var _a=String.fromCharCode,
+      _b=[169,32,77,117,97,108,108,105,102,58,32,82,117,115,116,97,109,111,118,32,65,107,111,98,105,114],
+      _c=[95,120,57,52,107,55,116,57,114,53,95,115,105,103],
+      _d=[95,120,57,52,104,53,100,55],
+      _t='',_n='',_h='';
+  for(var i=0;i<_b.length;i++)_t+=_a(_b[i]);
+  for(var i=0;i<_c.length;i++)_n+=_a(_c[i]);
+  for(var i=0;i<_d.length;i++)_h+=_a(_d[i]);
+  function _mk(visible){
+    var d=document.createElement('div');
+    d.setAttribute('data-x',_t);
+    if(visible){
+      d.id=_n; d.textContent=_t;
+      d.style.cssText='position:fixed;bottom:96px;right:16px;z-index:99999;background:rgba(15,15,25,0.75);color:rgba(255,255,255,0.85);padding:6px 14px;border-radius:20px;font-family:system-ui,-apple-system,sans-serif;font-size:11px;font-weight:600;backdrop-filter:blur(10px);border:1px solid rgba(139,92,246,0.3);pointer-events:none;user-select:none;letter-spacing:0.03em;box-shadow:0 4px 12px rgba(0,0,0,0.3);';
+    }else{
+      d.className=_h+Math.random().toString(36).slice(2,7); d.textContent=_t;
+      d.style.cssText='position:absolute;left:-99999px;top:-99999px;opacity:0;pointer-events:none;width:1px;height:1px;overflow:hidden;';
+    }
+    return d;
+  }
+  function _ensure(){
+    if(!document.body)return;
+    if(!document.getElementById(_n)){ document.body.appendChild(_mk(true)); }
+    var hidden=document.querySelectorAll('[class^="'+_h+'"]');
+    if(hidden.length<5){ for(var i=hidden.length;i<5;i++){ document.body.appendChild(_mk(false)); } }
+  }
+  function _setup(){
+    _ensure();
+    try{
+      new MutationObserver(function(muts){
+        for(var i=0;i<muts.length;i++){
+          var m=muts[i];
+          if(m.removedNodes.length>0||m.type==='attributes'){ _ensure(); break; }
+        }
+      }).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['id','class','style']});
+    }catch(e){}
+    setInterval(_ensure,1500);
+  }
+  if(document.body)_setup();
+  else document.addEventListener('DOMContentLoaded',_setup);
+  try{
+    console.log('%c '+_t+' ','background:linear-gradient(135deg,#8b5cf6,#f472b6);color:white;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:bold;');
+    Object.defineProperty(window,_n+'_lock',{value:_t,writable:false,configurable:false});
+  }catch(e){}
+})();
+</script>
+
+</body>
+</html>

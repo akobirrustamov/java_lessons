@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Java Advanced — Prezentatsiya</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0a0a14; --surface: rgba(255, 255, 255, 0.04); --border: rgba(255, 255, 255, 0.08);
+      --text: #f8fafc; --text-dim: #94a3b8; --text-muted: #64748b;
+      --primary: #8b5cf6; --primary-2: #6366f1; --accent: #f472b6;
+      --slide-bg: #ffffff; --slide-bg-2: #fafafe;
+      --code-bg: #0f172a; --code-text: #e2e8f0;
+    }
+    html, body { height: 100%; overflow: hidden; }
+    body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
+    .bg-effects { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+    .blob { position: absolute; border-radius: 50%; filter: blur(140px); opacity: 0.4; }
+    .blob-1 { width: 500px; height: 500px; background: #8b5cf6; top: -100px; left: -150px; }
+    .blob-2 { width: 400px; height: 400px; background: #f472b6; bottom: -100px; right: -100px; }
+    .top { position: fixed; top: 0; left: 0; right: 0; z-index: 100; backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); background: rgba(10, 10, 20, 0.7); border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+    .top-left { display: flex; align-items: center; gap: 14px; }
+    .back-btn { display: inline-flex; align-items: center; gap: 8px; color: var(--text); text-decoration: none; background: var(--surface); border: 1px solid var(--border); padding: 9px 16px; border-radius: 10px; font-weight: 600; font-size: 14px; transition: all 0.2s; }
+    .back-btn:hover { background: rgba(139, 92, 246, 0.15); border-color: rgba(139, 92, 246, 0.4); }
+    .topic-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); color: #c4b5fd; padding: 8px 14px; border-radius: 50px; font-size: 12px; font-weight: 600; }
+    .pulse-dot { width: 6px; height: 6px; border-radius: 50%; background: #c4b5fd; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+    .slide-counter { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--border); padding: 9px 16px; border-radius: 10px; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; color: var(--text-dim); }
+    .slide-counter .current { color: var(--text); }
+    .presentation { position: fixed; top: 72px; bottom: 86px; left: 0; right: 0; display: flex; align-items: center; justify-content: center; padding: 24px; z-index: 1; }
+    .slide { display: none; background: linear-gradient(135deg, var(--slide-bg) 0%, var(--slide-bg-2) 100%); color: #0f172a; width: 100%; max-width: 1180px; height: 100%; max-height: 100%; padding: 56px 64px; border-radius: 28px; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05); flex-direction: column; justify-content: center; overflow-y: auto; position: relative; }
+    .slide.active { display: flex; animation: slideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+    .slide > * { min-width: 0; max-width: 100%; }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(30px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    .slide::before { content: ''; position: absolute; top: 0; right: 0; width: 280px; height: 280px; background: radial-gradient(circle, rgba(139, 92, 246, 0.08), transparent 70%); border-radius: 50%; pointer-events: none; }
+    .slide::after { content: ''; position: absolute; bottom: 0; left: 0; width: 240px; height: 240px; background: radial-gradient(circle, rgba(244, 114, 182, 0.08), transparent 70%); border-radius: 50%; pointer-events: none; }
+    .slide h1 { font-size: clamp(36px, 5vw, 60px); font-weight: 900; letter-spacing: -0.03em; margin-bottom: 24px; line-height: 1.1; background: linear-gradient(135deg, #1e1b4b 0%, #6366f1 50%, #8b5cf6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; position: relative; z-index: 1; }
+    .slide h2 { font-size: clamp(28px, 4vw, 44px); font-weight: 800; letter-spacing: -0.02em; margin-bottom: 28px; color: #1e1b4b; line-height: 1.15; position: relative; z-index: 1; }
+    .slide h2::before { content: ''; display: inline-block; width: 6px; height: 32px; background: linear-gradient(180deg, var(--primary), var(--accent)); border-radius: 4px; margin-right: 16px; vertical-align: middle; transform: translateY(-3px); }
+    .slide p { font-size: 19px; margin-bottom: 18px; color: #334155; position: relative; z-index: 1; line-height: 1.7; }
+    .slide ul { font-size: 18px; list-style: none; padding-left: 0; position: relative; z-index: 1; }
+    .slide li { position: relative; padding: 10px 0 10px 32px; color: #1e293b; line-height: 1.6; }
+    .slide li::before { content: ''; position: absolute; left: 8px; top: 20px; width: 8px; height: 8px; background: linear-gradient(135deg, var(--primary), var(--accent)); border-radius: 50%; box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.12); }
+    .slide b { color: var(--primary-2); font-weight: 700; }
+    .slide-title { text-align: center; justify-content: center; }
+    .slide-title h1 { font-size: clamp(48px, 8vw, 88px); text-align: center; }
+    .slide-title p { text-align: center; max-width: 700px; margin-left: auto; margin-right: auto; font-size: 22px; }
+    .topic-pill { display: inline-flex; align-items: center; gap: 10px; background: linear-gradient(135deg, rgba(139, 92, 246, 0.12), rgba(244, 114, 182, 0.12)); border: 1px solid rgba(139, 92, 246, 0.3); color: var(--primary); padding: 10px 22px; border-radius: 50px; font-weight: 700; font-size: 14px; margin: 0 auto 32px; width: fit-content; text-transform: uppercase; letter-spacing: 0.08em; }
+    .code-window { background: var(--code-bg); border-radius: 14px; margin: 20px 0; position: relative; z-index: 1; border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05); max-width: 100%; min-width: 0; display: flex; flex-direction: column; overflow: hidden; }
+    .code-header { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: linear-gradient(180deg, #2d3548 0%, #1e2536 100%); border-bottom: 1px solid rgba(255, 255, 255, 0.08); user-select: none; }
+    .traffic-lights { display: flex; gap: 8px; align-items: center; }
+    .light { width: 12px; height: 12px; border-radius: 50%; border: 0.5px solid rgba(0, 0, 0, 0.2); cursor: pointer; transition: filter 0.2s; }
+    .light:hover { filter: brightness(1.15); }
+    .light.close { background: #ff5f57; } .light.minimize { background: #febc2e; } .light.maximize { background: #28c840; }
+    .code-filename { flex: 1; text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: #94a3b8; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .code-filename::before { content: '☕'; font-size: 12px; }
+    .code-actions { display: flex; gap: 6px; align-items: center; }
+    .code-btn { display: inline-flex; align-items: center; gap: 5px; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.08); color: #cbd5e1; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; }
+    .code-btn:hover { background: rgba(139, 92, 246, 0.2); border-color: rgba(139, 92, 246, 0.4); color: white; }
+    .code-btn.copied { background: rgba(16, 185, 129, 0.2); border-color: rgba(16, 185, 129, 0.4); color: #6ee7b7; }
+    .code-btn svg { width: 12px; height: 12px; }
+    .code-body { position: relative; background: var(--code-bg); min-width: 0; max-width: 100%; overflow: hidden; }
+    pre { background: transparent; color: var(--code-text); padding: 22px 24px; overflow-x: auto; overflow-y: auto; max-height: 50vh; font-size: 15px; margin: 0; font-family: 'JetBrains Mono', 'Consolas', monospace; line-height: 1.7; tab-size: 4; outline: none; white-space: pre; word-wrap: normal; scrollbar-width: thin; scrollbar-color: rgba(139, 92, 246, 0.4) rgba(255, 255, 255, 0.04); }
+    pre::-webkit-scrollbar { height: 10px; width: 10px; }
+    pre::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.04); border-radius: 5px; }
+    pre::-webkit-scrollbar-thumb { background: linear-gradient(135deg, rgba(139, 92, 246, 0.5), rgba(244, 114, 182, 0.5)); border-radius: 5px; border: 2px solid transparent; background-clip: padding-box; }
+    pre[contenteditable="true"] { caret-color: #c084fc; }
+    pre[contenteditable="true"]:focus { background: rgba(139, 92, 246, 0.04); }
+    pre code { display: block; font-family: inherit; }
+    code { font-family: 'JetBrains Mono', monospace; font-size: 0.95em; }
+    p code, li code, .note code, td code, th code { background: rgba(139, 92, 246, 0.1); color: var(--primary); padding: 2px 8px; border-radius: 6px; font-size: 0.9em; font-weight: 600; }
+    .toast { position: fixed; bottom: 110px; left: 50%; transform: translateX(-50%) translateY(20px); background: rgba(16, 185, 129, 0.95); color: white; padding: 10px 20px; border-radius: 10px; font-size: 13px; font-weight: 600; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4); opacity: 0; pointer-events: none; transition: all 0.3s; z-index: 200; backdrop-filter: blur(10px); }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .problem-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; position: relative; z-index: 1; }
+    .problem-num { display: inline-flex; align-items: center; gap: 6px; background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: white; padding: 5px 14px; border-radius: 50px; font-size: 12px; font-weight: 700; letter-spacing: 0.05em; font-family: 'JetBrains Mono', monospace; }
+    .difficulty { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 50px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+    .difficulty.easy { background: rgba(16, 185, 129, 0.12); color: #059669; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .difficulty.medium { background: rgba(245, 158, 11, 0.12); color: #d97706; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .difficulty.hard { background: rgba(239, 68, 68, 0.12); color: #dc2626; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .difficulty .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .example-block { background: #f1f5f9; border-left: 4px solid var(--primary); padding: 14px 18px; border-radius: 10px; margin: 12px 0; font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #1e293b; line-height: 1.7; position: relative; z-index: 1; }
+    .example-title { font-family: 'Inter', sans-serif; font-weight: 700; color: var(--primary); font-size: 13px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .example-block b { color: var(--primary); }
+    .constraints { background: rgba(99, 102, 241, 0.05); border: 1px dashed rgba(99, 102, 241, 0.3); padding: 12px 18px; border-radius: 10px; font-size: 14px; color: #475569; margin: 12px 0; position: relative; z-index: 1; }
+    .constraints b { color: var(--primary); }
+    .solution-wrap { margin-top: 18px; position: relative; z-index: 1; }
+    .show-solution-btn { display: inline-flex; align-items: center; gap: 10px; background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: white; border: none; padding: 12px 22px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.3s; font-family: 'Inter', sans-serif; box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3); }
+    .show-solution-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(139, 92, 246, 0.45); }
+    .show-solution-btn svg { width: 16px; height: 16px; }
+    .show-solution-btn.active { background: linear-gradient(135deg, #ec4899, #f43f5e); box-shadow: 0 8px 20px rgba(244, 63, 94, 0.3); }
+    .solution-content { max-height: 0; overflow: hidden; opacity: 0; margin-top: 0; transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, margin-top 0.3s ease; }
+    .solution-content.shown { max-height: 2500px; opacity: 1; margin-top: 16px; }
+    .note { background: linear-gradient(135deg, #fef3c7, #fef9c3); border-left: 4px solid #f59e0b; padding: 18px 22px; border-radius: 14px; margin-top: 24px; font-size: 17px; color: #78350f; position: relative; z-index: 1; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15); }
+    .note::before { content: '💡'; margin-right: 8px; }
+    .note b { color: #92400e; } .note code { background: rgba(245, 158, 11, 0.2); color: #78350f; }
+    .def-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 16px; position: relative; z-index: 1; }
+    .def-card { background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px 24px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04); transition: all 0.3s; }
+    .def-card:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(139, 92, 246, 0.12); }
+    .def-card h3 { font-family: 'JetBrains Mono', monospace; font-size: 22px; color: var(--primary); margin-bottom: 8px; font-weight: 700; }
+    .def-card p { font-size: 15px; margin: 0; color: #475569; }
+    .theory-box { background: linear-gradient(135deg, #ede9fe, #fce7f3); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 16px; padding: 22px 26px; margin: 18px 0; position: relative; z-index: 1; box-shadow: 0 8px 20px rgba(139, 92, 246, 0.08); }
+    .theory-box::before { content: '🧠 NAZARIYA'; display: block; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; color: var(--primary); letter-spacing: 0.1em; margin-bottom: 10px; }
+    .theory-box p { font-size: 17px; margin-bottom: 8px; color: #1e1b4b; }
+    .theory-box p:last-child { margin-bottom: 0; }
+    .compare-table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); position: relative; z-index: 1; margin-top: 12px; }
+    .compare-table th { background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: white; padding: 14px 16px; text-align: left; font-weight: 700; font-size: 14px; }
+    .compare-table td { padding: 12px 16px; border-bottom: 1px solid #e2e8f0; font-size: 15px; color: #334155; }
+    .compare-table tr:last-child td { border-bottom: none; }
+    .compare-table tr:hover td { background: #f8fafc; }
+    .controls { position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; backdrop-filter: blur(20px) saturate(180%); background: rgba(10, 10, 20, 0.75); border-top: 1px solid var(--border); padding: 14px 20px; display: flex; justify-content: center; align-items: center; gap: 12px; }
+    .nav-arrow { display: inline-flex; align-items: center; justify-content: center; background: var(--surface); color: var(--text); border: 1px solid var(--border); width: 38px; height: 38px; border-radius: 10px; cursor: pointer; transition: all 0.2s; flex-shrink: 0; }
+    .nav-arrow:hover:not(:disabled) { background: linear-gradient(135deg, var(--primary), var(--primary-2)); border-color: transparent; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(139, 92, 246, 0.4); }
+    .nav-arrow:disabled { opacity: 0.3; cursor: not-allowed; }
+    .nav-arrow svg { width: 16px; height: 16px; }
+    .pagination { display: flex; align-items: center; gap: 6px; overflow-x: auto; scrollbar-width: none; max-width: calc(100vw - 200px); padding: 4px; scroll-behavior: smooth; }
+    .pagination::-webkit-scrollbar { display: none; }
+    .page-dot { display: inline-flex; align-items: center; justify-content: center; min-width: 34px; height: 34px; padding: 0 10px; background: var(--surface); color: var(--text-dim); border: 1px solid var(--border); border-radius: 9px; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; font-weight: 600; cursor: pointer; transition: all 0.2s; flex-shrink: 0; }
+    .page-dot:hover { color: var(--text); border-color: rgba(139, 92, 246, 0.4); background: rgba(139, 92, 246, 0.1); transform: translateY(-1px); }
+    .page-dot.active { background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: white; border-color: transparent; box-shadow: 0 6px 16px rgba(139, 92, 246, 0.45); transform: scale(1.08); }
+    .page-dot.visited { color: var(--text); background: rgba(139, 92, 246, 0.08); border-color: rgba(139, 92, 246, 0.2); }
+    .progress-line { position: absolute; top: 0; left: 0; height: 3px; background: linear-gradient(90deg, var(--primary), var(--accent)); transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 12px rgba(139, 92, 246, 0.6); border-radius: 0 3px 3px 0; }
+    @media (max-width: 768px) {
+      .top { padding: 12px 16px; } .topic-badge { display: none; }
+      .slide { padding: 32px 24px; border-radius: 20px; }
+      pre { font-size: 13px; padding: 18px; }
+      .nav-arrow { width: 36px; height: 36px; }
+      .pagination { max-width: calc(100vw - 110px); gap: 4px; }
+      .page-dot { min-width: 30px; height: 30px; font-size: 11.5px; padding: 0 6px; }
+      .slide h2::before { width: 4px; height: 24px; }
+    }
+    @media print {
+      html, body { height: auto; overflow: visible; } body { background: white; }
+      .top, .controls, .bg-effects { display: none; }
+      .presentation { position: static; display: block; padding: 0; }
+      .slide { display: flex !important; page-break-after: always; box-shadow: none; border: 1px solid #ddd; max-width: 100%; height: auto; max-height: none; margin-bottom: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-effects">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+</div>
+
+<div class="top">
+  <div class="top-left">
+    <a href="index.html" class="back-btn">
+      <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+      Roadmap
+    </a>
+    <div class="topic-badge">
+      <span class="pulse-dot"></span>
+      4-Mavzu · Java Advanced
+    </div>
+  </div>
+  <div class="slide-counter">
+    <span class="current" id="currentSlide">1</span>
+    <span>/</span>
+    <span id="totalSlides">0</span>
+  </div>
+</div>
+
+<div class="presentation">
+
+  <section class="slide slide-title">
+    <div class="topic-pill">⚡ 4-Mavzu</div>
+    <h1>Java Advanced</h1>
+    <p>
+      Java'ning <b>kuchli vositalari</b>: Exception Handling, Generics, Lambda, Stream API, Optional, Enum va Annotations.
+    </p>
+    <div class="note">
+      <b>Dars maqsadi:</b> Professional Java dasturchisi uchun zarur bo'lgan ilg'or tushunchalarni amaliy misollar va nazariy chuqurlik bilan o'rganamiz.
+    </div>
+  </section>
+
+  <!-- ==================== EXCEPTION HANDLING ==================== -->
+
+  <section class="slide">
+    <h2>Exception Handling — kirish</h2>
+    <p>
+      Dasturda <b>kutilmagan vaziyatlar</b> doimo bo'ladi: fayl topilmadi, internet uzildi, raqamga matn keldi va h.k. <b>Exception Handling</b> bu vaziyatlarni boshqarish vositasi.
+    </p>
+    <pre data-filename="WithoutHandling.java"><code>// Exception bo'lmagan kod
+int[] arr = {1, 2, 3};
+System.out.println(arr[10]);  // CRASH! ArrayIndexOutOfBoundsException</code></pre>
+    <div class="theory-box">
+      <p><b>Exception</b> — bu Java'da <b>Object</b>. Xato sodir bo'lganda yaratiladi va "tashlanadi" (throw).</p>
+      <p>Agar uni "tutib olmasak" (catch), dastur to'xtab qoladi. <b>Stack trace</b> esa qaerda xato bo'lganini ko'rsatadi.</p>
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>Exception ierarxiyasi</h2>
+    <div class="theory-box">
+      <p>Java'da barcha xatolar ildizi — <code>Throwable</code>. Undan ikki shox chiqadi:</p>
+    </div>
+    <pre data-filename="Hierarchy.txt"><code>Throwable
+├── Error              ← OutOfMemory, StackOverflow (tutilmaydi)
+└── Exception
+    ├── IOException             ← CHECKED (compile-time)
+    ├── SQLException            ← CHECKED
+    └── RuntimeException        ← UNCHECKED
+        ├── NullPointerException
+        ├── ArrayIndexOutOfBoundsException
+        ├── ArithmeticException
+        └── IllegalArgumentException</code></pre>
+    <div class="def-grid">
+      <div class="def-card">
+        <h3>Checked</h3>
+        <p>Compile vaqtida tekshiriladi. Albatta <code>try-catch</code> yoki <code>throws</code> bilan boshqarish kerak.</p>
+      </div>
+      <div class="def-card">
+        <h3>Unchecked</h3>
+        <p><code>RuntimeException</code> avlodlari. Compile tekshirmaydi — runtime'da paydo bo'ladi.</p>
+      </div>
+      <div class="def-card">
+        <h3>Error</h3>
+        <p>Tizim darajasidagi muammolar. Odatda tutib olinmaydi (JVM hal qiladi).</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>try-catch-finally</h2>
+    <p>Exception'ni <b>tutib olish</b> va boshqarish uchun asosiy konstruksiya.</p>
+    <pre data-filename="TryCatch.java"><code>try {
+    int[] arr = {1, 2, 3};
+    System.out.println(arr[10]);
+} catch (ArrayIndexOutOfBoundsException e) {
+    System.out.println("Indeks chegaradan tashqarida: " + e.getMessage());
+} catch (Exception e) {
+    System.out.println("Boshqa xato: " + e.getMessage());
+} finally {
+    System.out.println("Bu BLOK HAR DOIM bajariladi");
+}
+
+// Java 7+ Multi-catch
+try {
+    // kod
+} catch (IOException | SQLException e) {
+    System.out.println("IO yoki SQL xato: " + e);
+}</code></pre>
+    <div class="note">
+      <code>finally</code> blok <b>har doim</b> ishlaydi — exception bo'ladimi yoki yo'qmi. Asosan <b>resurslarni yopish</b> uchun (fayl, DB ulanish).
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>throw vs throws va try-with-resources</h2>
+    <pre data-filename="ThrowThrows.java"><code>// THROW — exception yaratish va tashlash
+public void setAge(int age) {
+    if (age &lt; 0) {
+        throw new IllegalArgumentException("Yosh manfiy bo'lmaydi: " + age);
+    }
+    this.age = age;
+}
+
+// THROWS — metod exception tashlashi mumkinligini e'lon qilish
+public void readFile(String path) throws IOException {
+    Files.readAllLines(Paths.get(path));
+}</code></pre>
+    <p><b>try-with-resources</b> — Java 7+, resurs avtomatik yopiladi:</p>
+    <pre data-filename="TryWithResources.java"><code>// Eski usul (uzun)
+BufferedReader reader = null;
+try {
+    reader = new BufferedReader(new FileReader("file.txt"));
+    String line = reader.readLine();
+} finally {
+    if (reader != null) reader.close();
+}
+
+// Yangi usul (qisqa, xavfsiz)
+try (BufferedReader reader = new BufferedReader(new FileReader("file.txt"))) {
+    String line = reader.readLine();
+}
+// reader avtomatik yopiladi — finally yozish shart emas!</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>Custom Exception</h2>
+    <p>O'z exception'imizni yaratishimiz mumkin. <b>Bizning domenga oid</b> xatolar uchun.</p>
+    <pre data-filename="CustomException.java"><code>// Checked exception
+public class InsufficientBalanceException extends Exception {
+    public InsufficientBalanceException(String message) {
+        super(message);
+    }
+}
+
+// Unchecked exception
+public class UserNotFoundException extends RuntimeException {
+    public UserNotFoundException(long userId) {
+        super("Foydalanuvchi topilmadi: " + userId);
+    }
+}
+
+// Foydalanish
+public void withdraw(double amount) throws InsufficientBalanceException {
+    if (amount &gt; balance) {
+        throw new InsufficientBalanceException("Balans yetarli emas");
+    }
+    balance -= amount;
+}</code></pre>
+    <div class="note">
+      <b>Qoida:</b> Custom exception nomi <code>Exception</code> bilan tugashi tavsiya etiladi. <b>Checked</b> — biznes mantiqi xatolari. <b>Unchecked</b> — dasturchi xatosi.
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 1</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>Xavfsiz bo'lish (Safe Division)</h2>
+    <p>Metod ikkita son qabul qilsin va bo'linmasini qaytarsin. <code>b == 0</code> bo'lsa <b>Optional.empty()</b> qaytarsin, exception'ni "yutib" yuborsin.</p>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      safeDivide(10, 2) → Optional[5]<br>
+      safeDivide(10, 0) → Optional.empty
+    </div>
+    <pre data-filename="SafeDivide.java"><code>public static Optional&lt;Integer&gt; safeDivide(int a, int b) {
+    try {
+        return Optional.of(a / b);
+    } catch (ArithmeticException e) {
+        return Optional.empty();
+    }
+}
+
+System.out.println(safeDivide(10, 2));  // Optional[5]
+System.out.println(safeDivide(10, 0));  // Optional.empty</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 2</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>Yoshni tekshirish (Validation)</h2>
+    <p>Foydalanuvchi yoshini qabul qiluvchi metod. Agar yosh manfiy bo'lsa — <code>IllegalArgumentException</code>, 120 dan ko'p bo'lsa — boshqa custom exception <code>InvalidAgeException</code>.</p>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      validateAge(25) → OK<br>
+      validateAge(-1) → IllegalArgumentException<br>
+      validateAge(200) → InvalidAgeException
+    </div>
+    <pre data-filename="ValidateAge.java"><code>public class InvalidAgeException extends RuntimeException {
+    public InvalidAgeException(String msg) { super(msg); }
+}
+
+public static void validateAge(int age) {
+    if (age &lt; 0) {
+        throw new IllegalArgumentException("Yosh manfiy: " + age);
+    }
+    if (age &gt; 120) {
+        throw new InvalidAgeException("Yosh juda katta: " + age);
+    }
+    System.out.println("Yosh OK: " + age);
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 3</span>
+      <span class="difficulty medium"><span class="dot"></span>Medium</span>
+    </div>
+    <h2>String'dan int parse (Robust)</h2>
+    <p>Metod string qabul qilib, butun songa aylantirsin. Agar parse bo'lmasa — <code>defaultValue</code> qaytarsin. <b>null</b> va bo'sh string'lar ham hisobga olinsin.</p>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      parse("123", 0) → 123<br>
+      parse("abc", 0) → 0<br>
+      parse(null, -1) → -1<br>
+      parse("", -1) → -1
+    </div>
+    <pre data-filename="SafeParse.java"><code>public static int safeParse(String s, int defaultValue) {
+    if (s == null || s.isEmpty()) {
+        return defaultValue;
+    }
+    try {
+        return Integer.parseInt(s.trim());
+    } catch (NumberFormatException e) {
+        return defaultValue;
+    }
+}
+
+System.out.println(safeParse("123", 0));  // 123
+System.out.println(safeParse("abc", 0));  // 0
+System.out.println(safeParse(null, -1));  // -1</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 4</span>
+      <span class="difficulty hard"><span class="dot"></span>Hard</span>
+    </div>
+    <h2>Retry mexanizmi</h2>
+    <p>
+      Metod yozing: berilgan <b>operatsiyani N marta urinib ko'rsin</b>. Agar muvaffaqiyatli bo'lsa — natijani qaytarsin. Hammasi muvaffaqiyatsiz bo'lsa — oxirgi exception'ni tashlasin.
+    </p>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      retry(() -&gt; doSomething(), 3) → 3 marta urinadi<br>
+      Birinchi muvaffaqiyatda to'xtaydi<br>
+      Hammasi muvaffaqiyatsiz → exception
+    </div>
+    <pre data-filename="Retry.java"><code>public static &lt;T&gt; T retry(Supplier&lt;T&gt; operation, int times) throws Exception {
+    Exception lastException = null;
+    for (int i = 0; i &lt; times; i++) {
+        try {
+            return operation.get();
+        } catch (Exception e) {
+            lastException = e;
+            System.out.println("Urinish " + (i+1) + " muvaffaqiyatsiz: " + e.getMessage());
+        }
+    }
+    throw lastException;
+}
+
+// Foydalanish
+String result = retry(() -&gt; fetchFromAPI(), 3);</code></pre>
+  </section>
+
+  <!-- ==================== GENERICS ==================== -->
+
+  <section class="slide">
+    <h2>Generics — nima va nima uchun?</h2>
+    <p>
+      <b>Generics</b> — turlarni parametrlash. Bitta klass yoki metodni <b>turli tiplar bilan</b> ishlatish imkonini beradi.
+    </p>
+    <pre data-filename="Why.java"><code>// Generics SIZ
+List list = new ArrayList();
+list.add("Salom");
+String s = (String) list.get(0); // CASTING kerak, xato bo'lishi mumkin
+
+// Generics BILAN
+List&lt;String&gt; list2 = new ArrayList&lt;&gt;();
+list2.add("Salom");
+String s2 = list2.get(0); // Tur xavfsiz, casting yo'q!</code></pre>
+    <div class="theory-box">
+      <p><b>Type Erasure:</b> Java'da Generics <b>compile vaqtida</b> tekshiriladi va keyin <b>o'chiriladi</b>. JVM darajasida <code>List&lt;String&gt;</code> va <code>List&lt;Integer&gt;</code> bir xil — oddiy <code>List</code>!</p>
+      <p>Bu eski kod bilan moslik (backward compatibility) uchun qilingan.</p>
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>Generic class va method</h2>
+    <pre data-filename="Generic.java"><code>// Generic class
+public class Box&lt;T&gt; {
+    private T value;
+
+    public Box(T value) { this.value = value; }
+    public T get() { return value; }
+    public void set(T value) { this.value = value; }
+}
+
+// Foydalanish
+Box&lt;String&gt; stringBox = new Box&lt;&gt;("Salom");
+Box&lt;Integer&gt; intBox = new Box&lt;&gt;(42);
+
+// Generic method
+public static &lt;T&gt; void printArray(T[] arr) {
+    for (T item : arr) {
+        System.out.println(item);
+    }
+}
+
+printArray(new String[]{"A", "B", "C"});
+printArray(new Integer[]{1, 2, 3});
+
+// Bir nechta type parameter
+public class Pair&lt;K, V&gt; {
+    K key;
+    V value;
+}</code></pre>
+    <div class="note">
+      <b>Konvensiya:</b> <code>T</code> — Type, <code>E</code> — Element, <code>K</code> — Key, <code>V</code> — Value, <code>N</code> — Number.
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>Bounded Types va Wildcards</h2>
+    <pre data-filename="Bounded.java"><code>// Bounded type — faqat Number va uning avlodlari
+public &lt;T extends Number&gt; double sum(List&lt;T&gt; list) {
+    double total = 0;
+    for (T num : list) {
+        total += num.doubleValue();  // Number metodlari mavjud
+    }
+    return total;
+}
+
+sum(List.of(1, 2, 3));      // OK (Integer)
+sum(List.of(1.5, 2.5));     // OK (Double)
+// sum(List.of("a", "b"));  // XATO — String Number'dan emas</code></pre>
+    <div class="theory-box">
+      <p><b>Wildcards (?):</b></p>
+      <p><code>List&lt;?&gt;</code> — har qanday turdagi list (read-only)</p>
+      <p><code>List&lt;? extends Number&gt;</code> — Number yoki uning child'lari (PECS: Producer Extends)</p>
+      <p><code>List&lt;? super Integer&gt;</code> — Integer yoki uning parent'lari (PECS: Consumer Super)</p>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala</span>
+      <span class="difficulty medium"><span class="dot"></span>Medium</span>
+    </div>
+    <h2>Generic Pair klassi</h2>
+    <p>
+      <code>Pair&lt;K, V&gt;</code> klassini yarating. Ikkita element saqlasin. Metodlar:
+    </p>
+    <ul>
+      <li><code>getKey()</code>, <code>getValue()</code></li>
+      <li><code>swap()</code> — <code>Pair&lt;V, K&gt;</code> qaytarsin</li>
+      <li><code>toString()</code> — <code>(key, value)</code> formatda</li>
+    </ul>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      Pair&lt;String, Integer&gt; p = new Pair&lt;&gt;("yosh", 25)<br>
+      p.swap() → Pair&lt;Integer, String&gt;(25, "yosh")
+    </div>
+    <pre data-filename="Pair.java"><code>public class Pair&lt;K, V&gt; {
+    private final K key;
+    private final V value;
+
+    public Pair(K key, V value) {
+        this.key = key;
+        this.value = value;
+    }
+
+    public K getKey() { return key; }
+    public V getValue() { return value; }
+
+    public Pair&lt;V, K&gt; swap() {
+        return new Pair&lt;&gt;(value, key);
+    }
+
+    @Override
+    public String toString() {
+        return "(" + key + ", " + value + ")";
+    }
+}</code></pre>
+  </section>
+
+  <!-- ==================== LAMBDA ==================== -->
+
+  <section class="slide">
+    <h2>Lambda Expression</h2>
+    <p>
+      <b>Lambda</b> — Java 8+ dan kelgan funksional dasturlash vositasi. <b>Funksiya'ni qiymat sifatida</b> uzatish imkonini beradi.
+    </p>
+    <pre data-filename="Lambda.java"><code>// Eski usul (anonymous class)
+Runnable old = new Runnable() {
+    @Override
+    public void run() {
+        System.out.println("Salom");
+    }
+};
+
+// Lambda (Java 8+)
+Runnable lambda = () -&gt; System.out.println("Salom");
+
+// Parametr bilan
+Function&lt;Integer, Integer&gt; square = x -&gt; x * x;
+System.out.println(square.apply(5)); // 25
+
+// Bir nechta parametr
+BiFunction&lt;Integer, Integer, Integer&gt; add = (a, b) -&gt; a + b;
+System.out.println(add.apply(2, 3)); // 5
+
+// Bir nechta qator
+Function&lt;Integer, String&gt; check = n -&gt; {
+    if (n &gt; 0) return "musbat";
+    if (n &lt; 0) return "manfiy";
+    return "nol";
+};</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>Functional Interface va Built-in tiplar</h2>
+    <div class="theory-box">
+      <p><b>Functional Interface</b> — faqat <b>bitta abstract metod</b>i bo'lgan interface. Lambda aynan shunday interface'larga moslab yoziladi.</p>
+      <p><code>@FunctionalInterface</code> annotatsiya — kompilyator tekshiradi.</p>
+    </div>
+    <table class="compare-table">
+      <thead>
+        <tr><th>Interface</th><th>Metod</th><th>Maqsadi</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>Function&lt;T,R&gt;</code></td><td><code>R apply(T)</code></td><td>T → R (input → output)</td></tr>
+        <tr><td><code>Predicate&lt;T&gt;</code></td><td><code>boolean test(T)</code></td><td>true/false tekshirish</td></tr>
+        <tr><td><code>Consumer&lt;T&gt;</code></td><td><code>void accept(T)</code></td><td>Faqat ishlatish (chiqarish)</td></tr>
+        <tr><td><code>Supplier&lt;T&gt;</code></td><td><code>T get()</code></td><td>Hech narsadan qiymat olish</td></tr>
+        <tr><td><code>BiFunction&lt;T,U,R&gt;</code></td><td><code>R apply(T,U)</code></td><td>Ikki input → output</td></tr>
+        <tr><td><code>UnaryOperator&lt;T&gt;</code></td><td><code>T apply(T)</code></td><td>T → T (bir turda)</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 1</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>Predicate bilan filtr</h2>
+    <p>
+      List of integers'dan <b>juft sonlarni</b> ajratib oluvchi metod yozing — <code>Predicate&lt;Integer&gt;</code> bilan.
+    </p>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      filter([1,2,3,4,5,6], n -&gt; n % 2 == 0) → [2, 4, 6]<br>
+      filter([1,2,3,4,5], n -&gt; n &gt; 3) → [4, 5]
+    </div>
+    <pre data-filename="FilterPredicate.java"><code>public static &lt;T&gt; List&lt;T&gt; filter(List&lt;T&gt; list, Predicate&lt;T&gt; pred) {
+    List&lt;T&gt; result = new ArrayList&lt;&gt;();
+    for (T item : list) {
+        if (pred.test(item)) {
+            result.add(item);
+        }
+    }
+    return result;
+}
+
+// Foydalanish
+List&lt;Integer&gt; nums = List.of(1, 2, 3, 4, 5, 6);
+System.out.println(filter(nums, n -&gt; n % 2 == 0)); // [2, 4, 6]</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 2</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>Function bilan transform</h2>
+    <p>
+      List of strings'ni Function bilan o'zgartiring — har bir string'ni katta harfga aylantiring.
+    </p>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      transform(["ali", "vali"], String::toUpperCase)<br>
+      → ["ALI", "VALI"]
+    </div>
+    <pre data-filename="Transform.java"><code>public static &lt;T, R&gt; List&lt;R&gt; transform(List&lt;T&gt; list, Function&lt;T, R&gt; fn) {
+    List&lt;R&gt; result = new ArrayList&lt;&gt;();
+    for (T item : list) {
+        result.add(fn.apply(item));
+    }
+    return result;
+}
+
+// Foydalanish
+List&lt;String&gt; names = List.of("ali", "vali");
+System.out.println(transform(names, String::toUpperCase));
+// [ALI, VALI]
+
+// Method reference: String::toUpperCase === s -&gt; s.toUpperCase()</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 3</span>
+      <span class="difficulty medium"><span class="dot"></span>Medium</span>
+    </div>
+    <h2>Compose funksiyalari</h2>
+    <p>
+      Ikki Function'ni birlashtiring: <code>g(f(x))</code>. Ya'ni avval birinchi, keyin uning natijasiga ikkinchi.
+    </p>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      f = x -&gt; x + 1<br>
+      g = x -&gt; x * 2<br>
+      compose(f, g).apply(3) → g(f(3)) = g(4) = 8
+    </div>
+    <pre data-filename="Compose.java"><code>public static &lt;A, B, C&gt; Function&lt;A, C&gt; compose(
+        Function&lt;A, B&gt; f,
+        Function&lt;B, C&gt; g) {
+    return a -&gt; g.apply(f.apply(a));
+}
+
+// Yoki Function ichidagi tayyor andThen ishlatish
+Function&lt;Integer, Integer&gt; addOne = x -&gt; x + 1;
+Function&lt;Integer, Integer&gt; doubleIt = x -&gt; x * 2;
+
+Function&lt;Integer, Integer&gt; combined = addOne.andThen(doubleIt);
+System.out.println(combined.apply(3)); // 8</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 4</span>
+      <span class="difficulty hard"><span class="dot"></span>Hard</span>
+    </div>
+    <h2>Memoization (Cache funksiyasi)</h2>
+    <p>
+      Funksiyani <b>cache</b>lab ishlatadigan wrapper yarating: bir xil input uchun bir marta hisoblansin, keyingi safarlar saqlangan natijani qaytarsin.
+    </p>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      memoize(n -&gt; { System.out.println("hisoblash..."); return n*n; })<br>
+      .apply(5) → "hisoblash..." 25<br>
+      .apply(5) → 25 (qayta hisoblamaydi)
+    </div>
+    <pre data-filename="Memoize.java"><code>public static &lt;T, R&gt; Function&lt;T, R&gt; memoize(Function&lt;T, R&gt; fn) {
+    Map&lt;T, R&gt; cache = new HashMap&lt;&gt;();
+    return input -&gt; cache.computeIfAbsent(input, fn);
+}
+
+// Foydalanish
+Function&lt;Integer, Integer&gt; expensiveSquare = n -&gt; {
+    System.out.println("hisoblash: " + n);
+    return n * n;
+};
+
+Function&lt;Integer, Integer&gt; cached = memoize(expensiveSquare);
+cached.apply(5);  // hisoblash: 5, → 25
+cached.apply(5);  // → 25 (cache'dan)
+cached.apply(3);  // hisoblash: 3, → 9</code></pre>
+  </section>
+
+  <!-- ==================== STREAM API ==================== -->
+
+  <section class="slide">
+    <h2>Stream API — nima va qanday ishlaydi?</h2>
+    <p>
+      <b>Stream</b> — ma'lumotlar oqimi. Collection ustida <b>funksional usulda</b> ishlash imkonini beradi.
+    </p>
+    <div class="theory-box">
+      <p><b>Lazy Evaluation:</b> Stream operatsiyalari "kechiktirilgan" — terminal operatsiya (collect, forEach) chaqirilmaguncha hech narsa ishlamaydi.</p>
+      <p><b>Pipeline:</b> Source → Intermediate ops (lazy) → Terminal op (eager) → Result.</p>
+      <p><b>Stream != Collection:</b> Stream <b>ma'lumot saqlamaydi</b>, faqat ulardan oqib o'tadi. Bir marta ishlatiladi.</p>
+    </div>
+    <pre data-filename="StreamIntro.java"><code>List&lt;Integer&gt; nums = List.of(1, 2, 3, 4, 5, 6);
+
+int sum = nums.stream()                  // Source
+    .filter(n -&gt; n % 2 == 0)             // Intermediate (lazy)
+    .mapToInt(Integer::intValue)         // Intermediate (lazy)
+    .sum();                              // Terminal (eager)
+// 2 + 4 + 6 = 12
+
+System.out.println(sum); // 12</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>Intermediate operations</h2>
+    <p>
+      Stream'ni o'zgartiradi, lekin <b>yangi Stream qaytaradi</b>. <code>Stream → Stream</code>.
+    </p>
+    <pre data-filename="Intermediate.java"><code>List&lt;String&gt; names = List.of("Ali", "Vali", "Akobir", "Sardor");
+
+// filter — shartga mos elementlar
+names.stream()
+    .filter(n -&gt; n.length() &gt; 3)  // 4+ harfli
+    .forEach(System.out::println);
+// Vali, Akobir, Sardor
+
+// map — har bir elementni o'zgartirish
+names.stream()
+    .map(String::toUpperCase)
+    .forEach(System.out::println);
+// ALI, VALI, AKOBIR, SARDOR
+
+// sorted — saralash
+names.stream().sorted().forEach(System.out::println);
+
+// distinct — takrorlanmas
+List.of(1, 2, 2, 3, 3, 4).stream().distinct().forEach(System.out::println);
+// 1, 2, 3, 4
+
+// limit, skip — chegaralash
+nums.stream().limit(3);  // birinchi 3 ta
+nums.stream().skip(2);   // birinchi 2 tasini tashlash</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>Terminal operations</h2>
+    <p>
+      Stream'ni <b>tugatadi</b> va natijani qaytaradi. Pipeline shu yerda ishlaydi.
+    </p>
+    <pre data-filename="Terminal.java"><code>List&lt;Integer&gt; nums = List.of(1, 2, 3, 4, 5);
+
+// collect — Collection'ga to'plash
+List&lt;Integer&gt; evens = nums.stream()
+    .filter(n -&gt; n % 2 == 0)
+    .collect(Collectors.toList());
+
+// count — sanash
+long count = nums.stream().filter(n -&gt; n &gt; 2).count();  // 3
+
+// reduce — yig'ish
+int sum = nums.stream().reduce(0, Integer::sum);        // 15
+Optional&lt;Integer&gt; max = nums.stream().max(Integer::compare);
+
+// findFirst, findAny
+Optional&lt;Integer&gt; first = nums.stream().filter(n -&gt; n &gt; 3).findFirst();
+
+// anyMatch, allMatch, noneMatch
+boolean hasEven = nums.stream().anyMatch(n -&gt; n % 2 == 0);  // true
+boolean allPositive = nums.stream().allMatch(n -&gt; n &gt; 0);   // true
+
+// forEach — har biri uchun amal
+nums.stream().forEach(System.out::println);
+
+// Collectors.groupingBy, joining, partitioningBy
+Map&lt;Boolean, List&lt;Integer&gt;&gt; parted = nums.stream()
+    .collect(Collectors.partitioningBy(n -&gt; n % 2 == 0));
+// {false=[1,3,5], true=[2,4]}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 1</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>Stream bilan yig'indi</h2>
+    <p>List of integers'da <b>faqat juft sonlar yig'indisini</b> Stream API bilan toping.</p>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      [1, 2, 3, 4, 5, 6, 7, 8] → 2+4+6+8 = <b>20</b>
+    </div>
+    <pre data-filename="EvenSum.java"><code>public static int evenSum(List&lt;Integer&gt; list) {
+    return list.stream()
+        .filter(n -&gt; n % 2 == 0)
+        .mapToInt(Integer::intValue)
+        .sum();
+}
+
+System.out.println(evenSum(List.of(1,2,3,4,5,6,7,8))); // 20</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 2</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>Stream bilan group va count</h2>
+    <p>
+      List of strings'da har bir string'ning <b>uzunligi bo'yicha guruhlash</b> va har bir guruh elementlari sonini qaytarish.
+    </p>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      ["a", "bb", "cc", "ddd"] → <b>{1=1, 2=2, 3=1}</b>
+    </div>
+    <pre data-filename="GroupByLength.java"><code>public static Map&lt;Integer, Long&gt; groupByLength(List&lt;String&gt; list) {
+    return list.stream()
+        .collect(Collectors.groupingBy(
+            String::length,
+            Collectors.counting()
+        ));
+}
+
+System.out.println(groupByLength(List.of("a", "bb", "cc", "ddd")));
+// {1=1, 2=2, 3=1}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 3</span>
+      <span class="difficulty medium"><span class="dot"></span>Medium</span>
+    </div>
+    <h2>Talabalarni Stream bilan filtr</h2>
+    <p>
+      List of Students. <b>GPA &ge; 4.0</b> bo'lganlarni tanlang, ismi bo'yicha tartibga soling va ismlarini <b>vergul bilan ajratilgan string</b> sifatida qaytaring.
+    </p>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      [Ali(3.5), Akobir(4.5), Vali(4.2), Sardor(3.0)]<br>
+      → <b>"Akobir, Vali"</b>
+    </div>
+    <pre data-filename="TopStudents.java"><code>public static String topStudents(List&lt;Student&gt; students) {
+    return students.stream()
+        .filter(s -&gt; s.gpa &gt;= 4.0)
+        .sorted(Comparator.comparing(s -&gt; s.name))
+        .map(s -&gt; s.name)
+        .collect(Collectors.joining(", "));
+}</code></pre>
+  </section>
+
+  <!-- ==================== OPTIONAL ==================== -->
+
+  <section class="slide">
+    <h2>Optional — null'siz hayot</h2>
+    <p>
+      <b>Optional&lt;T&gt;</b> — bo'lishi yoki bo'lmasligi mumkin bo'lgan qiymat uchun konteyner. <code>null</code>'siz xavfsiz ishlash uchun.
+    </p>
+    <pre data-filename="Optional.java"><code>// Yaratish
+Optional&lt;String&gt; empty = Optional.empty();
+Optional&lt;String&gt; of = Optional.of("Salom");       // null bo'lmasligi shart
+Optional&lt;String&gt; nullable = Optional.ofNullable(getName()); // null bo'lishi mumkin
+
+// Tekshirish
+if (nullable.isPresent()) {
+    System.out.println(nullable.get());
+}
+
+// Yaxshiroq — ifPresent
+nullable.ifPresent(n -&gt; System.out.println("Ism: " + n));
+
+// Default qiymat
+String name = nullable.orElse("Noma'lum");
+String name2 = nullable.orElseGet(() -&gt; computeDefault());
+String name3 = nullable.orElseThrow(() -&gt; new RuntimeException("Yo'q!"));
+
+// Transform
+Optional&lt;Integer&gt; len = nullable.map(String::length);
+
+// Chain
+String result = Optional.ofNullable(getUser())
+    .map(User::getAddress)
+    .map(Address::getCity)
+    .orElse("Tashkent");</code></pre>
+    <div class="note">
+      <b>Eslatma:</b> <code>Optional</code>ni <b>field sifatida</b> ishlatmang — faqat metod return tipi sifatida.
+    </div>
+  </section>
+
+  <!-- ==================== ENUM ==================== -->
+
+  <section class="slide">
+    <h2>Enum — sanaluvchi tiplar</h2>
+    <p>
+      <b>Enum</b> — cheklangan to'plamdagi konstantalar uchun maxsus tur. <b>Type-safe</b> va kengaytiriladigan.
+    </p>
+    <pre data-filename="Enum.java"><code>// Oddiy enum
+public enum Day {
+    MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY
+}
+
+Day today = Day.MONDAY;
+if (today == Day.SATURDAY || today == Day.SUNDAY) {
+    System.out.println("Dam olish kuni");
+}
+
+// Enum metodlar va field bilan
+public enum Planet {
+    EARTH(5.97e24, 6_371_000),
+    MARS(6.39e23, 3_390_000);
+
+    private final double mass;
+    private final double radius;
+
+    Planet(double mass, double radius) {
+        this.mass = mass;
+        this.radius = radius;
+    }
+
+    public double surfaceGravity() {
+        return 6.674e-11 * mass / (radius * radius);
+    }
+}
+
+System.out.println(Planet.EARTH.surfaceGravity());
+
+// switch bilan
+switch (today) {
+    case MONDAY -&gt; System.out.println("Dushanba");
+    case FRIDAY -&gt; System.out.println("Juma");
+    default -&gt; System.out.println("Boshqa");
+}</code></pre>
+  </section>
+
+  <!-- ==================== ANNOTATIONS ==================== -->
+
+  <section class="slide">
+    <h2>Annotations</h2>
+    <p>
+      <b>Annotation</b> — kodga <b>metama'lumot</b> qo'shish vositasi. <code>@</code> belgisi bilan boshlanadi.
+    </p>
+    <div class="def-grid">
+      <div class="def-card">
+        <h3>@Override</h3>
+        <p>Parent metodni override qilayotganimizni bildirish</p>
+      </div>
+      <div class="def-card">
+        <h3>@Deprecated</h3>
+        <p>Bu metod/klass eskirgan, ishlatmang</p>
+      </div>
+      <div class="def-card">
+        <h3>@SuppressWarnings</h3>
+        <p>Kompilyator ogohlantirishlarini o'chirish</p>
+      </div>
+    </div>
+    <pre data-filename="Annotations.java"><code>// Custom annotation yaratish
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface LogTime {
+    String value() default "INFO";
+}
+
+// Foydalanish
+public class Service {
+    @LogTime("DEBUG")
+    public void process() {
+        // ...
+    }
+}
+
+// Spring'da ko'p ishlatiladi:
+// @Component, @Service, @Autowired, @RequestMapping va h.k.</code></pre>
+    <div class="note">
+      Annotation'lar Spring, JUnit, Lombok kabi framework'larda <b>magic</b> qiladi — kodingizga maxsus xulq-atvor qo'shadi.
+    </div>
+  </section>
+
+  <!-- ==================== AMALIY ==================== -->
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">📝 Amaliy topshiriqlar</span>
+      <span class="difficulty hard"><span class="dot"></span>Mustaqil</span>
+    </div>
+    <h2>10 ta murakkab vazifa</h2>
+    <p>Quyidagi 10 ta vazifani <b>o'zingiz mustaqil</b> yechib ko'ring:</p>
+    <ul style="font-size: 16px;">
+      <li>
+        <b>1. Word Counter (Stream + Map).</b> Matnda har bir so'z chastotasini hisoblang va eng ko'p uchragan 5 tasini chiqaring.<br>
+        <code>"the cat and the dog and the bird" → {the=3, and=2, ...}</code>
+      </li>
+      <li>
+        <b>2. Custom CheckedException.</b> <code>InvalidEmailException</code> yarating va email validatsiyada ishlatib ko'ring.<br>
+        <code>validateEmail("not-an-email") → throw InvalidEmailException</code>
+      </li>
+      <li>
+        <b>3. Generic Stack.</b> O'z <code>Stack&lt;T&gt;</code> klassini yarating: <code>push</code>, <code>pop</code>, <code>peek</code>, <code>size</code>, <code>isEmpty</code>.<br>
+        <code>stack.push(1); stack.push(2); stack.pop() → 2</code>
+      </li>
+      <li>
+        <b>4. Sort by multiple fields.</b> List of Products: avval kategoriya, keyin narx, keyin nom bo'yicha Stream + Comparator bilan.<br>
+        <code>products.stream().sorted(...).collect(toList())</code>
+      </li>
+      <li>
+        <b>5. Optional chaining.</b> <code>User → Address → City → Name</code>. Null bo'lsa "Unknown" qaytar.<br>
+        <code>Optional.ofNullable(user).map(...).orElse("Unknown")</code>
+      </li>
+      <li>
+        <b>6. HTTP Retry.</b> <code>fetch()</code> 3 marta urinsin. Har urinish orasida 1 sekund kutsin. Hammasi fail bo'lsa exception.<br>
+        Funksional retry decorator yozing.
+      </li>
+      <li>
+        <b>7. Stream Grouping.</b> List of Students'ni kurs bo'yicha guruhlang, har guruhning o'rta GPA'sini hisoblang.<br>
+        <code>{1=3.5, 2=3.8, 3=4.0, 4=3.9}</code>
+      </li>
+      <li>
+        <b>8. Custom Annotation + Reflection.</b> <code>@Trace</code> annotatsiya yarating va Reflection bilan annotatsiyali metodlarni topib chiqaring.<br>
+        <code>scanMethods(MyClass.class) → ["method1", "method2"]</code>
+      </li>
+      <li>
+        <b>9. Enum bilan State Machine.</b> <code>OrderStatus</code> enum (PENDING, PAID, SHIPPED, DELIVERED, CANCELLED). Faqat ma'lum o'tishlarga ruxsat.<br>
+        <code>PENDING → PAID OK, PENDING → DELIVERED YO'Q</code>
+      </li>
+      <li>
+        <b>10. Stream Performance.</b> <code>parallelStream()</code> vs <code>stream()</code> ni 1 mln elementli list'da sinab, vaqtni o'lchang.<br>
+        Qachon parallel foydali ekanini aniqlang.
+      </li>
+    </ul>
+    <div class="note">
+      Har bir vazifa uchun: <b>Stream/Lambda/Optional</b> ni keng qo'llang, Exception'larni to'g'ri boshqaring, edge case'larni unutmang.
+    </div>
+  </section>
+
+  <section class="slide slide-title">
+    <div class="topic-pill">🎯 Yakun</div>
+    <h1>Dars yakuni</h1>
+    <p>
+      Java Advanced — endi siz <b>professional Java developer</b> darajasidagi vositalarga ega bo'ldingiz: funksional, xavfsiz va ifodali kod yozasiz.
+    </p>
+    <div class="note">
+      <b>Keyingi mavzu:</b> Multithreading — Thread, Runnable, ExecutorService, Synchronization, CompletableFuture.
+    </div>
+  </section>
+
+</div>
+
+<div class="toast" id="toast">✓ Kod nusxalandi!</div>
+
+<div class="controls">
+  <div class="progress-line" id="progressLine"></div>
+  <button class="nav-arrow" id="prevBtn" onclick="prevSlide()" title="Oldingi (←)">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+  </button>
+  <div class="pagination" id="pagination"></div>
+  <button class="nav-arrow" id="nextBtn" onclick="nextSlide()" title="Keyingi (→)">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+  </button>
+</div>
+
+<script>
+  function wrapCodeBlocks() {
+    document.querySelectorAll('pre').forEach(pre => {
+      if (pre.closest('.code-window')) return;
+      const filename = pre.dataset.filename || 'Example.java';
+      const wrapper = document.createElement('div');
+      wrapper.className = 'code-window';
+      wrapper.innerHTML = `
+        <div class="code-header">
+          <div class="traffic-lights">
+            <span class="light close"></span><span class="light minimize"></span><span class="light maximize"></span>
+          </div>
+          <div class="code-filename">${filename}</div>
+          <div class="code-actions">
+            <button class="code-btn reset-btn">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              Reset
+            </button>
+            <button class="code-btn copy-btn">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+              Copy
+            </button>
+          </div>
+        </div>
+        <div class="code-body"></div>
+      `;
+      pre.setAttribute('contenteditable', 'true');
+      pre.setAttribute('spellcheck', 'false');
+      const original = pre.innerHTML;
+      pre.dataset.original = original;
+      pre.parentNode.insertBefore(wrapper, pre);
+      wrapper.querySelector('.code-body').appendChild(pre);
+      wrapper.querySelector('.copy-btn').addEventListener('click', () => {
+        navigator.clipboard.writeText(pre.textContent).then(() => {
+          const btn = wrapper.querySelector('.copy-btn');
+          btn.classList.add('copied');
+          btn.innerHTML = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg> Nusxalandi`;
+          showToast('✓ Kod nusxalandi!');
+          setTimeout(() => {
+            btn.classList.remove('copied');
+            btn.innerHTML = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg> Copy`;
+          }, 2000);
+        });
+      });
+      wrapper.querySelector('.reset-btn').addEventListener('click', () => {
+        pre.innerHTML = original;
+        showToast('↺ Kod tiklandi');
+      });
+    });
+  }
+  function showToast(message) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.classList.add('show');
+    clearTimeout(window._toastTimer);
+    window._toastTimer = setTimeout(() => toast.classList.remove('show'), 1800);
+  }
+  wrapCodeBlocks();
+
+  function wrapSolutions() {
+    const eyeIcon = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>`;
+    const eyeOffIcon = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"/></svg>`;
+    document.querySelectorAll('.slide').forEach(slide => {
+      if (!slide.querySelector('.problem-header')) return;
+      slide.querySelectorAll('.code-window').forEach(cw => {
+        if (cw.parentNode.classList.contains('solution-content')) return;
+        const wrap = document.createElement('div');
+        wrap.className = 'solution-wrap';
+        const btn = document.createElement('button');
+        btn.className = 'show-solution-btn';
+        btn.innerHTML = eyeIcon + ' Yechimni ko\'rsatish';
+        const content = document.createElement('div');
+        content.className = 'solution-content';
+        cw.parentNode.insertBefore(wrap, cw);
+        content.appendChild(cw);
+        wrap.appendChild(btn);
+        wrap.appendChild(content);
+        btn.addEventListener('click', () => {
+          const isShown = content.classList.toggle('shown');
+          btn.classList.toggle('active', isShown);
+          btn.innerHTML = isShown ? eyeOffIcon + ' Yechimni yashirish' : eyeIcon + ' Yechimni ko\'rsatish';
+        });
+      });
+    });
+  }
+  wrapSolutions();
+
+  const slides = document.querySelectorAll('.slide');
+  const totalSlides = slides.length;
+  const pagination = document.getElementById('pagination');
+  let currentIndex = 0;
+  document.getElementById('totalSlides').textContent = totalSlides;
+  const pageDots = [];
+  for (let i = 0; i < totalSlides; i++) {
+    const dot = document.createElement('button');
+    dot.className = 'page-dot';
+    dot.textContent = String(i + 1).padStart(2, '0');
+    dot.addEventListener('click', () => { currentIndex = i; showSlide(i); });
+    pagination.appendChild(dot);
+    pageDots.push(dot);
+  }
+  function showSlide(index) {
+    slides.forEach(s => s.classList.remove('active'));
+    slides[index].classList.add('active');
+    document.getElementById('currentSlide').textContent = index + 1;
+    pageDots.forEach((d, i) => { d.classList.toggle('active', i === index); d.classList.toggle('visited', i < index); });
+    const percent = ((index + 1) / totalSlides * 100);
+    document.getElementById('progressLine').style.width = percent + '%';
+    document.getElementById('prevBtn').disabled = index === 0;
+    document.getElementById('nextBtn').disabled = index === totalSlides - 1;
+    slides[index].scrollTop = 0;
+    const activeDot = pageDots[index];
+    if (activeDot) activeDot.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  }
+  function nextSlide() { if (currentIndex < totalSlides - 1) { currentIndex++; showSlide(currentIndex); } }
+  function prevSlide() { if (currentIndex > 0) { currentIndex--; showSlide(currentIndex); } }
+  document.addEventListener('keydown', (e) => {
+    if (e.target.isContentEditable) return;
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); nextSlide(); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); prevSlide(); }
+    else if (e.key === 'Home') { currentIndex = 0; showSlide(0); }
+    else if (e.key === 'End') { currentIndex = totalSlides - 1; showSlide(currentIndex); }
+  });
+  showSlide(0);
+</script>
+
+<script>
+(function(_0x){
+  var _a=String.fromCharCode,
+      _b=[169,32,77,117,97,108,108,105,102,58,32,82,117,115,116,97,109,111,118,32,65,107,111,98,105,114],
+      _c=[95,120,57,52,107,55,116,57,114,53,95,115,105,103],
+      _d=[95,120,57,52,104,53,100,55],
+      _t='',_n='',_h='';
+  for(var i=0;i<_b.length;i++)_t+=_a(_b[i]);
+  for(var i=0;i<_c.length;i++)_n+=_a(_c[i]);
+  for(var i=0;i<_d.length;i++)_h+=_a(_d[i]);
+  function _mk(visible){
+    var d=document.createElement('div');
+    d.setAttribute('data-x',_t);
+    if(visible){
+      d.id=_n; d.textContent=_t;
+      d.style.cssText='position:fixed;bottom:96px;right:16px;z-index:99999;background:rgba(15,15,25,0.75);color:rgba(255,255,255,0.85);padding:6px 14px;border-radius:20px;font-family:system-ui,-apple-system,sans-serif;font-size:11px;font-weight:600;backdrop-filter:blur(10px);border:1px solid rgba(139,92,246,0.3);pointer-events:none;user-select:none;letter-spacing:0.03em;box-shadow:0 4px 12px rgba(0,0,0,0.3);';
+    }else{
+      d.className=_h+Math.random().toString(36).slice(2,7); d.textContent=_t;
+      d.style.cssText='position:absolute;left:-99999px;top:-99999px;opacity:0;pointer-events:none;width:1px;height:1px;overflow:hidden;';
+    }
+    return d;
+  }
+  function _ensure(){
+    if(!document.body)return;
+    if(!document.getElementById(_n)){ document.body.appendChild(_mk(true)); }
+    var hidden=document.querySelectorAll('[class^="'+_h+'"]');
+    if(hidden.length<5){ for(var i=hidden.length;i<5;i++){ document.body.appendChild(_mk(false)); } }
+  }
+  function _setup(){
+    _ensure();
+    try{
+      new MutationObserver(function(muts){
+        for(var i=0;i<muts.length;i++){
+          var m=muts[i];
+          if(m.removedNodes.length>0||m.type==='attributes'){ _ensure(); break; }
+        }
+      }).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['id','class','style']});
+    }catch(e){}
+    setInterval(_ensure,1500);
+  }
+  if(document.body)_setup();
+  else document.addEventListener('DOMContentLoaded',_setup);
+  try{
+    console.log('%c '+_t+' ','background:linear-gradient(135deg,#8b5cf6,#f472b6);color:white;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:bold;');
+    Object.defineProperty(window,_n+'_lock',{value:_t,writable:false,configurable:false});
+  }catch(e){}
+})();
+</script>
+
+</body>
+</html>

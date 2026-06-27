@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SQL va Database — Prezentatsiya</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0a0a14; --surface: rgba(255, 255, 255, 0.04); --border: rgba(255, 255, 255, 0.08);
+      --text: #f8fafc; --text-dim: #94a3b8; --text-muted: #64748b;
+      --primary: #8b5cf6; --primary-2: #6366f1; --accent: #f472b6;
+      --slide-bg: #ffffff; --slide-bg-2: #fafafe;
+      --code-bg: #0f172a; --code-text: #e2e8f0;
+    }
+    html, body { height: 100%; overflow: hidden; }
+    body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
+    .bg-effects { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+    .blob { position: absolute; border-radius: 50%; filter: blur(140px); opacity: 0.4; }
+    .blob-1 { width: 500px; height: 500px; background: #8b5cf6; top: -100px; left: -150px; }
+    .blob-2 { width: 400px; height: 400px; background: #f472b6; bottom: -100px; right: -100px; }
+    .top { position: fixed; top: 0; left: 0; right: 0; z-index: 100; backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); background: rgba(10, 10, 20, 0.7); border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+    .top-left { display: flex; align-items: center; gap: 14px; }
+    .back-btn { display: inline-flex; align-items: center; gap: 8px; color: var(--text); text-decoration: none; background: var(--surface); border: 1px solid var(--border); padding: 9px 16px; border-radius: 10px; font-weight: 600; font-size: 14px; transition: all 0.2s; }
+    .back-btn:hover { background: rgba(139, 92, 246, 0.15); border-color: rgba(139, 92, 246, 0.4); }
+    .topic-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); color: #c4b5fd; padding: 8px 14px; border-radius: 50px; font-size: 12px; font-weight: 600; }
+    .pulse-dot { width: 6px; height: 6px; border-radius: 50%; background: #c4b5fd; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+    .slide-counter { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--border); padding: 9px 16px; border-radius: 10px; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; color: var(--text-dim); }
+    .slide-counter .current { color: var(--text); }
+    .presentation { position: fixed; top: 72px; bottom: 86px; left: 0; right: 0; display: flex; align-items: center; justify-content: center; padding: 24px; z-index: 1; }
+    .slide { display: none; background: linear-gradient(135deg, var(--slide-bg) 0%, var(--slide-bg-2) 100%); color: #0f172a; width: 100%; max-width: 1180px; height: 100%; max-height: 100%; padding: 56px 64px; border-radius: 28px; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05); flex-direction: column; justify-content: center; overflow-y: auto; position: relative; }
+    .slide.active { display: flex; animation: slideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+    .slide > * { min-width: 0; max-width: 100%; }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(30px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    .slide::before { content: ''; position: absolute; top: 0; right: 0; width: 280px; height: 280px; background: radial-gradient(circle, rgba(139, 92, 246, 0.08), transparent 70%); border-radius: 50%; pointer-events: none; }
+    .slide::after { content: ''; position: absolute; bottom: 0; left: 0; width: 240px; height: 240px; background: radial-gradient(circle, rgba(244, 114, 182, 0.08), transparent 70%); border-radius: 50%; pointer-events: none; }
+    .slide h1 { font-size: clamp(36px, 5vw, 60px); font-weight: 900; letter-spacing: -0.03em; margin-bottom: 24px; line-height: 1.1; background: linear-gradient(135deg, #1e1b4b 0%, #6366f1 50%, #8b5cf6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; position: relative; z-index: 1; }
+    .slide h2 { font-size: clamp(28px, 4vw, 44px); font-weight: 800; letter-spacing: -0.02em; margin-bottom: 28px; color: #1e1b4b; line-height: 1.15; position: relative; z-index: 1; }
+    .slide h2::before { content: ''; display: inline-block; width: 6px; height: 32px; background: linear-gradient(180deg, var(--primary), var(--accent)); border-radius: 4px; margin-right: 16px; vertical-align: middle; transform: translateY(-3px); }
+    .slide p { font-size: 19px; margin-bottom: 18px; color: #334155; position: relative; z-index: 1; line-height: 1.7; }
+    .slide ul { font-size: 18px; list-style: none; padding-left: 0; position: relative; z-index: 1; }
+    .slide li { position: relative; padding: 10px 0 10px 32px; color: #1e293b; line-height: 1.6; }
+    .slide li::before { content: ''; position: absolute; left: 8px; top: 20px; width: 8px; height: 8px; background: linear-gradient(135deg, var(--primary), var(--accent)); border-radius: 50%; box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.12); }
+    .slide b { color: var(--primary-2); font-weight: 700; }
+    .slide-title { text-align: center; justify-content: center; }
+    .slide-title h1 { font-size: clamp(48px, 8vw, 88px); text-align: center; }
+    .slide-title p { text-align: center; max-width: 700px; margin-left: auto; margin-right: auto; font-size: 22px; }
+    .topic-pill { display: inline-flex; align-items: center; gap: 10px; background: linear-gradient(135deg, rgba(139, 92, 246, 0.12), rgba(244, 114, 182, 0.12)); border: 1px solid rgba(139, 92, 246, 0.3); color: var(--primary); padding: 10px 22px; border-radius: 50px; font-weight: 700; font-size: 14px; margin: 0 auto 32px; width: fit-content; text-transform: uppercase; letter-spacing: 0.08em; }
+    .code-window { background: var(--code-bg); border-radius: 14px; margin: 20px 0; position: relative; z-index: 1; border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05); max-width: 100%; min-width: 0; display: flex; flex-direction: column; overflow: hidden; }
+    .code-header { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: linear-gradient(180deg, #2d3548 0%, #1e2536 100%); border-bottom: 1px solid rgba(255, 255, 255, 0.08); user-select: none; }
+    .traffic-lights { display: flex; gap: 8px; align-items: center; }
+    .light { width: 12px; height: 12px; border-radius: 50%; border: 0.5px solid rgba(0, 0, 0, 0.2); cursor: pointer; transition: filter 0.2s; }
+    .light:hover { filter: brightness(1.15); }
+    .light.close { background: #ff5f57; } .light.minimize { background: #febc2e; } .light.maximize { background: #28c840; }
+    .code-filename { flex: 1; text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: #94a3b8; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .code-filename::before { content: '🗃️'; font-size: 12px; }
+    .code-actions { display: flex; gap: 6px; align-items: center; }
+    .code-btn { display: inline-flex; align-items: center; gap: 5px; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.08); color: #cbd5e1; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; }
+    .code-btn:hover { background: rgba(139, 92, 246, 0.2); border-color: rgba(139, 92, 246, 0.4); color: white; }
+    .code-btn.copied { background: rgba(16, 185, 129, 0.2); border-color: rgba(16, 185, 129, 0.4); color: #6ee7b7; }
+    .code-btn svg { width: 12px; height: 12px; }
+    .code-body { position: relative; background: var(--code-bg); min-width: 0; max-width: 100%; overflow: hidden; }
+    pre { background: transparent; color: var(--code-text); padding: 22px 24px; overflow-x: auto; overflow-y: auto; max-height: 50vh; font-size: 15px; margin: 0; font-family: 'JetBrains Mono', 'Consolas', monospace; line-height: 1.7; tab-size: 4; outline: none; white-space: pre; word-wrap: normal; scrollbar-width: thin; scrollbar-color: rgba(139, 92, 246, 0.4) rgba(255, 255, 255, 0.04); }
+    pre::-webkit-scrollbar { height: 10px; width: 10px; }
+    pre::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.04); border-radius: 5px; }
+    pre::-webkit-scrollbar-thumb { background: linear-gradient(135deg, rgba(139, 92, 246, 0.5), rgba(244, 114, 182, 0.5)); border-radius: 5px; border: 2px solid transparent; background-clip: padding-box; }
+    pre[contenteditable="true"] { caret-color: #c084fc; }
+    pre[contenteditable="true"]:focus { background: rgba(139, 92, 246, 0.04); }
+    pre code { display: block; font-family: inherit; }
+    code { font-family: 'JetBrains Mono', monospace; font-size: 0.95em; }
+    p code, li code, .note code, td code, th code { background: rgba(139, 92, 246, 0.1); color: var(--primary); padding: 2px 8px; border-radius: 6px; font-size: 0.9em; font-weight: 600; }
+    .toast { position: fixed; bottom: 110px; left: 50%; transform: translateX(-50%) translateY(20px); background: rgba(16, 185, 129, 0.95); color: white; padding: 10px 20px; border-radius: 10px; font-size: 13px; font-weight: 600; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4); opacity: 0; pointer-events: none; transition: all 0.3s; z-index: 200; backdrop-filter: blur(10px); }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .problem-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; position: relative; z-index: 1; }
+    .problem-num { display: inline-flex; align-items: center; gap: 6px; background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: white; padding: 5px 14px; border-radius: 50px; font-size: 12px; font-weight: 700; letter-spacing: 0.05em; font-family: 'JetBrains Mono', monospace; }
+    .difficulty { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 50px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+    .difficulty.easy { background: rgba(16, 185, 129, 0.12); color: #059669; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .difficulty.medium { background: rgba(245, 158, 11, 0.12); color: #d97706; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .difficulty.hard { background: rgba(239, 68, 68, 0.12); color: #dc2626; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .difficulty .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .example-block { background: #f1f5f9; border-left: 4px solid var(--primary); padding: 14px 18px; border-radius: 10px; margin: 12px 0; font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #1e293b; line-height: 1.7; position: relative; z-index: 1; }
+    .example-title { font-family: 'Inter', sans-serif; font-weight: 700; color: var(--primary); font-size: 13px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .example-block b { color: var(--primary); }
+    .constraints { background: rgba(99, 102, 241, 0.05); border: 1px dashed rgba(99, 102, 241, 0.3); padding: 12px 18px; border-radius: 10px; font-size: 14px; color: #475569; margin: 12px 0; position: relative; z-index: 1; }
+    .constraints b { color: var(--primary); }
+    .solution-wrap { margin-top: 18px; position: relative; z-index: 1; }
+    .show-solution-btn { display: inline-flex; align-items: center; gap: 10px; background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: white; border: none; padding: 12px 22px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.3s; font-family: 'Inter', sans-serif; box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3); }
+    .show-solution-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(139, 92, 246, 0.45); }
+    .show-solution-btn svg { width: 16px; height: 16px; }
+    .show-solution-btn.active { background: linear-gradient(135deg, #ec4899, #f43f5e); box-shadow: 0 8px 20px rgba(244, 63, 94, 0.3); }
+    .solution-content { max-height: 0; overflow: hidden; opacity: 0; margin-top: 0; transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, margin-top 0.3s ease; }
+    .solution-content.shown { max-height: 2500px; opacity: 1; margin-top: 16px; }
+    .note { background: linear-gradient(135deg, #fef3c7, #fef9c3); border-left: 4px solid #f59e0b; padding: 18px 22px; border-radius: 14px; margin-top: 24px; font-size: 17px; color: #78350f; position: relative; z-index: 1; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15); }
+    .note::before { content: '💡'; margin-right: 8px; }
+    .note b { color: #92400e; } .note code { background: rgba(245, 158, 11, 0.2); color: #78350f; }
+    .warning { background: linear-gradient(135deg, #fee2e2, #fecaca); border-left: 4px solid #ef4444; padding: 18px 22px; border-radius: 14px; margin-top: 24px; font-size: 17px; color: #7f1d1d; position: relative; z-index: 1; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15); }
+    .warning::before { content: '⚠️'; margin-right: 8px; }
+    .warning b { color: #991b1b; } .warning code { background: rgba(239, 68, 68, 0.2); color: #7f1d1d; }
+    .def-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 16px; position: relative; z-index: 1; }
+    .def-card { background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px 24px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04); transition: all 0.3s; }
+    .def-card:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(139, 92, 246, 0.12); }
+    .def-card h3 { font-family: 'JetBrains Mono', monospace; font-size: 22px; color: var(--primary); margin-bottom: 8px; font-weight: 700; }
+    .def-card p { font-size: 15px; margin: 0; color: #475569; }
+    .theory-box { background: linear-gradient(135deg, #ede9fe, #fce7f3); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 16px; padding: 22px 26px; margin: 18px 0; position: relative; z-index: 1; box-shadow: 0 8px 20px rgba(139, 92, 246, 0.08); }
+    .theory-box::before { content: '🧠 NAZARIYA'; display: block; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; color: var(--primary); letter-spacing: 0.1em; margin-bottom: 10px; }
+    .theory-box p { font-size: 17px; margin-bottom: 8px; color: #1e1b4b; }
+    .theory-box p:last-child { margin-bottom: 0; }
+    .compare-table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); position: relative; z-index: 1; margin-top: 12px; }
+    .compare-table th { background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: white; padding: 14px 16px; text-align: left; font-weight: 700; font-size: 14px; }
+    .compare-table td { padding: 12px 16px; border-bottom: 1px solid #e2e8f0; font-size: 15px; color: #334155; }
+    .compare-table tr:last-child td { border-bottom: none; }
+    .compare-table tr:hover td { background: #f8fafc; }
+
+    /* SQL result table */
+    .sql-result { background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.06); margin: 12px 0; font-family: 'JetBrains Mono', monospace; font-size: 13.5px; }
+    .sql-result table { width: 100%; border-collapse: collapse; }
+    .sql-result thead { background: linear-gradient(135deg, #1e1b4b, #312e81); color: white; }
+    .sql-result th { padding: 10px 14px; text-align: left; font-weight: 600; font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase; }
+    .sql-result td { padding: 8px 14px; border-bottom: 1px solid #f1f5f9; color: #1e293b; }
+    .sql-result tr:last-child td { border-bottom: none; }
+    .sql-result tr:nth-child(even) td { background: #f8fafc; }
+    .sql-result-label { display: inline-block; font-family: 'Inter', sans-serif; font-size: 12px; color: var(--primary); font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 6px; margin-top: 14px; }
+
+    .controls { position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; backdrop-filter: blur(20px) saturate(180%); background: rgba(10, 10, 20, 0.75); border-top: 1px solid var(--border); padding: 14px 20px; display: flex; justify-content: center; align-items: center; gap: 12px; }
+    .nav-arrow { display: inline-flex; align-items: center; justify-content: center; background: var(--surface); color: var(--text); border: 1px solid var(--border); width: 38px; height: 38px; border-radius: 10px; cursor: pointer; transition: all 0.2s; flex-shrink: 0; }
+    .nav-arrow:hover:not(:disabled) { background: linear-gradient(135deg, var(--primary), var(--primary-2)); border-color: transparent; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(139, 92, 246, 0.4); }
+    .nav-arrow:disabled { opacity: 0.3; cursor: not-allowed; }
+    .nav-arrow svg { width: 16px; height: 16px; }
+    .pagination { display: flex; align-items: center; gap: 6px; overflow-x: auto; scrollbar-width: none; max-width: calc(100vw - 200px); padding: 4px; scroll-behavior: smooth; }
+    .pagination::-webkit-scrollbar { display: none; }
+    .page-dot { display: inline-flex; align-items: center; justify-content: center; min-width: 34px; height: 34px; padding: 0 10px; background: var(--surface); color: var(--text-dim); border: 1px solid var(--border); border-radius: 9px; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; font-weight: 600; cursor: pointer; transition: all 0.2s; flex-shrink: 0; }
+    .page-dot:hover { color: var(--text); border-color: rgba(139, 92, 246, 0.4); background: rgba(139, 92, 246, 0.1); transform: translateY(-1px); }
+    .page-dot.active { background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: white; border-color: transparent; box-shadow: 0 6px 16px rgba(139, 92, 246, 0.45); transform: scale(1.08); }
+    .page-dot.visited { color: var(--text); background: rgba(139, 92, 246, 0.08); border-color: rgba(139, 92, 246, 0.2); }
+    .progress-line { position: absolute; top: 0; left: 0; height: 3px; background: linear-gradient(90deg, var(--primary), var(--accent)); transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 12px rgba(139, 92, 246, 0.6); border-radius: 0 3px 3px 0; }
+    @media (max-width: 768px) {
+      .top { padding: 12px 16px; } .topic-badge { display: none; }
+      .slide { padding: 32px 24px; border-radius: 20px; }
+      pre { font-size: 13px; padding: 18px; }
+      .nav-arrow { width: 36px; height: 36px; }
+      .pagination { max-width: calc(100vw - 110px); gap: 4px; }
+      .page-dot { min-width: 30px; height: 30px; font-size: 11.5px; padding: 0 6px; }
+      .slide h2::before { width: 4px; height: 24px; }
+    }
+    @media print {
+      html, body { height: auto; overflow: visible; } body { background: white; }
+      .top, .controls, .bg-effects { display: none; }
+      .presentation { position: static; display: block; padding: 0; }
+      .slide { display: flex !important; page-break-after: always; box-shadow: none; border: 1px solid #ddd; max-width: 100%; height: auto; max-height: none; margin-bottom: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-effects">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+</div>
+
+<div class="top">
+  <div class="top-left">
+    <a href="index.html" class="back-btn">
+      <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+      Roadmap
+    </a>
+    <div class="topic-badge">
+      <span class="pulse-dot"></span>
+      6-Mavzu · SQL va Database
+    </div>
+  </div>
+  <div class="slide-counter">
+    <span class="current" id="currentSlide">1</span>
+    <span>/</span>
+    <span id="totalSlides">0</span>
+  </div>
+</div>
+
+<div class="presentation">
+
+  <section class="slide slide-title">
+    <div class="topic-pill">⚡ 6-Mavzu</div>
+    <h1>SQL va Database</h1>
+    <p>
+      <b>Ma'lumotlarni saqlash, qidirish va boshqarish</b> uchun dunyodagi eng muhim til. Backend uchun majburiy.
+    </p>
+    <div class="note">
+      <b>Dars maqsadi:</b> Database asoslari, SQL CRUD, JOIN, GROUP BY, Indexes, Transactions (ACID), Isolation levels, JDBC va SQL injection xavfsizligini batafsil o'rganamiz.
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>Database nima?</h2>
+    <p>
+      <b>Database (ma'lumotlar bazasi)</b> — tartibli, qidirish oson, ko'p foydalanuvchili ma'lumotlar to'plami.
+    </p>
+    <div class="theory-box">
+      <p><b>Nima uchun fayl emas?</b> Fayllarda: parallel kirish qiyin, qidirish sekin, tartib yo'q, xavfsizlik yo'q.</p>
+      <p><b>DBMS (Database Management System)</b> — bu muammolarni hal qiluvchi tizim: PostgreSQL, MySQL, Oracle, SQLite va h.k.</p>
+    </div>
+    <table class="compare-table">
+      <thead><tr><th>Turi</th><th>Xususiyat</th><th>Misol</th></tr></thead>
+      <tbody>
+        <tr><td><b>RDBMS</b></td><td>Jadval-ustun, SQL bilan, ACID</td><td>PostgreSQL, MySQL, Oracle</td></tr>
+        <tr><td><b>NoSQL</b></td><td>Document, key-value, graph</td><td>MongoDB, Redis, Neo4j</td></tr>
+        <tr><td><b>NewSQL</b></td><td>SQL + ko'lamlash</td><td>CockroachDB, TiDB</td></tr>
+      </tbody>
+    </table>
+    <div class="note">
+      Bu dars asosan <b>RDBMS</b> ga bag'ishlangan. SQL — RDBMS bilan ishlash tili.
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>Asosiy atamalar</h2>
+    <div class="def-grid">
+      <div class="def-card">
+        <h3>Table</h3>
+        <p><b>Jadval</b> — ustun va qatorlardan iborat ma'lumot tuzilmasi. Excel jadvali kabi.</p>
+      </div>
+      <div class="def-card">
+        <h3>Row</h3>
+        <p><b>Qator</b> (record, tuple) — bitta yozuv. Masalan: bitta foydalanuvchi.</p>
+      </div>
+      <div class="def-card">
+        <h3>Column</h3>
+        <p><b>Ustun</b> (field) — ma'lum bir atribut. Masalan: name, age, email.</p>
+      </div>
+      <div class="def-card">
+        <h3>Primary Key</h3>
+        <p>Har bir qator uchun <b>noyob identifikator</b>. Odatda <code>id</code>.</p>
+      </div>
+      <div class="def-card">
+        <h3>Foreign Key</h3>
+        <p>Boshqa jadvaldagi qatorga <b>havola</b>. Jadvallar o'rtasidagi bog'lanish.</p>
+      </div>
+      <div class="def-card">
+        <h3>Index</h3>
+        <p>Tezroq qidirish uchun yordamchi struktura. Kitobning <b>indeksi</b> kabi.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>SQL turlari</h2>
+    <div class="theory-box">
+      <p><b>SQL — Structured Query Language.</b> 1974-yilda IBM yaratgan. ANSI standart bo'lib, har bir DBMS o'z dialekti bilan ishlaydi.</p>
+      <p><b>Declarative til:</b> "Nima qilish kerakligi"ni aytasiz, "qanday qilish"ni DBMS o'zi hal qiladi.</p>
+    </div>
+    <table class="compare-table">
+      <thead><tr><th>Turi</th><th>Maqsadi</th><th>Misol</th></tr></thead>
+      <tbody>
+        <tr><td><b>DDL</b> (Data Definition)</td><td>Strukturani belgilash</td><td><code>CREATE</code>, <code>ALTER</code>, <code>DROP</code></td></tr>
+        <tr><td><b>DML</b> (Data Manipulation)</td><td>Ma'lumot o'zgartirish</td><td><code>SELECT</code>, <code>INSERT</code>, <code>UPDATE</code>, <code>DELETE</code></td></tr>
+        <tr><td><b>DCL</b> (Data Control)</td><td>Ruxsatlar</td><td><code>GRANT</code>, <code>REVOKE</code></td></tr>
+        <tr><td><b>TCL</b> (Transaction Control)</td><td>Tranzaksiyalar</td><td><code>COMMIT</code>, <code>ROLLBACK</code></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="slide">
+    <h2>CREATE TABLE — jadval yaratish</h2>
+    <pre data-filename="create.sql"><code>CREATE TABLE users (
+    id          SERIAL PRIMARY KEY,
+    name        VARCHAR(100) NOT NULL,
+    email       VARCHAR(255) UNIQUE NOT NULL,
+    age         INTEGER CHECK (age &gt;= 0),
+    balance     DECIMAL(10, 2) DEFAULT 0,
+    is_active   BOOLEAN DEFAULT TRUE,
+    created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Foreign key bilan
+CREATE TABLE orders (
+    id          SERIAL PRIMARY KEY,
+    user_id     INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    total       DECIMAL(10, 2),
+    created_at  TIMESTAMP DEFAULT NOW()
+);</code></pre>
+    <table class="compare-table">
+      <thead><tr><th>Data Type</th><th>Tavsif</th></tr></thead>
+      <tbody>
+        <tr><td><code>INTEGER</code> / <code>BIGINT</code></td><td>Butun sonlar</td></tr>
+        <tr><td><code>VARCHAR(N)</code> / <code>TEXT</code></td><td>Matn (N — maksimal uzunlik)</td></tr>
+        <tr><td><code>DECIMAL(p,s)</code></td><td>Aniq kasr (pul uchun)</td></tr>
+        <tr><td><code>BOOLEAN</code></td><td>TRUE / FALSE</td></tr>
+        <tr><td><code>TIMESTAMP</code> / <code>DATE</code></td><td>Vaqt</td></tr>
+        <tr><td><code>SERIAL</code></td><td>Auto-increment integer (PostgreSQL)</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="slide">
+    <h2>INSERT va SELECT</h2>
+    <pre data-filename="insert_select.sql"><code>-- Bitta qator
+INSERT INTO users (name, email, age)
+VALUES ('Akobir', 'akobir@mail.com', 22);
+
+-- Bir nechta qator
+INSERT INTO users (name, email, age) VALUES
+    ('Ali',    'ali@mail.com',    25),
+    ('Vali',   'vali@mail.com',   30),
+    ('Sardor', 'sardor@mail.com', 28);
+
+-- Hammasini olish
+SELECT * FROM users;
+
+-- Faqat kerakli ustunlar
+SELECT name, email FROM users;
+
+-- Hisoblangan ustun
+SELECT name, age, age * 12 AS age_in_months FROM users;</code></pre>
+    <div class="sql-result-label">📊 Natija:</div>
+    <div class="sql-result">
+      <table>
+        <thead><tr><th>id</th><th>name</th><th>email</th><th>age</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Akobir</td><td>akobir@mail.com</td><td>22</td></tr>
+          <tr><td>2</td><td>Ali</td><td>ali@mail.com</td><td>25</td></tr>
+          <tr><td>3</td><td>Vali</td><td>vali@mail.com</td><td>30</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>WHERE — filtrlash</h2>
+    <pre data-filename="where.sql"><code>-- Oddiy shart
+SELECT * FROM users WHERE age &gt; 25;
+
+-- AND, OR
+SELECT * FROM users WHERE age &gt; 18 AND is_active = TRUE;
+SELECT * FROM users WHERE name = 'Akobir' OR name = 'Ali';
+
+-- IN — ro'yxatdan
+SELECT * FROM users WHERE id IN (1, 3, 5);
+
+-- BETWEEN — oraliq
+SELECT * FROM users WHERE age BETWEEN 20 AND 30;
+
+-- LIKE — naqsh bo'yicha (% har qanday, _ bitta belgi)
+SELECT * FROM users WHERE name LIKE 'A%';     -- A bilan boshlanadi
+SELECT * FROM users WHERE email LIKE '%@gmail.com';
+SELECT * FROM users WHERE name LIKE '_li';    -- 3 harf, 2-si 'l'
+
+-- NULL tekshirish
+SELECT * FROM users WHERE phone IS NULL;
+SELECT * FROM users WHERE phone IS NOT NULL;
+
+-- NOT
+SELECT * FROM users WHERE NOT (age &lt; 18);</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>ORDER BY, LIMIT, OFFSET</h2>
+    <pre data-filename="order_limit.sql"><code>-- Saralash (default ASC)
+SELECT * FROM users ORDER BY age;
+SELECT * FROM users ORDER BY age DESC;     -- kamayish
+
+-- Bir nechta ustun bo'yicha
+SELECT * FROM users
+ORDER BY age DESC, name ASC;
+
+-- Cheklash (paginate uchun)
+SELECT * FROM users ORDER BY id LIMIT 10;          -- 10 ta
+SELECT * FROM users ORDER BY id LIMIT 10 OFFSET 20;-- 21-30
+
+-- Pagination (page=3, size=10)
+SELECT * FROM users
+ORDER BY id
+LIMIT 10 OFFSET 20;
+
+-- DISTINCT — takrorlanmaslar
+SELECT DISTINCT city FROM users;</code></pre>
+    <div class="note">
+      <code>LIMIT</code> va <code>OFFSET</code> — pagination uchun. <b>OFFSET katta bo'lsa sekinlashadi</b> (cursor-based pagination yaxshiroq).
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>UPDATE va DELETE</h2>
+    <pre data-filename="update_delete.sql"><code>-- UPDATE — o'zgartirish
+UPDATE users
+SET balance = 1000, is_active = TRUE
+WHERE id = 5;
+
+-- Bir nechta qator
+UPDATE users
+SET age = age + 1
+WHERE age &lt; 30;
+
+-- DELETE — o'chirish
+DELETE FROM users WHERE id = 5;
+
+-- Shartli o'chirish
+DELETE FROM users WHERE is_active = FALSE;
+
+-- HAMMA SINI o'chirish (ehtiyot bo'ling!)
+DELETE FROM users;
+-- yoki
+TRUNCATE TABLE users;  -- tezroq, lekin rollback yo'q</code></pre>
+    <div class="warning">
+      <b>OGOHLANTIRISH:</b> <code>UPDATE</code> yoki <code>DELETE</code>ni <b>WHERE'siz</b> yozsangiz — <b>butun jadval</b>ga ta'sir qiladi! Har doim avval <code>SELECT</code> bilan tekshiring.
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 1</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>Faollar ro'yxati</h2>
+    <p>
+      <code>users</code> jadvalidan <b>18+ yoshli</b> va <b>aktiv</b> foydalanuvchilarni toping. Faqat <code>name</code> va <code>email</code> ustunlarini chiqaring, ism alifbo bo'yicha.
+    </p>
+    <pre data-filename="problem1.sql"><code>SELECT name, email
+FROM users
+WHERE age &gt;= 18 AND is_active = TRUE
+ORDER BY name ASC;</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 2</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>Email domen bo'yicha qidirish</h2>
+    <p>
+      Faqat <b>@gmail.com</b> domenidan foydalanuvchilarni toping va eng katta yoshlilarni birinchi qiling. Faqat 10 tasini qaytaring.
+    </p>
+    <pre data-filename="problem2.sql"><code>SELECT *
+FROM users
+WHERE email LIKE '%@gmail.com'
+ORDER BY age DESC
+LIMIT 10;</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 3</span>
+      <span class="difficulty medium"><span class="dot"></span>Medium</span>
+    </div>
+    <h2>Bulk update — balansga foiz qo'shish</h2>
+    <p>
+      Barcha <b>aktiv foydalanuvchilarning</b> balansiga <b>5% foiz</b> qo'shing, lekin faqat balans <b>100 dan katta</b> bo'lganlar uchun.
+    </p>
+    <pre data-filename="problem3.sql"><code>UPDATE users
+SET balance = balance * 1.05
+WHERE is_active = TRUE
+  AND balance &gt; 100;
+
+-- Yangilangan qatorlar sonini tekshirish (PostgreSQL)
+SELECT COUNT(*) FROM users
+WHERE is_active = TRUE AND balance &gt; 100;</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 4</span>
+      <span class="difficulty hard"><span class="dot"></span>Hard</span>
+    </div>
+    <h2>Subquery bilan top-N</h2>
+    <p>
+      Har bir <b>shahar</b>dan <b>eng katta yoshli</b> foydalanuvchini toping (subquery yoki window function ishlatib).
+    </p>
+    <pre data-filename="problem4.sql"><code>-- Yo'l 1: subquery
+SELECT u.*
+FROM users u
+WHERE age = (
+    SELECT MAX(age) FROM users
+    WHERE city = u.city
+);
+
+-- Yo'l 2: window function (zamonaviy, tezroq)
+SELECT *
+FROM (
+    SELECT u.*,
+           ROW_NUMBER() OVER (PARTITION BY city ORDER BY age DESC) AS rn
+    FROM users u
+) ranked
+WHERE rn = 1;</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>JOIN — jadvallarni birlashtirish</h2>
+    <div class="theory-box">
+      <p><b>Nima uchun JOIN?</b> Ma'lumot bir jadvalga sig'masligi mumkin. Masalan: foydalanuvchilar va ularning buyurtmalari.</p>
+      <p><b>Foreign Key</b> orqali jadvallar bog'lanadi. JOIN — ularni <b>birgalikda ko'rsatish</b>.</p>
+      <p>JOIN <b>Cartesian product</b> dan boshlanadi (har bir qator har bir qator bilan) va keyin shart bo'yicha filtrlanadi.</p>
+    </div>
+    <pre data-filename="join_basic.sql"><code>-- 2 ta jadval bor:
+-- users(id, name)
+-- orders(id, user_id, total)
+
+-- INNER JOIN — ikkalasida ham mavjud bo'lganlar
+SELECT u.name, o.total
+FROM users u
+INNER JOIN orders o ON u.id = o.user_id;</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>JOIN turlari</h2>
+    <pre data-filename="joins.sql"><code>-- INNER JOIN — faqat moslar
+SELECT u.name, o.total
+FROM users u
+INNER JOIN orders o ON u.id = o.user_id;
+
+-- LEFT JOIN — chap (users) qoladi, o'ng yo'q bo'lsa NULL
+SELECT u.name, o.total
+FROM users u
+LEFT JOIN orders o ON u.id = o.user_id;
+-- Buyurtmasi yo'q userlar ham chiqadi (total = NULL)
+
+-- RIGHT JOIN — aksincha
+SELECT u.name, o.total
+FROM users u
+RIGHT JOIN orders o ON u.id = o.user_id;
+
+-- FULL OUTER JOIN — ikkala tomondan ham hammasi
+SELECT u.name, o.total
+FROM users u
+FULL OUTER JOIN orders o ON u.id = o.user_id;
+
+-- SELF JOIN — bir jadval o'zi bilan
+SELECT e1.name AS employee, e2.name AS manager
+FROM employees e1
+LEFT JOIN employees e2 ON e1.manager_id = e2.id;
+
+-- Bir nechta JOIN
+SELECT u.name, o.total, p.name AS product
+FROM users u
+JOIN orders o ON u.id = o.user_id
+JOIN products p ON o.product_id = p.id;</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala</span>
+      <span class="difficulty medium"><span class="dot"></span>Medium</span>
+    </div>
+    <h2>Buyurtmasiz foydalanuvchilar</h2>
+    <p>
+      Bironta ham buyurtma qilmagan foydalanuvchilarni toping (<b>LEFT JOIN + IS NULL</b> trick).
+    </p>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      users: [Ali, Vali, Sardor, Akobir]<br>
+      orders: [Vali → buyurtma, Akobir → buyurtma]<br>
+      → Natija: <b>Ali, Sardor</b>
+    </div>
+    <div class="constraints">
+      <b>Maslahat:</b> LEFT JOIN qiladigan har bir foydalanuvchi qatorida buyurtma yo'q bo'lsa, <code>orders.id IS NULL</code> bo'ladi.
+    </div>
+    <pre data-filename="no_orders.sql"><code>SELECT u.id, u.name
+FROM users u
+LEFT JOIN orders o ON u.id = o.user_id
+WHERE o.id IS NULL;
+
+-- Yoki NOT EXISTS bilan (ko'pincha tezroq)
+SELECT u.id, u.name
+FROM users u
+WHERE NOT EXISTS (
+    SELECT 1 FROM orders o WHERE o.user_id = u.id
+);</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>Aggregate funksiyalar</h2>
+    <p>
+      <b>Aggregate</b> — bir necha qatorni <b>bitta natijaga</b> aylantiradi.
+    </p>
+    <pre data-filename="aggregates.sql"><code>SELECT COUNT(*)        FROM users;        -- jami qator soni
+SELECT COUNT(email)    FROM users;        -- NULL emas emaillar
+SELECT COUNT(DISTINCT city) FROM users;   -- noyob shaharlar
+
+SELECT SUM(balance)    FROM users;        -- jami balans
+SELECT AVG(age)        FROM users;        -- o'rta yosh
+SELECT MIN(age)        FROM users;        -- eng yosh
+SELECT MAX(balance)    FROM users;        -- eng katta balans
+
+-- Bitta query'da bir nechtasi
+SELECT
+    COUNT(*)   AS total_users,
+    AVG(age)   AS avg_age,
+    MAX(balance) AS richest,
+    MIN(balance) AS poorest
+FROM users
+WHERE is_active = TRUE;</code></pre>
+    <div class="note">
+      <code>COUNT(*)</code> hamma qatorni sanaydi (NULL ham). <code>COUNT(column)</code> faqat NULL bo'lmaganini sanaydi.
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>GROUP BY va HAVING</h2>
+    <div class="theory-box">
+      <p><b>GROUP BY</b> — qatorlarni guruhlarga ajratadi, aggregate'larni har bir guruh uchun alohida hisoblaydi.</p>
+      <p><b>HAVING vs WHERE</b>: <code>WHERE</code> guruhlashdan oldin, <code>HAVING</code> keyin filtrlaydi.</p>
+    </div>
+    <pre data-filename="groupby.sql"><code>-- Har bir shahar bo'yicha foydalanuvchilar soni
+SELECT city, COUNT(*) AS users_count
+FROM users
+GROUP BY city;
+
+-- Saralash bilan
+SELECT city, COUNT(*) AS cnt
+FROM users
+GROUP BY city
+ORDER BY cnt DESC;
+
+-- HAVING — guruh ustida filter
+SELECT city, COUNT(*) AS cnt
+FROM users
+GROUP BY city
+HAVING COUNT(*) &gt;= 10;   -- faqat 10+ foydalanuvchili shaharlar
+
+-- WHERE + GROUP BY + HAVING — to'liq pipeline
+SELECT city, AVG(age) AS avg_age
+FROM users
+WHERE is_active = TRUE       -- 1. Avval qatorni filtrlash
+GROUP BY city                 -- 2. Keyin guruhlash
+HAVING AVG(age) &gt; 25         -- 3. Guruhni filtrlash
+ORDER BY avg_age DESC;        -- 4. Saralash</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 1</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>Buyurtmalar soni va summasi</h2>
+    <p>
+      Har bir foydalanuvchi uchun <b>buyurtmalar soni</b> va <b>jami summasi</b>ni chiqaring. Eng ko'p sarflaganlar birinchi.
+    </p>
+    <pre data-filename="user_stats.sql"><code>SELECT
+    u.id,
+    u.name,
+    COUNT(o.id) AS orders_count,
+    COALESCE(SUM(o.total), 0) AS total_spent
+FROM users u
+LEFT JOIN orders o ON u.id = o.user_id
+GROUP BY u.id, u.name
+ORDER BY total_spent DESC;</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 2</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>Eng ko'p sotilgan tovarlar (Top 5)</h2>
+    <p>
+      <code>order_items(order_id, product_id, quantity)</code> jadvalidan eng ko'p sotilgan 5 ta mahsulotni toping.
+    </p>
+    <pre data-filename="top_products.sql"><code>SELECT
+    p.id,
+    p.name,
+    SUM(oi.quantity) AS total_sold
+FROM products p
+JOIN order_items oi ON p.id = oi.product_id
+GROUP BY p.id, p.name
+ORDER BY total_sold DESC
+LIMIT 5;</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 3</span>
+      <span class="difficulty medium"><span class="dot"></span>Medium</span>
+    </div>
+    <h2>Oylik daromad</h2>
+    <p>
+      <code>orders(created_at, total)</code> jadvalidan har <b>oy bo'yicha jami daromad</b>ni chiqaring. Faqat 2025-yil uchun.
+    </p>
+    <pre data-filename="monthly_income.sql"><code>SELECT
+    EXTRACT(YEAR FROM created_at) AS year,
+    EXTRACT(MONTH FROM created_at) AS month,
+    COUNT(*) AS orders_count,
+    SUM(total) AS revenue
+FROM orders
+WHERE EXTRACT(YEAR FROM created_at) = 2025
+GROUP BY year, month
+ORDER BY year, month;
+
+-- Yoki TO_CHAR bilan
+SELECT
+    TO_CHAR(created_at, 'YYYY-MM') AS month,
+    SUM(total) AS revenue
+FROM orders
+WHERE created_at &gt;= '2025-01-01'
+  AND created_at &lt; '2026-01-01'
+GROUP BY TO_CHAR(created_at, 'YYYY-MM')
+ORDER BY month;</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 4</span>
+      <span class="difficulty hard"><span class="dot"></span>Hard</span>
+    </div>
+    <h2>Loyal mijozlar (HAVING + JOIN)</h2>
+    <p>
+      <b>Kamida 5 ta buyurtma</b> qilgan va <b>jami summasi 1 mln'dan ko'p</b> bo'lgan foydalanuvchilarni toping. Har birining o'rta buyurtmasini ham chiqaring.
+    </p>
+    <pre data-filename="loyal_customers.sql"><code>SELECT
+    u.id,
+    u.name,
+    COUNT(o.id) AS orders_count,
+    SUM(o.total) AS total_spent,
+    AVG(o.total) AS avg_order
+FROM users u
+JOIN orders o ON u.id = o.user_id
+GROUP BY u.id, u.name
+HAVING COUNT(o.id) &gt;= 5
+   AND SUM(o.total) &gt; 1000000
+ORDER BY total_spent DESC;</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>Indexes — tezlikning siri</h2>
+    <div class="theory-box">
+      <p><b>Index nima?</b> Jadvaldagi qatorlarga <b>tezroq murojaat qilish</b> uchun yordamchi struktura. Kitobning oxiridagi indeks kabi.</p>
+      <p><b>Eng ko'p ishlatiladigan tur — B-Tree</b> (balanced tree). Saralangan ko'p shoxli daraxt. Qidirish <code>O(log n)</code>.</p>
+      <p><b>Lekin:</b> indeks <b>xotira</b> egallaydi va <b>INSERT/UPDATE/DELETE'ni sekinlashtiradi</b> (chunki indeks ham yangilanishi kerak).</p>
+    </div>
+    <pre data-filename="indexes.sql"><code>-- Index yaratish
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_users_age ON users(age);
+
+-- Composite (bir nechta ustun)
+CREATE INDEX idx_users_city_age ON users(city, age);
+
+-- Unique index
+CREATE UNIQUE INDEX idx_users_email_unique ON users(email);
+
+-- Partial index — faqat shartga mos qatorlar uchun
+CREATE INDEX idx_active_users ON users(email) WHERE is_active = TRUE;
+
+-- Index'ni o'chirish
+DROP INDEX idx_users_email;
+
+-- Index ishlatildi mi? EXPLAIN bilan ko'rish
+EXPLAIN SELECT * FROM users WHERE email = 'x@y.com';</code></pre>
+    <div class="warning">
+      <b>Qoida:</b> Faqat <b>tez-tez qidiriladigan</b> ustunlarga index qo'ying. Har bir indeks — qo'shimcha xarajat.
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>Transactions — ACID</h2>
+    <p>
+      <b>Tranzaksiya</b> — bir nechta SQL amallari <b>bitta blok</b> sifatida bajariladi. Yoki <b>hammasi</b>, yoki <b>hech qaysi biri</b>.
+    </p>
+    <div class="theory-box">
+      <p><b>ACID — 4 ta kafolat:</b></p>
+      <p><b>A</b>tomicity — Atomiklik. Hamma yoki hech qaysi.</p>
+      <p><b>C</b>onsistency — Mosligi. Tranzaksiyadan oldin va keyin DB to'g'ri holatda.</p>
+      <p><b>I</b>solation — Izolyatsiya. Bir vaqtdagi tranzaksiyalar bir-biriga xalal bermaydi.</p>
+      <p><b>D</b>urability — Doimiylik. <code>COMMIT</code> dan keyin ma'lumot saqlanadi (hatto crash bo'lsa ham).</p>
+    </div>
+    <pre data-filename="transaction.sql"><code>-- Bank o'tkazmasi — klassik misol
+BEGIN;
+    UPDATE accounts SET balance = balance - 100 WHERE id = 1;
+    UPDATE accounts SET balance = balance + 100 WHERE id = 2;
+COMMIT;
+
+-- Xato bo'lsa qaytarish
+BEGIN;
+    UPDATE accounts SET balance = balance - 100 WHERE id = 1;
+    -- Bu yerda xato bo'lsa
+ROLLBACK;  -- hamma narsa qaytariladi
+
+-- SAVEPOINT — qisman rollback
+BEGIN;
+    INSERT INTO users (name) VALUES ('A');
+    SAVEPOINT sp1;
+    INSERT INTO users (name) VALUES ('B');
+    ROLLBACK TO sp1;     -- B yo'qoladi, A qoladi
+COMMIT;</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>Isolation Levels</h2>
+    <div class="theory-box">
+      <p>Tranzaksiyalar bir vaqtda ishlaganda muammolar paydo bo'lishi mumkin:</p>
+      <p><b>Dirty Read:</b> Boshqa tranzaksiyaning <b>commit'lanmagan</b> ma'lumotini o'qish</p>
+      <p><b>Non-repeatable Read:</b> Bir tranzaksiya ichida ikki marta o'qiganda <b>turli natija</b></p>
+      <p><b>Phantom Read:</b> Bir tranzaksiya ichida ikki marta sanaganda <b>turli qator soni</b></p>
+    </div>
+    <table class="compare-table">
+      <thead><tr><th>Isolation Level</th><th>Dirty</th><th>Non-repeat</th><th>Phantom</th></tr></thead>
+      <tbody>
+        <tr><td>READ UNCOMMITTED</td><td>❌</td><td>❌</td><td>❌</td></tr>
+        <tr><td>READ COMMITTED <i>(default ko'p DBMS)</i></td><td>✅</td><td>❌</td><td>❌</td></tr>
+        <tr><td>REPEATABLE READ</td><td>✅</td><td>✅</td><td>❌</td></tr>
+        <tr><td>SERIALIZABLE <i>(eng qattiq)</i></td><td>✅</td><td>✅</td><td>✅</td></tr>
+      </tbody>
+    </table>
+    <pre data-filename="isolation.sql"><code>BEGIN;
+SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+-- amallar
+COMMIT;</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 1</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>Bank o'tkazmasi (Transaction)</h2>
+    <p>
+      <code>accounts(id, balance)</code> jadvalida 1-account'dan 2-account'ga <b>500 so'm o'tkazing</b>. Yetarli balans bo'lmasa rollback qiling.
+    </p>
+    <pre data-filename="transfer.sql"><code>BEGIN;
+
+-- Balansni tekshirish
+SELECT balance FROM accounts WHERE id = 1 FOR UPDATE;
+-- FOR UPDATE — qatorni qulflaydi (boshqa transaction kuta turadi)
+
+-- Pul yechish
+UPDATE accounts SET balance = balance - 500
+WHERE id = 1 AND balance &gt;= 500;
+
+-- Pul qo'shish
+UPDATE accounts SET balance = balance + 500 WHERE id = 2;
+
+-- Tekshirish: birinchi UPDATE muvaffaqiyatli bo'ldi mi?
+-- Agar yo'q (balans yetmadi) — ROLLBACK
+-- Agar ha — COMMIT
+
+COMMIT;</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 2</span>
+      <span class="difficulty medium"><span class="dot"></span>Medium</span>
+    </div>
+    <h2>Index'ni qaerga qo'yish kerak?</h2>
+    <p>
+      Quyidagi query har kuni 1000 marta ishlaydi. Qaysi ustun(lar)ga <b>index</b> qo'yish kerak?
+    </p>
+    <pre data-filename="slow_query.sql"><code>SELECT *
+FROM orders
+WHERE user_id = ?
+  AND status = 'PENDING'
+  AND created_at &gt;= '2025-01-01'
+ORDER BY created_at DESC
+LIMIT 20;</code></pre>
+    <div class="constraints">
+      <b>G'oya:</b> WHERE'da ishlatiladigan ustunlar tartibi muhim. Composite index qoidasi: <b>tenglik → oraliq → sort</b>.
+    </div>
+    <pre data-filename="solution_index.sql"><code>-- Composite index — eng samarali
+CREATE INDEX idx_orders_user_status_date
+ON orders(user_id, status, created_at DESC);
+
+-- Bu index quyidagilarni qoplaydi:
+-- WHERE user_id = ?
+-- WHERE user_id = ? AND status = ?
+-- WHERE user_id = ? AND status = ? AND created_at &gt;= ?
+-- ORDER BY created_at DESC</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 3</span>
+      <span class="difficulty medium"><span class="dot"></span>Medium</span>
+    </div>
+    <h2>Order yaratish (multi-table transaction)</h2>
+    <p>
+      Buyurtma yaratish: <code>orders</code> jadvaliga yangi qator qo'shing va <code>order_items</code> jadvaliga 3 ta tovar qo'shing. Birortasi xato bo'lsa — hamma narsa rollback.
+    </p>
+    <pre data-filename="create_order.sql"><code>BEGIN;
+
+INSERT INTO orders (user_id, total)
+VALUES (123, 500)
+RETURNING id INTO @order_id;  -- PostgreSQL: WITH bilan
+
+INSERT INTO order_items (order_id, product_id, quantity, price) VALUES
+    (@order_id, 1, 2, 100),
+    (@order_id, 2, 1, 200),
+    (@order_id, 3, 1, 100);
+
+-- Stock'ni kamaytirish
+UPDATE products SET stock = stock - 2 WHERE id = 1;
+UPDATE products SET stock = stock - 1 WHERE id = 2;
+UPDATE products SET stock = stock - 1 WHERE id = 3;
+
+COMMIT;</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>JDBC — Java'dan SQL'ga</h2>
+    <p>
+      <b>JDBC (Java Database Connectivity)</b> — Java'ning standart database API'si.
+    </p>
+    <pre data-filename="JdbcExample.java"><code>String url = "jdbc:postgresql://localhost:5432/mydb";
+String user = "admin";
+String password = "secret";
+
+try (Connection conn = DriverManager.getConnection(url, user, password)) {
+
+    // SELECT
+    String sql = "SELECT id, name, email FROM users WHERE age &gt; ?";
+    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+        ps.setInt(1, 18);
+
+        try (ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                long id = rs.getLong("id");
+                String name = rs.getString("name");
+                System.out.println(id + " " + name);
+            }
+        }
+    }
+
+    // INSERT
+    String insert = "INSERT INTO users (name, email) VALUES (?, ?)";
+    try (PreparedStatement ps = conn.prepareStatement(insert)) {
+        ps.setString(1, "Akobir");
+        ps.setString(2, "akobir@mail.com");
+        int rows = ps.executeUpdate();
+    }
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>SQL Injection — xavf va himoya</h2>
+    <div class="warning">
+      <b>SQL Injection</b> — eng xavfli web zaifliklardan biri. Foydalanuvchi inputi to'g'ridan-to'g'ri SQL'ga qo'shilsa, hacker o'z so'rovini bajartirishi mumkin.
+    </div>
+    <pre data-filename="vulnerable.java"><code>// XAVFLI — String concatenation
+String query = "SELECT * FROM users WHERE name = '" + userName + "'";
+
+// Hacker shunday yozadi:
+// userName = "x'; DROP TABLE users; --"
+// Natija: SELECT * FROM users WHERE name = 'x'; DROP TABLE users; --'
+// USERS JADVALI YO'Q BO'LADI!</code></pre>
+    <div class="theory-box">
+      <p><b>Yechim — PreparedStatement (parameterized query):</b></p>
+      <p>SQL strukturasi va parametr <b>alohida uzatiladi</b>. Parametr har doim qiymat sifatida tushuniladi, hech qachon SQL kodi sifatida emas.</p>
+    </div>
+    <pre data-filename="safe.java"><code>// XAVFSIZ — PreparedStatement
+String query = "SELECT * FROM users WHERE name = ?";
+PreparedStatement ps = conn.prepareStatement(query);
+ps.setString(1, userName);  // har qanday input — xavfsiz!
+ResultSet rs = ps.executeQuery();</code></pre>
+    <div class="note">
+      <b>Spring Data JPA</b> ham PreparedStatement'dan foydalanadi — shuning uchun xavfsiz.
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">📝 Amaliy topshiriqlar</span>
+      <span class="difficulty hard"><span class="dot"></span>Mustaqil</span>
+    </div>
+    <h2>10 ta murakkab vazifa</h2>
+    <p>Quyidagi vazifalar uchun PostgreSQL'da o'zingiz jadval yarating va SQL yozing:</p>
+    <ul style="font-size: 16px;">
+      <li>
+        <b>1. E-commerce schema.</b> <code>users, products, orders, order_items, categories</code> jadvallari. Foreign key'lar bilan.
+      </li>
+      <li>
+        <b>2. Eng ko'p sotuvchi shahar.</b> Mahsulotlar narxi va sotilgan miqdoriga ko'ra eng ko'p daromad keltirgan shaharni toping.
+      </li>
+      <li>
+        <b>3. Customer Lifetime Value.</b> Har bir mijozning umumiy xarid summasi va birinchi/oxirgi xarid sanasi.
+      </li>
+      <li>
+        <b>4. Retention analysis.</b> Birinchi marta xarid qilgan va <b>30 kun ichida yana qaytgan</b> mijozlar ulushi.
+      </li>
+      <li>
+        <b>5. Window functions.</b> Har bir shaharda balans bo'yicha top-3 foydalanuvchini <code>ROW_NUMBER()</code> bilan.
+      </li>
+      <li>
+        <b>6. Recursive query.</b> Kategoriyalar daraxti (parent_id bilan). Berilgan kategoriya va uning barcha child'larini toping (CTE).
+      </li>
+      <li>
+        <b>7. Aralashtirilgan transaction.</b> Pul o'tkazmasi: tekshirish, yechish, qo'shish, log yozish — hammasi atomik.
+      </li>
+      <li>
+        <b>8. Index optimization.</b> Slow query'ni <code>EXPLAIN ANALYZE</code> bilan tahlil qiling va index qo'shing.
+      </li>
+      <li>
+        <b>9. Pivot table.</b> Oylik daromadni har bir kategoriya bo'yicha pivot qiling (CASE WHEN + SUM).
+      </li>
+      <li>
+        <b>10. JDBC + Connection Pool.</b> HikariCP bilan connection pool sozlang. Batch insert (10000 ta qator) qiling.
+      </li>
+    </ul>
+    <div class="note">
+      <b>Sinab ko'rish:</b> <code>docker run --name pg -e POSTGRES_PASSWORD=secret -p 5432:5432 -d postgres</code> bilan PostgreSQL ishga tushiring.
+    </div>
+  </section>
+
+  <section class="slide slide-title">
+    <div class="topic-pill">🎯 Yakun</div>
+    <h1>Dars yakuni</h1>
+    <p>
+      SQL va Database — endi siz <b>professional darajada</b> ma'lumotlar bilan ishlay olasiz. Bu Spring Boot va backend'da har kuni kerak bo'ladi.
+    </p>
+    <div class="note">
+      <b>Keyingi mavzu:</b> Spring Framework — IoC, Dependency Injection, Bean, Component, Service, Repository va Controller.
+    </div>
+  </section>
+
+</div>
+
+<div class="toast" id="toast">✓ Kod nusxalandi!</div>
+
+<div class="controls">
+  <div class="progress-line" id="progressLine"></div>
+  <button class="nav-arrow" id="prevBtn" onclick="prevSlide()" title="Oldingi (←)">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+  </button>
+  <div class="pagination" id="pagination"></div>
+  <button class="nav-arrow" id="nextBtn" onclick="nextSlide()" title="Keyingi (→)">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+  </button>
+</div>
+
+<script>
+  function wrapCodeBlocks() {
+    document.querySelectorAll('pre').forEach(pre => {
+      if (pre.closest('.code-window')) return;
+      const filename = pre.dataset.filename || 'query.sql';
+      const wrapper = document.createElement('div');
+      wrapper.className = 'code-window';
+      wrapper.innerHTML = `
+        <div class="code-header">
+          <div class="traffic-lights">
+            <span class="light close"></span><span class="light minimize"></span><span class="light maximize"></span>
+          </div>
+          <div class="code-filename">${filename}</div>
+          <div class="code-actions">
+            <button class="code-btn reset-btn">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              Reset
+            </button>
+            <button class="code-btn copy-btn">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+              Copy
+            </button>
+          </div>
+        </div>
+        <div class="code-body"></div>
+      `;
+      pre.setAttribute('contenteditable', 'true');
+      pre.setAttribute('spellcheck', 'false');
+      const original = pre.innerHTML;
+      pre.dataset.original = original;
+      pre.parentNode.insertBefore(wrapper, pre);
+      wrapper.querySelector('.code-body').appendChild(pre);
+      wrapper.querySelector('.copy-btn').addEventListener('click', () => {
+        navigator.clipboard.writeText(pre.textContent).then(() => {
+          const btn = wrapper.querySelector('.copy-btn');
+          btn.classList.add('copied');
+          btn.innerHTML = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg> Nusxalandi`;
+          showToast('✓ Kod nusxalandi!');
+          setTimeout(() => {
+            btn.classList.remove('copied');
+            btn.innerHTML = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg> Copy`;
+          }, 2000);
+        });
+      });
+      wrapper.querySelector('.reset-btn').addEventListener('click', () => {
+        pre.innerHTML = original;
+        showToast('↺ Kod tiklandi');
+      });
+    });
+  }
+  function showToast(message) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.classList.add('show');
+    clearTimeout(window._toastTimer);
+    window._toastTimer = setTimeout(() => toast.classList.remove('show'), 1800);
+  }
+  wrapCodeBlocks();
+
+  function wrapSolutions() {
+    const eyeIcon = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>`;
+    const eyeOffIcon = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"/></svg>`;
+    document.querySelectorAll('.slide').forEach(slide => {
+      if (!slide.querySelector('.problem-header')) return;
+      slide.querySelectorAll('.code-window').forEach(cw => {
+        if (cw.parentNode.classList.contains('solution-content')) return;
+        const wrap = document.createElement('div');
+        wrap.className = 'solution-wrap';
+        const btn = document.createElement('button');
+        btn.className = 'show-solution-btn';
+        btn.innerHTML = eyeIcon + ' Yechimni ko\'rsatish';
+        const content = document.createElement('div');
+        content.className = 'solution-content';
+        cw.parentNode.insertBefore(wrap, cw);
+        content.appendChild(cw);
+        wrap.appendChild(btn);
+        wrap.appendChild(content);
+        btn.addEventListener('click', () => {
+          const isShown = content.classList.toggle('shown');
+          btn.classList.toggle('active', isShown);
+          btn.innerHTML = isShown ? eyeOffIcon + ' Yechimni yashirish' : eyeIcon + ' Yechimni ko\'rsatish';
+        });
+      });
+    });
+  }
+  wrapSolutions();
+
+  const slides = document.querySelectorAll('.slide');
+  const totalSlides = slides.length;
+  const pagination = document.getElementById('pagination');
+  let currentIndex = 0;
+  document.getElementById('totalSlides').textContent = totalSlides;
+  const pageDots = [];
+  for (let i = 0; i < totalSlides; i++) {
+    const dot = document.createElement('button');
+    dot.className = 'page-dot';
+    dot.textContent = String(i + 1).padStart(2, '0');
+    dot.addEventListener('click', () => { currentIndex = i; showSlide(i); });
+    pagination.appendChild(dot);
+    pageDots.push(dot);
+  }
+  function showSlide(index) {
+    slides.forEach(s => s.classList.remove('active'));
+    slides[index].classList.add('active');
+    document.getElementById('currentSlide').textContent = index + 1;
+    pageDots.forEach((d, i) => { d.classList.toggle('active', i === index); d.classList.toggle('visited', i < index); });
+    const percent = ((index + 1) / totalSlides * 100);
+    document.getElementById('progressLine').style.width = percent + '%';
+    document.getElementById('prevBtn').disabled = index === 0;
+    document.getElementById('nextBtn').disabled = index === totalSlides - 1;
+    slides[index].scrollTop = 0;
+    const activeDot = pageDots[index];
+    if (activeDot) activeDot.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  }
+  function nextSlide() { if (currentIndex < totalSlides - 1) { currentIndex++; showSlide(currentIndex); } }
+  function prevSlide() { if (currentIndex > 0) { currentIndex--; showSlide(currentIndex); } }
+  document.addEventListener('keydown', (e) => {
+    if (e.target.isContentEditable) return;
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); nextSlide(); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); prevSlide(); }
+    else if (e.key === 'Home') { currentIndex = 0; showSlide(0); }
+    else if (e.key === 'End') { currentIndex = totalSlides - 1; showSlide(currentIndex); }
+  });
+  showSlide(0);
+</script>
+
+<script>
+(function(_0x){
+  var _a=String.fromCharCode,
+      _b=[169,32,77,117,97,108,108,105,102,58,32,82,117,115,116,97,109,111,118,32,65,107,111,98,105,114],
+      _c=[95,120,57,52,107,55,116,57,114,53,95,115,105,103],
+      _d=[95,120,57,52,104,53,100,55],
+      _t='',_n='',_h='';
+  for(var i=0;i<_b.length;i++)_t+=_a(_b[i]);
+  for(var i=0;i<_c.length;i++)_n+=_a(_c[i]);
+  for(var i=0;i<_d.length;i++)_h+=_a(_d[i]);
+  function _mk(visible){
+    var d=document.createElement('div');
+    d.setAttribute('data-x',_t);
+    if(visible){
+      d.id=_n; d.textContent=_t;
+      d.style.cssText='position:fixed;bottom:96px;right:16px;z-index:99999;background:rgba(15,15,25,0.75);color:rgba(255,255,255,0.85);padding:6px 14px;border-radius:20px;font-family:system-ui,-apple-system,sans-serif;font-size:11px;font-weight:600;backdrop-filter:blur(10px);border:1px solid rgba(139,92,246,0.3);pointer-events:none;user-select:none;letter-spacing:0.03em;box-shadow:0 4px 12px rgba(0,0,0,0.3);';
+    }else{
+      d.className=_h+Math.random().toString(36).slice(2,7); d.textContent=_t;
+      d.style.cssText='position:absolute;left:-99999px;top:-99999px;opacity:0;pointer-events:none;width:1px;height:1px;overflow:hidden;';
+    }
+    return d;
+  }
+  function _ensure(){
+    if(!document.body)return;
+    if(!document.getElementById(_n)){ document.body.appendChild(_mk(true)); }
+    var hidden=document.querySelectorAll('[class^="'+_h+'"]');
+    if(hidden.length<5){ for(var i=hidden.length;i<5;i++){ document.body.appendChild(_mk(false)); } }
+  }
+  function _setup(){
+    _ensure();
+    try{
+      new MutationObserver(function(muts){
+        for(var i=0;i<muts.length;i++){
+          var m=muts[i];
+          if(m.removedNodes.length>0||m.type==='attributes'){ _ensure(); break; }
+        }
+      }).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['id','class','style']});
+    }catch(e){}
+    setInterval(_ensure,1500);
+  }
+  if(document.body)_setup();
+  else document.addEventListener('DOMContentLoaded',_setup);
+  try{
+    console.log('%c '+_t+' ','background:linear-gradient(135deg,#8b5cf6,#f472b6);color:white;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:bold;');
+    Object.defineProperty(window,_n+'_lock',{value:_t,writable:false,configurable:false});
+  }catch(e){}
+})();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1238 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Multithreading — Prezentatsiya</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0a0a14; --surface: rgba(255, 255, 255, 0.04); --border: rgba(255, 255, 255, 0.08);
+      --text: #f8fafc; --text-dim: #94a3b8; --text-muted: #64748b;
+      --primary: #8b5cf6; --primary-2: #6366f1; --accent: #f472b6;
+      --slide-bg: #ffffff; --slide-bg-2: #fafafe;
+      --code-bg: #0f172a; --code-text: #e2e8f0;
+    }
+    html, body { height: 100%; overflow: hidden; }
+    body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
+    .bg-effects { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+    .blob { position: absolute; border-radius: 50%; filter: blur(140px); opacity: 0.4; }
+    .blob-1 { width: 500px; height: 500px; background: #8b5cf6; top: -100px; left: -150px; }
+    .blob-2 { width: 400px; height: 400px; background: #f472b6; bottom: -100px; right: -100px; }
+    .top { position: fixed; top: 0; left: 0; right: 0; z-index: 100; backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); background: rgba(10, 10, 20, 0.7); border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+    .top-left { display: flex; align-items: center; gap: 14px; }
+    .back-btn { display: inline-flex; align-items: center; gap: 8px; color: var(--text); text-decoration: none; background: var(--surface); border: 1px solid var(--border); padding: 9px 16px; border-radius: 10px; font-weight: 600; font-size: 14px; transition: all 0.2s; }
+    .back-btn:hover { background: rgba(139, 92, 246, 0.15); border-color: rgba(139, 92, 246, 0.4); }
+    .topic-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); color: #c4b5fd; padding: 8px 14px; border-radius: 50px; font-size: 12px; font-weight: 600; }
+    .pulse-dot { width: 6px; height: 6px; border-radius: 50%; background: #c4b5fd; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+    .slide-counter { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--border); padding: 9px 16px; border-radius: 10px; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; color: var(--text-dim); }
+    .slide-counter .current { color: var(--text); }
+    .presentation { position: fixed; top: 72px; bottom: 86px; left: 0; right: 0; display: flex; align-items: center; justify-content: center; padding: 24px; z-index: 1; }
+    .slide { display: none; background: linear-gradient(135deg, var(--slide-bg) 0%, var(--slide-bg-2) 100%); color: #0f172a; width: 100%; max-width: 1180px; height: 100%; max-height: 100%; padding: 56px 64px; border-radius: 28px; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05); flex-direction: column; justify-content: center; overflow-y: auto; position: relative; }
+    .slide.active { display: flex; animation: slideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+    .slide > * { min-width: 0; max-width: 100%; }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(30px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    .slide::before { content: ''; position: absolute; top: 0; right: 0; width: 280px; height: 280px; background: radial-gradient(circle, rgba(139, 92, 246, 0.08), transparent 70%); border-radius: 50%; pointer-events: none; }
+    .slide::after { content: ''; position: absolute; bottom: 0; left: 0; width: 240px; height: 240px; background: radial-gradient(circle, rgba(244, 114, 182, 0.08), transparent 70%); border-radius: 50%; pointer-events: none; }
+    .slide h1 { font-size: clamp(36px, 5vw, 60px); font-weight: 900; letter-spacing: -0.03em; margin-bottom: 24px; line-height: 1.1; background: linear-gradient(135deg, #1e1b4b 0%, #6366f1 50%, #8b5cf6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; position: relative; z-index: 1; }
+    .slide h2 { font-size: clamp(28px, 4vw, 44px); font-weight: 800; letter-spacing: -0.02em; margin-bottom: 28px; color: #1e1b4b; line-height: 1.15; position: relative; z-index: 1; }
+    .slide h2::before { content: ''; display: inline-block; width: 6px; height: 32px; background: linear-gradient(180deg, var(--primary), var(--accent)); border-radius: 4px; margin-right: 16px; vertical-align: middle; transform: translateY(-3px); }
+    .slide p { font-size: 19px; margin-bottom: 18px; color: #334155; position: relative; z-index: 1; line-height: 1.7; }
+    .slide ul { font-size: 18px; list-style: none; padding-left: 0; position: relative; z-index: 1; }
+    .slide li { position: relative; padding: 10px 0 10px 32px; color: #1e293b; line-height: 1.6; }
+    .slide li::before { content: ''; position: absolute; left: 8px; top: 20px; width: 8px; height: 8px; background: linear-gradient(135deg, var(--primary), var(--accent)); border-radius: 50%; box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.12); }
+    .slide b { color: var(--primary-2); font-weight: 700; }
+    .slide-title { text-align: center; justify-content: center; }
+    .slide-title h1 { font-size: clamp(48px, 8vw, 88px); text-align: center; }
+    .slide-title p { text-align: center; max-width: 700px; margin-left: auto; margin-right: auto; font-size: 22px; }
+    .topic-pill { display: inline-flex; align-items: center; gap: 10px; background: linear-gradient(135deg, rgba(139, 92, 246, 0.12), rgba(244, 114, 182, 0.12)); border: 1px solid rgba(139, 92, 246, 0.3); color: var(--primary); padding: 10px 22px; border-radius: 50px; font-weight: 700; font-size: 14px; margin: 0 auto 32px; width: fit-content; text-transform: uppercase; letter-spacing: 0.08em; }
+    .code-window { background: var(--code-bg); border-radius: 14px; margin: 20px 0; position: relative; z-index: 1; border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05); max-width: 100%; min-width: 0; display: flex; flex-direction: column; overflow: hidden; }
+    .code-header { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: linear-gradient(180deg, #2d3548 0%, #1e2536 100%); border-bottom: 1px solid rgba(255, 255, 255, 0.08); user-select: none; }
+    .traffic-lights { display: flex; gap: 8px; align-items: center; }
+    .light { width: 12px; height: 12px; border-radius: 50%; border: 0.5px solid rgba(0, 0, 0, 0.2); cursor: pointer; transition: filter 0.2s; }
+    .light:hover { filter: brightness(1.15); }
+    .light.close { background: #ff5f57; } .light.minimize { background: #febc2e; } .light.maximize { background: #28c840; }
+    .code-filename { flex: 1; text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: #94a3b8; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .code-filename::before { content: '☕'; font-size: 12px; }
+    .code-actions { display: flex; gap: 6px; align-items: center; }
+    .code-btn { display: inline-flex; align-items: center; gap: 5px; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.08); color: #cbd5e1; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; }
+    .code-btn:hover { background: rgba(139, 92, 246, 0.2); border-color: rgba(139, 92, 246, 0.4); color: white; }
+    .code-btn.copied { background: rgba(16, 185, 129, 0.2); border-color: rgba(16, 185, 129, 0.4); color: #6ee7b7; }
+    .code-btn svg { width: 12px; height: 12px; }
+    .code-body { position: relative; background: var(--code-bg); min-width: 0; max-width: 100%; overflow: hidden; }
+    pre { background: transparent; color: var(--code-text); padding: 22px 24px; overflow-x: auto; overflow-y: auto; max-height: 50vh; font-size: 15px; margin: 0; font-family: 'JetBrains Mono', 'Consolas', monospace; line-height: 1.7; tab-size: 4; outline: none; white-space: pre; word-wrap: normal; scrollbar-width: thin; scrollbar-color: rgba(139, 92, 246, 0.4) rgba(255, 255, 255, 0.04); }
+    pre::-webkit-scrollbar { height: 10px; width: 10px; }
+    pre::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.04); border-radius: 5px; }
+    pre::-webkit-scrollbar-thumb { background: linear-gradient(135deg, rgba(139, 92, 246, 0.5), rgba(244, 114, 182, 0.5)); border-radius: 5px; border: 2px solid transparent; background-clip: padding-box; }
+    pre[contenteditable="true"] { caret-color: #c084fc; }
+    pre[contenteditable="true"]:focus { background: rgba(139, 92, 246, 0.04); }
+    pre code { display: block; font-family: inherit; }
+    code { font-family: 'JetBrains Mono', monospace; font-size: 0.95em; }
+    p code, li code, .note code, td code, th code { background: rgba(139, 92, 246, 0.1); color: var(--primary); padding: 2px 8px; border-radius: 6px; font-size: 0.9em; font-weight: 600; }
+    .toast { position: fixed; bottom: 110px; left: 50%; transform: translateX(-50%) translateY(20px); background: rgba(16, 185, 129, 0.95); color: white; padding: 10px 20px; border-radius: 10px; font-size: 13px; font-weight: 600; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4); opacity: 0; pointer-events: none; transition: all 0.3s; z-index: 200; backdrop-filter: blur(10px); }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .problem-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; position: relative; z-index: 1; }
+    .problem-num { display: inline-flex; align-items: center; gap: 6px; background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: white; padding: 5px 14px; border-radius: 50px; font-size: 12px; font-weight: 700; letter-spacing: 0.05em; font-family: 'JetBrains Mono', monospace; }
+    .difficulty { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 50px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+    .difficulty.easy { background: rgba(16, 185, 129, 0.12); color: #059669; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .difficulty.medium { background: rgba(245, 158, 11, 0.12); color: #d97706; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .difficulty.hard { background: rgba(239, 68, 68, 0.12); color: #dc2626; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .difficulty .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .example-block { background: #f1f5f9; border-left: 4px solid var(--primary); padding: 14px 18px; border-radius: 10px; margin: 12px 0; font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #1e293b; line-height: 1.7; position: relative; z-index: 1; }
+    .example-title { font-family: 'Inter', sans-serif; font-weight: 700; color: var(--primary); font-size: 13px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .example-block b { color: var(--primary); }
+    .constraints { background: rgba(99, 102, 241, 0.05); border: 1px dashed rgba(99, 102, 241, 0.3); padding: 12px 18px; border-radius: 10px; font-size: 14px; color: #475569; margin: 12px 0; position: relative; z-index: 1; }
+    .constraints b { color: var(--primary); }
+    .solution-wrap { margin-top: 18px; position: relative; z-index: 1; }
+    .show-solution-btn { display: inline-flex; align-items: center; gap: 10px; background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: white; border: none; padding: 12px 22px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.3s; font-family: 'Inter', sans-serif; box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3); }
+    .show-solution-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(139, 92, 246, 0.45); }
+    .show-solution-btn svg { width: 16px; height: 16px; }
+    .show-solution-btn.active { background: linear-gradient(135deg, #ec4899, #f43f5e); box-shadow: 0 8px 20px rgba(244, 63, 94, 0.3); }
+    .solution-content { max-height: 0; overflow: hidden; opacity: 0; margin-top: 0; transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, margin-top 0.3s ease; }
+    .solution-content.shown { max-height: 2500px; opacity: 1; margin-top: 16px; }
+    .note { background: linear-gradient(135deg, #fef3c7, #fef9c3); border-left: 4px solid #f59e0b; padding: 18px 22px; border-radius: 14px; margin-top: 24px; font-size: 17px; color: #78350f; position: relative; z-index: 1; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15); }
+    .note::before { content: '💡'; margin-right: 8px; }
+    .note b { color: #92400e; } .note code { background: rgba(245, 158, 11, 0.2); color: #78350f; }
+    .warning { background: linear-gradient(135deg, #fee2e2, #fecaca); border-left: 4px solid #ef4444; padding: 18px 22px; border-radius: 14px; margin-top: 24px; font-size: 17px; color: #7f1d1d; position: relative; z-index: 1; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15); }
+    .warning::before { content: '⚠️'; margin-right: 8px; }
+    .warning b { color: #991b1b; } .warning code { background: rgba(239, 68, 68, 0.2); color: #7f1d1d; }
+    .def-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 16px; position: relative; z-index: 1; }
+    .def-card { background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px 24px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04); transition: all 0.3s; }
+    .def-card:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(139, 92, 246, 0.12); }
+    .def-card h3 { font-family: 'JetBrains Mono', monospace; font-size: 22px; color: var(--primary); margin-bottom: 8px; font-weight: 700; }
+    .def-card p { font-size: 15px; margin: 0; color: #475569; }
+    .theory-box { background: linear-gradient(135deg, #ede9fe, #fce7f3); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 16px; padding: 22px 26px; margin: 18px 0; position: relative; z-index: 1; box-shadow: 0 8px 20px rgba(139, 92, 246, 0.08); }
+    .theory-box::before { content: '🧠 NAZARIYA'; display: block; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; color: var(--primary); letter-spacing: 0.1em; margin-bottom: 10px; }
+    .theory-box p { font-size: 17px; margin-bottom: 8px; color: #1e1b4b; }
+    .theory-box p:last-child { margin-bottom: 0; }
+    .compare-table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); position: relative; z-index: 1; margin-top: 12px; }
+    .compare-table th { background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: white; padding: 14px 16px; text-align: left; font-weight: 700; font-size: 14px; }
+    .compare-table td { padding: 12px 16px; border-bottom: 1px solid #e2e8f0; font-size: 15px; color: #334155; }
+    .compare-table tr:last-child td { border-bottom: none; }
+    .compare-table tr:hover td { background: #f8fafc; }
+    .controls { position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; backdrop-filter: blur(20px) saturate(180%); background: rgba(10, 10, 20, 0.75); border-top: 1px solid var(--border); padding: 14px 20px; display: flex; justify-content: center; align-items: center; gap: 12px; }
+    .nav-arrow { display: inline-flex; align-items: center; justify-content: center; background: var(--surface); color: var(--text); border: 1px solid var(--border); width: 38px; height: 38px; border-radius: 10px; cursor: pointer; transition: all 0.2s; flex-shrink: 0; }
+    .nav-arrow:hover:not(:disabled) { background: linear-gradient(135deg, var(--primary), var(--primary-2)); border-color: transparent; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(139, 92, 246, 0.4); }
+    .nav-arrow:disabled { opacity: 0.3; cursor: not-allowed; }
+    .nav-arrow svg { width: 16px; height: 16px; }
+    .pagination { display: flex; align-items: center; gap: 6px; overflow-x: auto; scrollbar-width: none; max-width: calc(100vw - 200px); padding: 4px; scroll-behavior: smooth; }
+    .pagination::-webkit-scrollbar { display: none; }
+    .page-dot { display: inline-flex; align-items: center; justify-content: center; min-width: 34px; height: 34px; padding: 0 10px; background: var(--surface); color: var(--text-dim); border: 1px solid var(--border); border-radius: 9px; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; font-weight: 600; cursor: pointer; transition: all 0.2s; flex-shrink: 0; }
+    .page-dot:hover { color: var(--text); border-color: rgba(139, 92, 246, 0.4); background: rgba(139, 92, 246, 0.1); transform: translateY(-1px); }
+    .page-dot.active { background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: white; border-color: transparent; box-shadow: 0 6px 16px rgba(139, 92, 246, 0.45); transform: scale(1.08); }
+    .page-dot.visited { color: var(--text); background: rgba(139, 92, 246, 0.08); border-color: rgba(139, 92, 246, 0.2); }
+    .progress-line { position: absolute; top: 0; left: 0; height: 3px; background: linear-gradient(90deg, var(--primary), var(--accent)); transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 12px rgba(139, 92, 246, 0.6); border-radius: 0 3px 3px 0; }
+    @media (max-width: 768px) {
+      .top { padding: 12px 16px; } .topic-badge { display: none; }
+      .slide { padding: 32px 24px; border-radius: 20px; }
+      pre { font-size: 13px; padding: 18px; }
+      .nav-arrow { width: 36px; height: 36px; }
+      .pagination { max-width: calc(100vw - 110px); gap: 4px; }
+      .page-dot { min-width: 30px; height: 30px; font-size: 11.5px; padding: 0 6px; }
+      .slide h2::before { width: 4px; height: 24px; }
+    }
+    @media print {
+      html, body { height: auto; overflow: visible; } body { background: white; }
+      .top, .controls, .bg-effects { display: none; }
+      .presentation { position: static; display: block; padding: 0; }
+      .slide { display: flex !important; page-break-after: always; box-shadow: none; border: 1px solid #ddd; max-width: 100%; height: auto; max-height: none; margin-bottom: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-effects">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+</div>
+
+<div class="top">
+  <div class="top-left">
+    <a href="index.html" class="back-btn">
+      <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+      Roadmap
+    </a>
+    <div class="topic-badge">
+      <span class="pulse-dot"></span>
+      5-Mavzu · Multithreading
+    </div>
+  </div>
+  <div class="slide-counter">
+    <span class="current" id="currentSlide">1</span>
+    <span>/</span>
+    <span id="totalSlides">0</span>
+  </div>
+</div>
+
+<div class="presentation">
+
+  <section class="slide slide-title">
+    <div class="topic-pill">⚡ 5-Mavzu</div>
+    <h1>Multithreading</h1>
+    <p>
+      <b>Bir vaqtda bir nechta vazifa</b>ni bajarish san'ati. Java'da Thread, Runnable, ExecutorService, CompletableFuture va sinxronizatsiya.
+    </p>
+    <div class="note">
+      <b>Dars maqsadi:</b> Concurrency asoslari, Race Condition, Deadlock, Synchronization, ExecutorService va zamonaviy CompletableFuture'ni chuqur va amaliy o'rganamiz.
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>Process vs Thread</h2>
+    <div class="theory-box">
+      <p><b>Process</b> — ishlab turgan dasturning <b>nusxasi</b>. O'z xotirasi, fayllari, resurslari bilan.</p>
+      <p><b>Thread (oqim)</b> — <b>process ichidagi</b> ish birligi. Bir process ichida ko'p thread bo'lishi mumkin va ular <b>xotirani baham ko'radi</b>.</p>
+      <p>Bir thread = bir <b>"kod oqimi"</b>. CPU har bir thread'ni alohida bajaradi (yoki almashtirib turadi).</p>
+    </div>
+    <table class="compare-table">
+      <thead><tr><th>Xususiyat</th><th>Process</th><th>Thread</th></tr></thead>
+      <tbody>
+        <tr><td>Xotira</td><td>Alohida</td><td>Birgalikda</td></tr>
+        <tr><td>Yaratish vaqti</td><td>Sekin (og'ir)</td><td>Tez (yengil)</td></tr>
+        <tr><td>Aloqa</td><td>Murakkab (IPC)</td><td>Oddiy (umumiy o'zgaruvchilar)</td></tr>
+        <tr><td>Buzilish ta'siri</td><td>Faqat o'sha process</td><td>Butun process buziladi</td></tr>
+      </tbody>
+    </table>
+    <div class="note">
+      Multithreading <b>parallellik</b> beradi: bir vaqtda fayl yuklash + UI yangilash + ma'lumotni qayta ishlash.
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>Thread Life Cycle</h2>
+    <div class="theory-box">
+      <p>Thread quyidagi <b>holatlardan</b> (states) o'tadi:</p>
+    </div>
+    <pre data-filename="States.txt"><code>NEW          → start() chaqirilmagan, hali ishlamayapti
+  ↓
+RUNNABLE     → bajarishga tayyor yoki bajarilmoqda
+  ↓
+BLOCKED      → boshqa thread monitor (qulf)ni ushlab turibdi
+  ↓
+WAITING      → wait() yoki join() — chaqirib chaqiruvni kutmoqda
+  ↓
+TIMED_WAITING → sleep(N) yoki wait(N) — vaqt bilan kutish
+  ↓
+TERMINATED   → run() metodi tugadi</code></pre>
+    <pre data-filename="ThreadState.java"><code>Thread t = new Thread(() -&gt; System.out.println("Salom"));
+System.out.println(t.getState());  // NEW
+
+t.start();
+// RUNNABLE → TERMINATED
+
+Thread.sleep(100);
+System.out.println(t.getState());  // TERMINATED</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>Thread yaratish — 2 ta usul</h2>
+    <p>Java'da thread yaratishning <b>2 ta asosiy yo'li</b> bor:</p>
+    <pre data-filename="ThreadCreate.java"><code>// 1-USUL: Thread klassidan meros olish
+class MyThread extends Thread {
+    @Override
+    public void run() {
+        System.out.println("Salom Thread'dan!");
+    }
+}
+
+MyThread t = new MyThread();
+t.start();  // run() ni chaqirma — start() chaqir!
+
+// 2-USUL: Runnable interface (TAVSIYA ETILADI)
+Runnable task = () -&gt; System.out.println("Salom Runnable'dan!");
+Thread t2 = new Thread(task);
+t2.start();
+
+// Yoki bevosita
+new Thread(() -&gt; System.out.println("Hi!")).start();</code></pre>
+    <div class="warning">
+      <b>Diqqat:</b> <code>t.run()</code> chaqirsangiz — yangi thread <b>ochilmaydi</b>! Joriy thread'da bajariladi. Faqat <code>t.start()</code> orqali yangi thread paydo bo'ladi.
+    </div>
+    <div class="note">
+      <b>Runnable</b> yaxshiroq — chunki Java'da <b>multiple inheritance yo'q</b>. Runnable ishlatsangiz, boshqa klassdan ham meros olishingiz mumkin.
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>Thread asosiy metodlar</h2>
+    <pre data-filename="ThreadMethods.java"><code>Thread t = new Thread(() -&gt; { /* ... */ });
+
+// Boshlash
+t.start();
+
+// Joriy thread'ni vaqtga to'xtatish
+Thread.sleep(1000);   // 1 sekund
+
+// Boshqa thread tugashini kutish
+t.join();             // shu joyda turamiz to'xtaguncha
+
+// Thread'ni to'xtatishga harakat (yumshoq)
+t.interrupt();
+
+// Hozirgi thread haqida
+Thread current = Thread.currentThread();
+System.out.println(current.getName());     // Thread-0
+System.out.println(current.getId());       // raqam
+System.out.println(current.getState());    // RUNNABLE
+
+// Daemon thread — background, asosiy thread tugagach o'ladi
+t.setDaemon(true);
+
+// Priority — JVM uchun maslahat (kafolat emas)
+t.setPriority(Thread.MAX_PRIORITY);  // 10
+t.setPriority(Thread.MIN_PRIORITY);  // 1
+t.setPriority(Thread.NORM_PRIORITY); // 5</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 1</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>2 ta Thread'da yig'indi</h2>
+    <p>1 dan 100 gacha sonlarni 2 ta thread'da yig'ing: birinchi 1-50, ikkinchi 51-100. Natijalarni qo'shib chiqaring.</p>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      Thread-1: 1+2+...+50 = 1275<br>
+      Thread-2: 51+52+...+100 = 3775<br>
+      Total: <b>5050</b>
+    </div>
+    <pre data-filename="ParallelSum.java"><code>public static void main(String[] args) throws InterruptedException {
+    int[] sum1 = {0}, sum2 = {0};
+
+    Thread t1 = new Thread(() -&gt; {
+        for (int i = 1; i &lt;= 50; i++) sum1[0] += i;
+    });
+    Thread t2 = new Thread(() -&gt; {
+        for (int i = 51; i &lt;= 100; i++) sum2[0] += i;
+    });
+
+    t1.start(); t2.start();
+    t1.join();  t2.join();  // Ikkalasini ham kutamiz
+
+    System.out.println("Total: " + (sum1[0] + sum2[0])); // 5050
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 2</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>Sleep va navbatma-navbat chiqarish</h2>
+    <p>3 ta thread yarating: har biri o'z nomini har 500ms da chiqarsin, jami 3 marta.</p>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      [0ms] T-A, T-B, T-C<br>
+      [500ms] T-A, T-B, T-C<br>
+      [1000ms] T-A, T-B, T-C
+    </div>
+    <pre data-filename="SleepThreads.java"><code>public static void main(String[] args) {
+    Runnable task = () -&gt; {
+        String name = Thread.currentThread().getName();
+        for (int i = 0; i &lt; 3; i++) {
+            System.out.println(name);
+            try { Thread.sleep(500); }
+            catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }
+    };
+
+    new Thread(task, "T-A").start();
+    new Thread(task, "T-B").start();
+    new Thread(task, "T-C").start();
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 3</span>
+      <span class="difficulty medium"><span class="dot"></span>Medium</span>
+    </div>
+    <h2>Massivni teng bo'lib qidirish</h2>
+    <p>
+      Katta massivda <code>target</code> sonni topish. <b>N ta thread</b>'ga teng bo'lib bering — har biri o'z qismida qidirsin. Topgan birinchi thread to'xtatsin.
+    </p>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      arr = [1..1000000], target = 753421, threads = 4<br>
+      → Thread-3 ichida topiladi
+    </div>
+    <pre data-filename="ParallelSearch.java"><code>public static int parallelSearch(int[] arr, int target, int threadCount) throws InterruptedException {
+    int[] foundIndex = {-1};
+    Thread[] threads = new Thread[threadCount];
+    int chunkSize = arr.length / threadCount;
+
+    for (int t = 0; t &lt; threadCount; t++) {
+        final int start = t * chunkSize;
+        final int end = (t == threadCount - 1) ? arr.length : start + chunkSize;
+
+        threads[t] = new Thread(() -&gt; {
+            for (int i = start; i &lt; end; i++) {
+                if (foundIndex[0] != -1) return; // boshqa thread topdi
+                if (arr[i] == target) {
+                    foundIndex[0] = i;
+                    return;
+                }
+            }
+        });
+        threads[t].start();
+    }
+
+    for (Thread t : threads) t.join();
+    return foundIndex[0];
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 4</span>
+      <span class="difficulty hard"><span class="dot"></span>Hard</span>
+    </div>
+    <h2>Ping Pong threads</h2>
+    <p>
+      Ikki thread navbatma-navbat 10 marta "PING" va "PONG" chiqarsin. Tartib qat'iy bo'lsin: PING → PONG → PING → PONG.
+    </p>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      PING<br>
+      PONG<br>
+      PING<br>
+      PONG... (10 marta har birida)
+    </div>
+    <div class="constraints">
+      <b>Maslahat:</b> <code>wait()/notify()</code> yoki <code>volatile flag</code> ishlatish kerak. <code>synchronized</code> blok bilan.
+    </div>
+    <pre data-filename="PingPong.java"><code>public class PingPong {
+    private static final Object lock = new Object();
+    private static boolean pingTurn = true;
+
+    public static void main(String[] args) throws Exception {
+        Thread ping = new Thread(() -&gt; {
+            for (int i = 0; i &lt; 10; i++) {
+                synchronized (lock) {
+                    while (!pingTurn) lock.wait();
+                    System.out.println("PING");
+                    pingTurn = false;
+                    lock.notify();
+                }
+            }
+        });
+
+        Thread pong = new Thread(() -&gt; {
+            for (int i = 0; i &lt; 10; i++) {
+                synchronized (lock) {
+                    while (pingTurn) lock.wait();
+                    System.out.println("PONG");
+                    pingTurn = true;
+                    lock.notify();
+                }
+            }
+        });
+
+        ping.start(); pong.start();
+        ping.join();  pong.join();
+    }
+}</code></pre>
+  </section>
+
+  <!-- ==================== SYNCHRONIZATION ==================== -->
+
+  <section class="slide">
+    <h2>Race Condition — asosiy muammo</h2>
+    <p>Bir nechta thread bir vaqtda bir o'zgaruvchini o'zgartirsa, <b>kutilmagan natija</b> chiqadi.</p>
+    <pre data-filename="RaceCondition.java"><code>public class Counter {
+    int count = 0;
+    public void increment() { count++; } // tahlikali!
+}
+
+// 2 ta thread, har biri 10000 marta increment qiladi
+Counter c = new Counter();
+Thread t1 = new Thread(() -&gt; { for (int i=0;i&lt;10000;i++) c.increment(); });
+Thread t2 = new Thread(() -&gt; { for (int i=0;i&lt;10000;i++) c.increment(); });
+
+t1.start(); t2.start(); t1.join(); t2.join();
+System.out.println(c.count); // 20000 kutamiz, lekin 15243 yoki boshqa son!</code></pre>
+    <div class="theory-box">
+      <p><b>Nima uchun?</b> <code>count++</code> aslida 3 ta amaldan iborat:</p>
+      <p>1️⃣ <code>count</code> ni o'qish<br>
+      2️⃣ 1 qo'shish<br>
+      3️⃣ Yangi qiymatni yozish</p>
+      <p>Ikkala thread <b>bir vaqtda 1-bosqichni bajarsa</b>, bir xil qiymatni o'qishadi va bir xil natijani yozishadi — bir oshirish <b>yo'qoladi</b>.</p>
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>synchronized va volatile</h2>
+    <pre data-filename="Synchronized.java"><code>// synchronized metod — butun metod bitta thread'ga
+public synchronized void increment() {
+    count++;
+}
+
+// synchronized blok — faqat kerakli qismi
+public void doSomething() {
+    // Bu qism parallel ishlashi mumkin
+    System.out.println("Boshlandi");
+
+    synchronized (this) {
+        count++;  // Faqat shu qism kritik
+    }
+
+    System.out.println("Tugadi");
+}
+
+// O'z lock obyekt — yaxshiroq
+private final Object lock = new Object();
+synchronized (lock) {
+    // ...
+}</code></pre>
+    <div class="theory-box">
+      <p><b>volatile</b> — JVM'ga aytadi: "bu o'zgaruvchini cache'lamasdan, har doim main memory'dan o'qi". Lekin <b>atomicity bermaydi</b>.</p>
+      <p><b>volatile</b> + bir thread yozadi, ko'p thread o'qiydi → OK.</p>
+      <p><b>volatile</b> ko'p thread yozadi → YO'Q, synchronized kerak!</p>
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>ReentrantLock — yangi yondashuv</h2>
+    <pre data-filename="ReentrantLock.java"><code>import java.util.concurrent.locks.*;
+
+private final ReentrantLock lock = new ReentrantLock();
+
+public void increment() {
+    lock.lock();
+    try {
+        count++;
+    } finally {
+        lock.unlock();  // ALBATTA finally'da!
+    }
+}
+
+// Afzalliklari (synchronized'dan ko'ra):
+// - tryLock() — bloklamasdan urinish
+// - lockInterruptibly() — interrupt'larga javob beradi
+// - fair lock — birinchi kelgan birinchi ishlatadi
+// - Condition'lar — kuchli wait/notify
+
+ReentrantLock fairLock = new ReentrantLock(true); // fair
+
+if (lock.tryLock()) {
+    try { /* ... */ }
+    finally { lock.unlock(); }
+} else {
+    System.out.println("Band, keyin urinaman");
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala</span>
+      <span class="difficulty medium"><span class="dot"></span>Medium</span>
+    </div>
+    <h2>Thread-safe BankAccount</h2>
+    <p>
+      <code>BankAccount</code> klassini xavfsiz qiling: <code>deposit</code>, <code>withdraw</code>, <code>getBalance</code> bir nechta thread'da chaqirilishi mumkin.
+    </p>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      100 ta thread parallel: 10 marta deposit(1) va 10 marta withdraw(1)<br>
+      Boshlang'ich balans = 1000 → Yakuniy balans = <b>1000</b> (har doim!)
+    </div>
+    <pre data-filename="SafeAccount.java"><code>public class BankAccount {
+    private double balance;
+    private final Object lock = new Object();
+
+    public BankAccount(double initial) { this.balance = initial; }
+
+    public void deposit(double amount) {
+        synchronized (lock) {
+            balance += amount;
+        }
+    }
+
+    public boolean withdraw(double amount) {
+        synchronized (lock) {
+            if (amount &gt; balance) return false;
+            balance -= amount;
+            return true;
+        }
+    }
+
+    public double getBalance() {
+        synchronized (lock) {
+            return balance;
+        }
+    }
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>Deadlock — o'lik qulf</h2>
+    <div class="theory-box">
+      <p><b>Deadlock</b> — ikki yoki ko'p thread <b>bir-birini cheksiz kutib turadi</b>. Hech kim ishlay olmaydi.</p>
+      <p><b>Klassik vaziyat:</b> Thread-A <code>lock1</code>ni oldi va <code>lock2</code>ni kutmoqda. Thread-B aksincha — <code>lock2</code>ni oldi va <code>lock1</code>ni kutmoqda.</p>
+    </div>
+    <pre data-filename="Deadlock.java"><code>Object lock1 = new Object();
+Object lock2 = new Object();
+
+Thread a = new Thread(() -&gt; {
+    synchronized (lock1) {
+        try { Thread.sleep(100); } catch (Exception e) {}
+        synchronized (lock2) {  // kutib qolamiz — DEADLOCK
+            System.out.println("A");
+        }
+    }
+});
+
+Thread b = new Thread(() -&gt; {
+    synchronized (lock2) {
+        try { Thread.sleep(100); } catch (Exception e) {}
+        synchronized (lock1) {  // kutib qolamiz — DEADLOCK
+            System.out.println("B");
+        }
+    }
+});</code></pre>
+    <div class="warning">
+      <b>Oldini olish:</b> Hamma joyda <b>lock'larni bir xil tartibda</b> oling! Yoki <code>tryLock(timeout)</code> ishlating.
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>wait / notify (Producer-Consumer)</h2>
+    <p>
+      Klassik pattern: bir thread <b>ishlab chiqaradi</b>, ikkinchisi <b>iste'mol qiladi</b>.
+    </p>
+    <pre data-filename="ProducerConsumer.java"><code>class Queue {
+    private final List&lt;Integer&gt; data = new ArrayList&lt;&gt;();
+    private final int CAPACITY = 5;
+
+    public synchronized void produce(int item) throws InterruptedException {
+        while (data.size() == CAPACITY) {
+            wait();  // qulf chiqarib, kutadi
+        }
+        data.add(item);
+        System.out.println("Produced: " + item);
+        notifyAll();  // consumer'larni uyg'otish
+    }
+
+    public synchronized int consume() throws InterruptedException {
+        while (data.isEmpty()) {
+            wait();
+        }
+        int item = data.remove(0);
+        System.out.println("Consumed: " + item);
+        notifyAll();
+        return item;
+    }
+}</code></pre>
+    <div class="note">
+      <code>wait()</code>, <code>notify()</code>, <code>notifyAll()</code> — faqat <code>synchronized</code> blok ichida chaqirilishi mumkin. <code>wait()</code> qulfni chiqaradi, <code>notify()</code> kutayotgan thread'ni uyg'otadi.
+    </div>
+  </section>
+
+  <!-- ==================== EXECUTOR SERVICE ==================== -->
+
+  <section class="slide">
+    <h2>ExecutorService — zamonaviy yondashuv</h2>
+    <div class="theory-box">
+      <p><b>Muammo:</b> Har safar <code>new Thread()</code> qilish — qimmat. Operatsion tizimga murojaat qilinadi.</p>
+      <p><b>Yechim:</b> <b>Thread Pool</b> — oldindan tayyor thread'lar to'plami. ExecutorService ularni boshqaradi.</p>
+      <p>Sizning kodingiz <b>vazifa yuboradi</b>, pool kim ishlashini hal qiladi.</p>
+    </div>
+    <pre data-filename="ExecutorIntro.java"><code>ExecutorService executor = Executors.newFixedThreadPool(4);
+
+// Vazifa yuborish
+executor.submit(() -&gt; System.out.println("Task 1"));
+executor.submit(() -&gt; System.out.println("Task 2"));
+
+// Yopish — yangi vazifalar qabul qilmaydi
+executor.shutdown();
+
+// Hammasini kutish
+executor.awaitTermination(1, TimeUnit.MINUTES);
+
+// Try-with-resources (Java 19+)
+try (var pool = Executors.newFixedThreadPool(4)) {
+    pool.submit(...);
+}  // shutdown avtomatik</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>ExecutorService turlari va Future</h2>
+    <table class="compare-table">
+      <thead><tr><th>Turi</th><th>Tavsif</th><th>Qachon?</th></tr></thead>
+      <tbody>
+        <tr><td><code>FixedThreadPool(N)</code></td><td>N ta doimiy thread</td><td>Belgilangan yuk uchun</td></tr>
+        <tr><td><code>CachedThreadPool</code></td><td>Kerakcha o'sib boradi</td><td>Ko'p qisqa vazifalar</td></tr>
+        <tr><td><code>SingleThreadExecutor</code></td><td>Bitta thread, navbat</td><td>Tartibli bajarish kerak</td></tr>
+        <tr><td><code>ScheduledThreadPool</code></td><td>Vaqt bo'yicha rejalashtirish</td><td>Cron-style vazifalar</td></tr>
+        <tr><td><code>WorkStealingPool</code></td><td>ForkJoinPool asosida</td><td>CPU-heavy parallel ishlar</td></tr>
+      </tbody>
+    </table>
+    <pre data-filename="Callable.java"><code>// Callable — Runnable + qiymat qaytaradi
+Callable&lt;Integer&gt; task = () -&gt; {
+    Thread.sleep(1000);
+    return 42;
+};
+
+Future&lt;Integer&gt; future = executor.submit(task);
+
+// Natijani kutish (bloklaydi)
+Integer result = future.get();          // 42
+Integer result2 = future.get(5, TimeUnit.SECONDS); // timeout bilan
+
+future.isDone();    // tugadimi?
+future.cancel(true); // bekor qilish</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 1</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>10 ta vazifani parallel bajarish</h2>
+    <p>10 ta vazifa har biri 1 sekund kutadi va o'z raqamini chiqaradi. <b>FixedThreadPool(4)</b> bilan parallel bajaring.</p>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      Total time ~ 3 sekund (10 vazifa / 4 thread ≈ 2.5 round)<br>
+      Sequential bo'lsa — 10 sekund
+    </div>
+    <pre data-filename="ParallelTasks.java"><code>ExecutorService pool = Executors.newFixedThreadPool(4);
+
+long start = System.currentTimeMillis();
+for (int i = 1; i &lt;= 10; i++) {
+    final int n = i;
+    pool.submit(() -&gt; {
+        try { Thread.sleep(1000); } catch (Exception e) {}
+        System.out.println("Task " + n + " on " + Thread.currentThread().getName());
+    });
+}
+
+pool.shutdown();
+pool.awaitTermination(1, TimeUnit.MINUTES);
+System.out.println("Time: " + (System.currentTimeMillis() - start) + "ms");</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 2</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>Callable bilan parallel hisoblash</h2>
+    <p>5 ta sonning kvadratlarini parallel hisoblang va natijalarni yig'ing.</p>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      Input: [1, 2, 3, 4, 5]<br>
+      Each thread: square(n)<br>
+      Sum: 1+4+9+16+25 = <b>55</b>
+    </div>
+    <pre data-filename="ParallelSquare.java"><code>ExecutorService pool = Executors.newFixedThreadPool(5);
+List&lt;Integer&gt; nums = List.of(1, 2, 3, 4, 5);
+
+List&lt;Future&lt;Integer&gt;&gt; futures = new ArrayList&lt;&gt;();
+for (int n : nums) {
+    futures.add(pool.submit(() -&gt; n * n));
+}
+
+int total = 0;
+for (Future&lt;Integer&gt; f : futures) {
+    total += f.get();
+}
+System.out.println(total); // 55
+
+pool.shutdown();</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 3</span>
+      <span class="difficulty medium"><span class="dot"></span>Medium</span>
+    </div>
+    <h2>invokeAll — barchasini kutish</h2>
+    <p>
+      Vazifalar ro'yxati berilgan. <b>invokeAll</b> orqali parallel boshlang va <b>hammasi tugashini</b> kuting. Natijalarni qaytaring.
+    </p>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      Tasks: 5 ta — har biri tasodifiy vaqt kutadi va N qaytaradi<br>
+      Result: [1, 2, 3, 4, 5]
+    </div>
+    <pre data-filename="InvokeAll.java"><code>ExecutorService pool = Executors.newFixedThreadPool(3);
+
+List&lt;Callable&lt;Integer&gt;&gt; tasks = new ArrayList&lt;&gt;();
+for (int i = 1; i &lt;= 5; i++) {
+    final int n = i;
+    tasks.add(() -&gt; {
+        Thread.sleep((long)(Math.random() * 1000));
+        return n;
+    });
+}
+
+List&lt;Future&lt;Integer&gt;&gt; results = pool.invokeAll(tasks);
+
+for (Future&lt;Integer&gt; f : results) {
+    System.out.println(f.get());
+}
+
+pool.shutdown();</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 4</span>
+      <span class="difficulty hard"><span class="dot"></span>Hard</span>
+    </div>
+    <h2>Scheduled Task — har 2 sekundda</h2>
+    <p>
+      <code>ScheduledExecutorService</code> bilan har 2 sekundda bir marta ishlovchi vazifa yarating. 10 sekunddan keyin to'xtatib qo'ying.
+    </p>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      [0s] Tick 1<br>
+      [2s] Tick 2<br>
+      [4s] Tick 3<br>
+      [6s] Tick 4<br>
+      [8s] Tick 5 — keyin to'xtaydi
+    </div>
+    <pre data-filename="Scheduled.java"><code>ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+AtomicInteger counter = new AtomicInteger(0);
+
+ScheduledFuture&lt;?&gt; task = scheduler.scheduleAtFixedRate(() -&gt; {
+    System.out.println("Tick " + counter.incrementAndGet());
+}, 0, 2, TimeUnit.SECONDS);
+
+// 10 sekunddan keyin to'xtatamiz
+scheduler.schedule(() -&gt; {
+    task.cancel(false);
+    scheduler.shutdown();
+}, 10, TimeUnit.SECONDS);</code></pre>
+  </section>
+
+  <!-- ==================== COMPLETABLE FUTURE ==================== -->
+
+  <section class="slide">
+    <h2>CompletableFuture — zamonaviy async</h2>
+    <div class="theory-box">
+      <p><b>Future</b>'ning kamchiligi: <code>get()</code> chaqirsangiz, asosiy thread bloklanadi. Chain qilish, callback qo'shish qiyin.</p>
+      <p><b>CompletableFuture (Java 8+)</b>: callback'lar, chain'lar, combinatsiyalar, exception handling — barchasi <b>funksional uslubda</b>.</p>
+    </div>
+    <pre data-filename="CFIntro.java"><code>// Asincrhon vazifa boshlash
+CompletableFuture&lt;String&gt; future = CompletableFuture.supplyAsync(() -&gt; {
+    sleep(1000);
+    return "Salom";
+});
+
+// Bloklamasdan callback
+future.thenAccept(result -&gt; System.out.println(result));
+
+// Yoki olish (block qiladi)
+String result = future.get();
+
+// Tayyor qiymatlar
+CompletableFuture&lt;String&gt; ready = CompletableFuture.completedFuture("Tayyor");</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>CompletableFuture — chain va combine</h2>
+    <pre data-filename="CFChain.java"><code>// Chain — natijani uzatib boradi
+CompletableFuture
+    .supplyAsync(() -&gt; "akobir")                    // String
+    .thenApply(String::toUpperCase)                  // String → String: "AKOBIR"
+    .thenApply(s -&gt; "Salom, " + s)                  // → "Salom, AKOBIR"
+    .thenAccept(System.out::println);                // → chiqarish
+
+// Combine — ikki natijani birlashtirish
+CompletableFuture&lt;Integer&gt; a = CompletableFuture.supplyAsync(() -&gt; 5);
+CompletableFuture&lt;Integer&gt; b = CompletableFuture.supplyAsync(() -&gt; 7);
+
+CompletableFuture&lt;Integer&gt; sum = a.thenCombine(b, Integer::sum);
+System.out.println(sum.get()); // 12
+
+// allOf — barchasini kutish
+CompletableFuture&lt;Void&gt; all = CompletableFuture.allOf(a, b);
+all.thenRun(() -&gt; System.out.println("Ikkalasi tayyor"));
+
+// anyOf — birinchi tayyor bo'lganini olish
+CompletableFuture&lt;Object&gt; first = CompletableFuture.anyOf(a, b);
+
+// Exception handling
+.exceptionally(ex -&gt; "Default")
+.handle((result, ex) -&gt; ex != null ? "Error" : result);</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 1</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>Async hisoblash chain</h2>
+    <p>
+      <code>CompletableFuture</code> yarating: sonni 1 sekunddan keyin qaytarsin, keyin 2 ga ko'paytirsin, keyin chiqarsin.
+    </p>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      Input: 5<br>
+      [1s] → 5 → 10 → "Natija: 10"
+    </div>
+    <pre data-filename="CFTask1.java"><code>CompletableFuture
+    .supplyAsync(() -&gt; {
+        try { Thread.sleep(1000); } catch (Exception e) {}
+        return 5;
+    })
+    .thenApply(n -&gt; n * 2)
+    .thenAccept(n -&gt; System.out.println("Natija: " + n));
+
+Thread.sleep(2000); // asosiy thread to'xtab qolmasin</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 2</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>Parallel HTTP imitatsiya</h2>
+    <p>3 ta "API call" parallel ishga tushiring va natijalarni birlashtiring.</p>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      API-1: "User: Akobir"<br>
+      API-2: "Posts: 15"<br>
+      API-3: "Friends: 42"<br>
+      Combined: "User: Akobir, Posts: 15, Friends: 42"
+    </div>
+    <pre data-filename="ParallelHttp.java"><code>CompletableFuture&lt;String&gt; user = CompletableFuture.supplyAsync(() -&gt; {
+    sleep(1000); return "User: Akobir";
+});
+CompletableFuture&lt;String&gt; posts = CompletableFuture.supplyAsync(() -&gt; {
+    sleep(800); return "Posts: 15";
+});
+CompletableFuture&lt;String&gt; friends = CompletableFuture.supplyAsync(() -&gt; {
+    sleep(600); return "Friends: 42";
+});
+
+CompletableFuture&lt;String&gt; combined = user
+    .thenCombine(posts, (u, p) -&gt; u + ", " + p)
+    .thenCombine(friends, (up, f) -&gt; up + ", " + f);
+
+System.out.println(combined.get());
+// Total time ~ 1s (eng uzun), sequential bo'lsa 2.4s</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 3</span>
+      <span class="difficulty medium"><span class="dot"></span>Medium</span>
+    </div>
+    <h2>Timeout va Exception handling</h2>
+    <p>
+      Sekin API'ga so'rov yuboring. 2 sekund ichida javob bo'lmasa — "Timeout" qaytarsin. Exception bo'lsa — "Error: ..." qaytarsin.
+    </p>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      Fast (500ms) → "Response: OK"<br>
+      Slow (5000ms) → "Timeout"<br>
+      Error → "Error: connection failed"
+    </div>
+    <pre data-filename="CFTimeout.java"><code>CompletableFuture&lt;String&gt; future = CompletableFuture
+    .supplyAsync(() -&gt; {
+        try { Thread.sleep(slowMs); } catch (Exception e) {}
+        if (shouldFail) throw new RuntimeException("connection failed");
+        return "Response: OK";
+    })
+    .completeOnTimeout("Timeout", 2, TimeUnit.SECONDS)
+    .exceptionally(ex -&gt; "Error: " + ex.getCause().getMessage());
+
+System.out.println(future.get());</code></pre>
+  </section>
+
+  <!-- ==================== ATOMIC & CONCURRENT ==================== -->
+
+  <section class="slide">
+    <h2>Atomic va Concurrent Collections</h2>
+    <p>
+      Java <b>thread-safe</b> ma'lumot strukturalari taqdim etadi — qo'l bilan <code>synchronized</code> yozish o'rniga.
+    </p>
+    <pre data-filename="AtomicConcurrent.java"><code>// AtomicInteger, AtomicLong — atomic operatsiyalar
+AtomicInteger counter = new AtomicInteger(0);
+counter.incrementAndGet();    // ++ atomik
+counter.compareAndSet(0, 5);  // CAS (Compare-And-Swap)
+int value = counter.get();
+
+// AtomicReference
+AtomicReference&lt;String&gt; ref = new AtomicReference&lt;&gt;("initial");
+ref.set("new value");
+
+// ConcurrentHashMap — HashMap'ning thread-safe versiyasi
+ConcurrentHashMap&lt;String, Integer&gt; map = new ConcurrentHashMap&lt;&gt;();
+map.put("a", 1);
+map.compute("a", (k, v) -&gt; v + 1);     // atomik update
+map.putIfAbsent("b", 2);                // bo'lmasa qo'shish
+
+// CopyOnWriteArrayList — kam yoziladigan, ko'p o'qiladigan
+List&lt;String&gt; list = new CopyOnWriteArrayList&lt;&gt;();
+
+// BlockingQueue — Producer-Consumer uchun ideal
+BlockingQueue&lt;Integer&gt; queue = new ArrayBlockingQueue&lt;&gt;(10);
+queue.put(1);    // to'lsa kutib turadi
+int val = queue.take(); // bo'sh bo'lsa kutadi</code></pre>
+    <div class="theory-box">
+      <p><b>CAS (Compare-And-Swap)</b> — CPU darajasidagi atomik instruktsiya. "Agar qiymat X bo'lsa, Y qilib o'rnat". Lock'larsiz ishlaydi va juda tez.</p>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">📝 Amaliy topshiriqlar</span>
+      <span class="difficulty hard"><span class="dot"></span>Mustaqil</span>
+    </div>
+    <h2>10 ta murakkab vazifa</h2>
+    <p>Quyidagi 10 ta vazifani <b>o'zingiz mustaqil</b> yechib ko'ring:</p>
+    <ul style="font-size: 16px;">
+      <li>
+        <b>1. Parallel Matrix Multiply.</b> Ikki katta matritsani parallel ko'paytiring (har bir qator — alohida thread).<br>
+        <code>multiply(A, B) → C[i][j] = sum(A[i][k] * B[k][j])</code>
+      </li>
+      <li>
+        <b>2. Thread-safe Singleton.</b> Double-checked locking pattern bilan Singleton yozing.<br>
+        <code>volatile</code> va <code>synchronized</code> ishlatiladi.
+      </li>
+      <li>
+        <b>3. Custom Thread Pool.</b> <code>BlockingQueue</code> va worker thread'lar bilan o'z ThreadPool'ingizni yarating.<br>
+        <code>pool.submit(task), pool.shutdown()</code>
+      </li>
+      <li>
+        <b>4. Producer-Consumer with BlockingQueue.</b> 2 ta producer + 3 ta consumer thread, <code>ArrayBlockingQueue</code> orqali.<br>
+        Producer 1 sekundda 1 ta tovar, consumer 2 sekundda 1 ta.
+      </li>
+      <li>
+        <b>5. Parallel Web Scraper.</b> 10 ta URL'dan parallel ma'lumot olib, natijalarni birlashtirish.<br>
+        <code>List&lt;CompletableFuture&gt;</code> + <code>allOf</code>
+      </li>
+      <li>
+        <b>6. Async Cache.</b> Agar qiymat cache'da bo'lmasa — async olib keladi, keladigan vaqt mobaynida boshqa so'rovlar ham kutadi (deduplication).
+      </li>
+      <li>
+        <b>7. Rate Limiter.</b> Sekundiga maksimum N ta so'rov bo'lishini ta'minlovchi class.<br>
+        <code>limiter.acquire()</code> — agar limit oshsa, kutadi.
+      </li>
+      <li>
+        <b>8. Deadlock Detector.</b> 2 ta thread va 2 ta lock bilan deadlock simulyatsiya qiling, keyin <code>tryLock(timeout)</code> bilan oldini oling.
+      </li>
+      <li>
+        <b>9. Parallel File Search.</b> Katta papkadagi barcha fayllarda berilgan so'zni parallel qidiring.<br>
+        <code>ForkJoinPool</code> yoki <code>parallelStream</code>
+      </li>
+      <li>
+        <b>10. CompletableFuture Pipeline.</b> User → fetchPosts → fetchComments → aggregate. Har biri asincrhon, exception bo'lsa fallback qiymat.
+      </li>
+    </ul>
+    <div class="note">
+      Har bir vazifa uchun: <b>thread safety</b>ni ta'minlang, lock'ni ortiqcha ushlamang, <b>finally'da resurslarni yoping</b>.
+    </div>
+  </section>
+
+  <section class="slide slide-title">
+    <div class="topic-pill">🎯 Yakun</div>
+    <h1>Dars yakuni</h1>
+    <p>
+      Multithreading — eng murakkab, lekin eng kuchli mavzulardan biri. Endi siz <b>parallel</b>, <b>asincrhon</b> va <b>thread-safe</b> kod yoza olasiz.
+    </p>
+    <div class="note">
+      <b>Keyingi mavzu:</b> SQL va Database — SQL asoslari, JOIN, GROUP BY, Indexes, Transactions, PostgreSQL va JDBC.
+    </div>
+  </section>
+
+</div>
+
+<div class="toast" id="toast">✓ Kod nusxalandi!</div>
+
+<div class="controls">
+  <div class="progress-line" id="progressLine"></div>
+  <button class="nav-arrow" id="prevBtn" onclick="prevSlide()" title="Oldingi (←)">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+  </button>
+  <div class="pagination" id="pagination"></div>
+  <button class="nav-arrow" id="nextBtn" onclick="nextSlide()" title="Keyingi (→)">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+  </button>
+</div>
+
+<script>
+  function wrapCodeBlocks() {
+    document.querySelectorAll('pre').forEach(pre => {
+      if (pre.closest('.code-window')) return;
+      const filename = pre.dataset.filename || 'Example.java';
+      const wrapper = document.createElement('div');
+      wrapper.className = 'code-window';
+      wrapper.innerHTML = `
+        <div class="code-header">
+          <div class="traffic-lights">
+            <span class="light close"></span><span class="light minimize"></span><span class="light maximize"></span>
+          </div>
+          <div class="code-filename">${filename}</div>
+          <div class="code-actions">
+            <button class="code-btn reset-btn">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              Reset
+            </button>
+            <button class="code-btn copy-btn">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+              Copy
+            </button>
+          </div>
+        </div>
+        <div class="code-body"></div>
+      `;
+      pre.setAttribute('contenteditable', 'true');
+      pre.setAttribute('spellcheck', 'false');
+      const original = pre.innerHTML;
+      pre.dataset.original = original;
+      pre.parentNode.insertBefore(wrapper, pre);
+      wrapper.querySelector('.code-body').appendChild(pre);
+      wrapper.querySelector('.copy-btn').addEventListener('click', () => {
+        navigator.clipboard.writeText(pre.textContent).then(() => {
+          const btn = wrapper.querySelector('.copy-btn');
+          btn.classList.add('copied');
+          btn.innerHTML = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg> Nusxalandi`;
+          showToast('✓ Kod nusxalandi!');
+          setTimeout(() => {
+            btn.classList.remove('copied');
+            btn.innerHTML = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg> Copy`;
+          }, 2000);
+        });
+      });
+      wrapper.querySelector('.reset-btn').addEventListener('click', () => {
+        pre.innerHTML = original;
+        showToast('↺ Kod tiklandi');
+      });
+    });
+  }
+  function showToast(message) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.classList.add('show');
+    clearTimeout(window._toastTimer);
+    window._toastTimer = setTimeout(() => toast.classList.remove('show'), 1800);
+  }
+  wrapCodeBlocks();
+
+  function wrapSolutions() {
+    const eyeIcon = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>`;
+    const eyeOffIcon = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"/></svg>`;
+    document.querySelectorAll('.slide').forEach(slide => {
+      if (!slide.querySelector('.problem-header')) return;
+      slide.querySelectorAll('.code-window').forEach(cw => {
+        if (cw.parentNode.classList.contains('solution-content')) return;
+        const wrap = document.createElement('div');
+        wrap.className = 'solution-wrap';
+        const btn = document.createElement('button');
+        btn.className = 'show-solution-btn';
+        btn.innerHTML = eyeIcon + ' Yechimni ko\'rsatish';
+        const content = document.createElement('div');
+        content.className = 'solution-content';
+        cw.parentNode.insertBefore(wrap, cw);
+        content.appendChild(cw);
+        wrap.appendChild(btn);
+        wrap.appendChild(content);
+        btn.addEventListener('click', () => {
+          const isShown = content.classList.toggle('shown');
+          btn.classList.toggle('active', isShown);
+          btn.innerHTML = isShown ? eyeOffIcon + ' Yechimni yashirish' : eyeIcon + ' Yechimni ko\'rsatish';
+        });
+      });
+    });
+  }
+  wrapSolutions();
+
+  const slides = document.querySelectorAll('.slide');
+  const totalSlides = slides.length;
+  const pagination = document.getElementById('pagination');
+  let currentIndex = 0;
+  document.getElementById('totalSlides').textContent = totalSlides;
+  const pageDots = [];
+  for (let i = 0; i < totalSlides; i++) {
+    const dot = document.createElement('button');
+    dot.className = 'page-dot';
+    dot.textContent = String(i + 1).padStart(2, '0');
+    dot.addEventListener('click', () => { currentIndex = i; showSlide(i); });
+    pagination.appendChild(dot);
+    pageDots.push(dot);
+  }
+  function showSlide(index) {
+    slides.forEach(s => s.classList.remove('active'));
+    slides[index].classList.add('active');
+    document.getElementById('currentSlide').textContent = index + 1;
+    pageDots.forEach((d, i) => { d.classList.toggle('active', i === index); d.classList.toggle('visited', i < index); });
+    const percent = ((index + 1) / totalSlides * 100);
+    document.getElementById('progressLine').style.width = percent + '%';
+    document.getElementById('prevBtn').disabled = index === 0;
+    document.getElementById('nextBtn').disabled = index === totalSlides - 1;
+    slides[index].scrollTop = 0;
+    const activeDot = pageDots[index];
+    if (activeDot) activeDot.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  }
+  function nextSlide() { if (currentIndex < totalSlides - 1) { currentIndex++; showSlide(currentIndex); } }
+  function prevSlide() { if (currentIndex > 0) { currentIndex--; showSlide(currentIndex); } }
+  document.addEventListener('keydown', (e) => {
+    if (e.target.isContentEditable) return;
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); nextSlide(); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); prevSlide(); }
+    else if (e.key === 'Home') { currentIndex = 0; showSlide(0); }
+    else if (e.key === 'End') { currentIndex = totalSlides - 1; showSlide(currentIndex); }
+  });
+  showSlide(0);
+</script>
+
+<script>
+(function(_0x){
+  var _a=String.fromCharCode,
+      _b=[169,32,77,117,97,108,108,105,102,58,32,82,117,115,116,97,109,111,118,32,65,107,111,98,105,114],
+      _c=[95,120,57,52,107,55,116,57,114,53,95,115,105,103],
+      _d=[95,120,57,52,104,53,100,55],
+      _t='',_n='',_h='';
+  for(var i=0;i<_b.length;i++)_t+=_a(_b[i]);
+  for(var i=0;i<_c.length;i++)_n+=_a(_c[i]);
+  for(var i=0;i<_d.length;i++)_h+=_a(_d[i]);
+  function _mk(visible){
+    var d=document.createElement('div');
+    d.setAttribute('data-x',_t);
+    if(visible){
+      d.id=_n; d.textContent=_t;
+      d.style.cssText='position:fixed;bottom:96px;right:16px;z-index:99999;background:rgba(15,15,25,0.75);color:rgba(255,255,255,0.85);padding:6px 14px;border-radius:20px;font-family:system-ui,-apple-system,sans-serif;font-size:11px;font-weight:600;backdrop-filter:blur(10px);border:1px solid rgba(139,92,246,0.3);pointer-events:none;user-select:none;letter-spacing:0.03em;box-shadow:0 4px 12px rgba(0,0,0,0.3);';
+    }else{
+      d.className=_h+Math.random().toString(36).slice(2,7); d.textContent=_t;
+      d.style.cssText='position:absolute;left:-99999px;top:-99999px;opacity:0;pointer-events:none;width:1px;height:1px;overflow:hidden;';
+    }
+    return d;
+  }
+  function _ensure(){
+    if(!document.body)return;
+    if(!document.getElementById(_n)){ document.body.appendChild(_mk(true)); }
+    var hidden=document.querySelectorAll('[class^="'+_h+'"]');
+    if(hidden.length<5){ for(var i=hidden.length;i<5;i++){ document.body.appendChild(_mk(false)); } }
+  }
+  function _setup(){
+    _ensure();
+    try{
+      new MutationObserver(function(muts){
+        for(var i=0;i<muts.length;i++){
+          var m=muts[i];
+          if(m.removedNodes.length>0||m.type==='attributes'){ _ensure(); break; }
+        }
+      }).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['id','class','style']});
+    }catch(e){}
+    setInterval(_ensure,1500);
+  }
+  if(document.body)_setup();
+  else document.addEventListener('DOMContentLoaded',_setup);
+  try{
+    console.log('%c '+_t+' ','background:linear-gradient(135deg,#8b5cf6,#f472b6);color:white;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:bold;');
+    Object.defineProperty(window,_n+'_lock',{value:_t,writable:false,configurable:false});
+  }catch(e){}
+})();
+</script>
+
+</body>
+</html>

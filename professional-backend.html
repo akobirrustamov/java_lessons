@@ -1,0 +1,1809 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Professional Backend — Prezentatsiya</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0a0a14; --surface: rgba(255, 255, 255, 0.04); --border: rgba(255, 255, 255, 0.08);
+      --text: #f8fafc; --text-dim: #94a3b8; --text-muted: #64748b;
+      --primary: #8b5cf6; --primary-2: #6366f1; --accent: #f472b6;
+      --slide-bg: #ffffff; --slide-bg-2: #fafafe;
+      --code-bg: #0f172a; --code-text: #e2e8f0;
+    }
+    html, body { height: 100%; overflow: hidden; }
+    body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
+    .bg-effects { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+    .blob { position: absolute; border-radius: 50%; filter: blur(140px); opacity: 0.4; }
+    .blob-1 { width: 500px; height: 500px; background: #8b5cf6; top: -100px; left: -150px; }
+    .blob-2 { width: 400px; height: 400px; background: #f472b6; bottom: -100px; right: -100px; }
+    .top { position: fixed; top: 0; left: 0; right: 0; z-index: 100; backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); background: rgba(10, 10, 20, 0.7); border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+    .top-left { display: flex; align-items: center; gap: 14px; }
+    .back-btn { display: inline-flex; align-items: center; gap: 8px; color: var(--text); text-decoration: none; background: var(--surface); border: 1px solid var(--border); padding: 9px 16px; border-radius: 10px; font-weight: 600; font-size: 14px; transition: all 0.2s; }
+    .back-btn:hover { background: rgba(139, 92, 246, 0.15); border-color: rgba(139, 92, 246, 0.4); }
+    .topic-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); color: #c4b5fd; padding: 8px 14px; border-radius: 50px; font-size: 12px; font-weight: 600; }
+    .pulse-dot { width: 6px; height: 6px; border-radius: 50%; background: #c4b5fd; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+    .slide-counter { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--border); padding: 9px 16px; border-radius: 10px; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; color: var(--text-dim); }
+    .slide-counter .current { color: var(--text); }
+    .presentation { position: fixed; top: 72px; bottom: 86px; left: 0; right: 0; display: flex; align-items: center; justify-content: center; padding: 24px; z-index: 1; }
+    .slide { display: none; background: linear-gradient(135deg, var(--slide-bg) 0%, var(--slide-bg-2) 100%); color: #0f172a; width: 100%; max-width: 1180px; height: 100%; max-height: 100%; padding: 56px 64px; border-radius: 28px; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05); flex-direction: column; justify-content: center; overflow-y: auto; position: relative; }
+    .slide.active { display: flex; animation: slideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+    .slide > * { min-width: 0; max-width: 100%; }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(30px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    .slide::before { content: ''; position: absolute; top: 0; right: 0; width: 280px; height: 280px; background: radial-gradient(circle, rgba(139, 92, 246, 0.08), transparent 70%); border-radius: 50%; pointer-events: none; }
+    .slide::after { content: ''; position: absolute; bottom: 0; left: 0; width: 240px; height: 240px; background: radial-gradient(circle, rgba(244, 114, 182, 0.08), transparent 70%); border-radius: 50%; pointer-events: none; }
+    .slide h1 { font-size: clamp(36px, 5vw, 60px); font-weight: 900; letter-spacing: -0.03em; margin-bottom: 24px; line-height: 1.1; background: linear-gradient(135deg, #1e1b4b 0%, #6366f1 50%, #8b5cf6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; position: relative; z-index: 1; }
+    .slide h2 { font-size: clamp(28px, 4vw, 44px); font-weight: 800; letter-spacing: -0.02em; margin-bottom: 28px; color: #1e1b4b; line-height: 1.15; position: relative; z-index: 1; }
+    .slide h2::before { content: ''; display: inline-block; width: 6px; height: 32px; background: linear-gradient(180deg, var(--primary), var(--accent)); border-radius: 4px; margin-right: 16px; vertical-align: middle; transform: translateY(-3px); }
+    .slide p { font-size: 19px; margin-bottom: 18px; color: #334155; position: relative; z-index: 1; line-height: 1.7; }
+    .slide ul { font-size: 18px; list-style: none; padding-left: 0; position: relative; z-index: 1; }
+    .slide li { position: relative; padding: 10px 0 10px 32px; color: #1e293b; line-height: 1.6; }
+    .slide li::before { content: ''; position: absolute; left: 8px; top: 20px; width: 8px; height: 8px; background: linear-gradient(135deg, var(--primary), var(--accent)); border-radius: 50%; box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.12); }
+    .slide b { color: var(--primary-2); font-weight: 700; }
+    .slide-title { text-align: center; justify-content: center; }
+    .slide-title h1 { font-size: clamp(48px, 8vw, 88px); text-align: center; }
+    .slide-title p { text-align: center; max-width: 700px; margin-left: auto; margin-right: auto; font-size: 22px; }
+    .topic-pill { display: inline-flex; align-items: center; gap: 10px; background: linear-gradient(135deg, rgba(139, 92, 246, 0.12), rgba(244, 114, 182, 0.12)); border: 1px solid rgba(139, 92, 246, 0.3); color: var(--primary); padding: 10px 22px; border-radius: 50px; font-weight: 700; font-size: 14px; margin: 0 auto 32px; width: fit-content; text-transform: uppercase; letter-spacing: 0.08em; }
+    .code-window { background: var(--code-bg); border-radius: 14px; margin: 20px 0; position: relative; z-index: 1; border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05); max-width: 100%; min-width: 0; display: flex; flex-direction: column; overflow: hidden; }
+    .code-header { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: linear-gradient(180deg, #2d3548 0%, #1e2536 100%); border-bottom: 1px solid rgba(255, 255, 255, 0.08); user-select: none; }
+    .traffic-lights { display: flex; gap: 8px; align-items: center; }
+    .light { width: 12px; height: 12px; border-radius: 50%; border: 0.5px solid rgba(0, 0, 0, 0.2); cursor: pointer; transition: filter 0.2s; }
+    .light:hover { filter: brightness(1.15); }
+    .light.close { background: #ff5f57; } .light.minimize { background: #febc2e; } .light.maximize { background: #28c840; }
+    .code-filename { flex: 1; text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: #94a3b8; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .code-filename::before { content: '⚙️'; font-size: 12px; }
+    .code-actions { display: flex; gap: 6px; align-items: center; }
+    .code-btn { display: inline-flex; align-items: center; gap: 5px; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.08); color: #cbd5e1; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; }
+    .code-btn:hover { background: rgba(139, 92, 246, 0.2); border-color: rgba(139, 92, 246, 0.4); color: white; }
+    .code-btn.copied { background: rgba(16, 185, 129, 0.2); border-color: rgba(16, 185, 129, 0.4); color: #6ee7b7; }
+    .code-btn svg { width: 12px; height: 12px; }
+    .code-body { position: relative; background: var(--code-bg); min-width: 0; max-width: 100%; overflow: hidden; }
+    pre { background: transparent; color: var(--code-text); padding: 22px 24px; overflow-x: auto; overflow-y: auto; max-height: 50vh; font-size: 15px; margin: 0; font-family: 'JetBrains Mono', 'Consolas', monospace; line-height: 1.7; tab-size: 4; outline: none; white-space: pre; word-wrap: normal; scrollbar-width: thin; scrollbar-color: rgba(139, 92, 246, 0.4) rgba(255, 255, 255, 0.04); }
+    pre::-webkit-scrollbar { height: 10px; width: 10px; }
+    pre::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.04); border-radius: 5px; }
+    pre::-webkit-scrollbar-thumb { background: linear-gradient(135deg, rgba(139, 92, 246, 0.5), rgba(244, 114, 182, 0.5)); border-radius: 5px; border: 2px solid transparent; background-clip: padding-box; }
+    pre[contenteditable="true"] { caret-color: #c084fc; }
+    pre[contenteditable="true"]:focus { background: rgba(139, 92, 246, 0.04); }
+    pre code { display: block; font-family: inherit; }
+    code { font-family: 'JetBrains Mono', monospace; font-size: 0.95em; }
+    p code, li code, .note code, td code, th code { background: rgba(139, 92, 246, 0.1); color: var(--primary); padding: 2px 8px; border-radius: 6px; font-size: 0.9em; font-weight: 600; }
+    .toast { position: fixed; bottom: 110px; left: 50%; transform: translateX(-50%) translateY(20px); background: rgba(16, 185, 129, 0.95); color: white; padding: 10px 20px; border-radius: 10px; font-size: 13px; font-weight: 600; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4); opacity: 0; pointer-events: none; transition: all 0.3s; z-index: 200; backdrop-filter: blur(10px); }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .problem-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; position: relative; z-index: 1; }
+    .problem-num { display: inline-flex; align-items: center; gap: 6px; background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: white; padding: 5px 14px; border-radius: 50px; font-size: 12px; font-weight: 700; letter-spacing: 0.05em; font-family: 'JetBrains Mono', monospace; }
+    .difficulty { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 50px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+    .difficulty.easy { background: rgba(16, 185, 129, 0.12); color: #059669; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .difficulty.medium { background: rgba(245, 158, 11, 0.12); color: #d97706; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .difficulty.hard { background: rgba(239, 68, 68, 0.12); color: #dc2626; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .difficulty .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .example-block { background: #f1f5f9; border-left: 4px solid var(--primary); padding: 14px 18px; border-radius: 10px; margin: 12px 0; font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #1e293b; line-height: 1.7; position: relative; z-index: 1; }
+    .example-title { font-family: 'Inter', sans-serif; font-weight: 700; color: var(--primary); font-size: 13px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .example-block b { color: var(--primary); }
+    .constraints { background: rgba(99, 102, 241, 0.05); border: 1px dashed rgba(99, 102, 241, 0.3); padding: 12px 18px; border-radius: 10px; font-size: 14px; color: #475569; margin: 12px 0; position: relative; z-index: 1; }
+    .constraints b { color: var(--primary); }
+    .solution-wrap { margin-top: 18px; position: relative; z-index: 1; }
+    .show-solution-btn { display: inline-flex; align-items: center; gap: 10px; background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: white; border: none; padding: 12px 22px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.3s; font-family: 'Inter', sans-serif; box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3); }
+    .show-solution-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(139, 92, 246, 0.45); }
+    .show-solution-btn svg { width: 16px; height: 16px; }
+    .show-solution-btn.active { background: linear-gradient(135deg, #ec4899, #f43f5e); box-shadow: 0 8px 20px rgba(244, 63, 94, 0.3); }
+    .solution-content { max-height: 0; overflow: hidden; opacity: 0; margin-top: 0; transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, margin-top 0.3s ease; }
+    .solution-content.shown { max-height: 2500px; opacity: 1; margin-top: 16px; }
+    .note { background: linear-gradient(135deg, #fef3c7, #fef9c3); border-left: 4px solid #f59e0b; padding: 18px 22px; border-radius: 14px; margin-top: 24px; font-size: 17px; color: #78350f; position: relative; z-index: 1; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15); }
+    .note::before { content: '💡'; margin-right: 8px; }
+    .note b { color: #92400e; } .note code { background: rgba(245, 158, 11, 0.2); color: #78350f; }
+    .warning { background: linear-gradient(135deg, #fee2e2, #fecaca); border-left: 4px solid #ef4444; padding: 18px 22px; border-radius: 14px; margin-top: 24px; font-size: 17px; color: #7f1d1d; position: relative; z-index: 1; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15); }
+    .warning::before { content: '⚠️'; margin-right: 8px; }
+    .warning b { color: #991b1b; } .warning code { background: rgba(239, 68, 68, 0.2); color: #7f1d1d; }
+    .def-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 16px; position: relative; z-index: 1; }
+    .def-card { background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px 24px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04); transition: all 0.3s; }
+    .def-card:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(139, 92, 246, 0.12); }
+    .def-card h3 { font-family: 'JetBrains Mono', monospace; font-size: 22px; color: var(--primary); margin-bottom: 8px; font-weight: 700; }
+    .def-card p { font-size: 15px; margin: 0; color: #475569; }
+    .theory-box { background: linear-gradient(135deg, #ede9fe, #fce7f3); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 16px; padding: 22px 26px; margin: 18px 0; position: relative; z-index: 1; box-shadow: 0 8px 20px rgba(139, 92, 246, 0.08); }
+    .theory-box::before { content: '🧠 NAZARIYA'; display: block; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; color: var(--primary); letter-spacing: 0.1em; margin-bottom: 10px; }
+    .theory-box p { font-size: 17px; margin-bottom: 8px; color: #1e1b4b; }
+    .theory-box p:last-child { margin-bottom: 0; }
+    .compare-table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); position: relative; z-index: 1; margin-top: 12px; }
+    .compare-table th { background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: white; padding: 14px 16px; text-align: left; font-weight: 700; font-size: 14px; }
+    .compare-table td { padding: 12px 16px; border-bottom: 1px solid #e2e8f0; font-size: 15px; color: #334155; }
+    .compare-table tr:last-child td { border-bottom: none; }
+    .compare-table tr:hover td { background: #f8fafc; }
+    .controls { position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; backdrop-filter: blur(20px) saturate(180%); background: rgba(10, 10, 20, 0.75); border-top: 1px solid var(--border); padding: 14px 20px; display: flex; justify-content: center; align-items: center; gap: 12px; }
+    .nav-arrow { display: inline-flex; align-items: center; justify-content: center; background: var(--surface); color: var(--text); border: 1px solid var(--border); width: 38px; height: 38px; border-radius: 10px; cursor: pointer; transition: all 0.2s; flex-shrink: 0; }
+    .nav-arrow:hover:not(:disabled) { background: linear-gradient(135deg, var(--primary), var(--primary-2)); border-color: transparent; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(139, 92, 246, 0.4); }
+    .nav-arrow:disabled { opacity: 0.3; cursor: not-allowed; }
+    .nav-arrow svg { width: 16px; height: 16px; }
+    .pagination { display: flex; align-items: center; gap: 6px; overflow-x: auto; scrollbar-width: none; max-width: calc(100vw - 200px); padding: 4px; scroll-behavior: smooth; }
+    .pagination::-webkit-scrollbar { display: none; }
+    .page-dot { display: inline-flex; align-items: center; justify-content: center; min-width: 34px; height: 34px; padding: 0 10px; background: var(--surface); color: var(--text-dim); border: 1px solid var(--border); border-radius: 9px; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; font-weight: 600; cursor: pointer; transition: all 0.2s; flex-shrink: 0; }
+    .page-dot:hover { color: var(--text); border-color: rgba(139, 92, 246, 0.4); background: rgba(139, 92, 246, 0.1); transform: translateY(-1px); }
+    .page-dot.active { background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: white; border-color: transparent; box-shadow: 0 6px 16px rgba(139, 92, 246, 0.45); transform: scale(1.08); }
+    .page-dot.visited { color: var(--text); background: rgba(139, 92, 246, 0.08); border-color: rgba(139, 92, 246, 0.2); }
+    .progress-line { position: absolute; top: 0; left: 0; height: 3px; background: linear-gradient(90deg, var(--primary), var(--accent)); transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 12px rgba(139, 92, 246, 0.6); border-radius: 0 3px 3px 0; }
+    @media (max-width: 768px) {
+      .top { padding: 12px 16px; } .topic-badge { display: none; }
+      .slide { padding: 32px 24px; border-radius: 20px; }
+      pre { font-size: 13px; padding: 18px; }
+      .nav-arrow { width: 36px; height: 36px; }
+      .pagination { max-width: calc(100vw - 110px); gap: 4px; }
+      .page-dot { min-width: 30px; height: 30px; font-size: 11.5px; padding: 0 6px; }
+      .slide h2::before { width: 4px; height: 24px; }
+    }
+    @media print {
+      html, body { height: auto; overflow: visible; } body { background: white; }
+      .top, .controls, .bg-effects { display: none; }
+      .presentation { position: static; display: block; padding: 0; }
+      .slide { display: flex !important; page-break-after: always; box-shadow: none; border: 1px solid #ddd; max-width: 100%; height: auto; max-height: none; margin-bottom: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-effects">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+</div>
+
+<div class="top">
+  <div class="top-left">
+    <a href="index.html" class="back-btn">
+      <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+      Roadmap
+    </a>
+    <div class="topic-badge">
+      <span class="pulse-dot"></span>
+      12-Mavzu · Professional Backend
+    </div>
+  </div>
+  <div class="slide-counter">
+    <span class="current" id="currentSlide">1</span>
+    <span>/</span>
+    <span id="totalSlides">0</span>
+  </div>
+</div>
+
+<div class="presentation">
+
+  <section class="slide slide-title">
+    <div class="topic-pill">⚡ 12-Mavzu</div>
+    <h1>Professional Backend</h1>
+    <p>
+      Junior'dan <b>Senior darajaga</b> o'tish uchun zarur ko'nikmalar: File, Email, Cache, Docker, Testing, CI/CD va Deployment.
+    </p>
+    <div class="note">
+      <b>Dars maqsadi:</b> Production-ready ilova yaratishning barcha bosqichlarini — fayl boshqaruvi, email, caching strategiyalari, Docker, testing pyramid, CI/CD va deployment'ni nazariya va amaliyot bilan o'rganamiz.
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>Junior vs Senior — farqi</h2>
+    <p>
+      <b>Code yozish</b> — junior. <b>Production'da ishlatish, monitor qilish, scale qilish</b> — senior.
+    </p>
+    <table class="compare-table">
+      <thead><tr><th>Junior</th><th>Senior</th></tr></thead>
+      <tbody>
+        <tr><td>"Mening kompyuterimda ishlaydi"</td><td>"Docker'da reproducible build"</td></tr>
+        <tr><td>"Manual" deploy</td><td>"CI/CD pipeline" (auto)</td></tr>
+        <tr><td>Test yo'q yoki kam</td><td>Unit + Integration + E2E</td></tr>
+        <tr><td>"Logs grep qilamiz"</td><td>Structured logging + observability</td></tr>
+        <tr><td>"Kechiroq optimallashtiraman"</td><td>Cache + async dan boshlanadi</td></tr>
+        <tr><td>"Email keyin yoziladi"</td><td>Queue + retry + idempotency</td></tr>
+        <tr><td>"Down vaqtida deploy"</td><td>Zero-downtime + Blue-Green</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ==================== FILE STORAGE ==================== -->
+
+  <section class="slide">
+    <h2>File Storage — strategiyalar</h2>
+    <div class="theory-box">
+      <p><b>Fayl bilan 3 ta vazifa bor:</b></p>
+      <p>1️⃣ <b>Upload</b> — yuklash (validatsiya, security, hajm)</p>
+      <p>2️⃣ <b>Storage</b> — saqlash (lokal disk vs cloud)</p>
+      <p>3️⃣ <b>Serve</b> — qaytarish (URL, streaming, signed URLs)</p>
+    </div>
+    <table class="compare-table">
+      <thead><tr><th>Joy</th><th>Plus</th><th>Minus</th></tr></thead>
+      <tbody>
+        <tr><td><b>Lokal disk</b></td><td>Tez, oson</td><td>Scale qilinmaydi, backup yo'q</td></tr>
+        <tr><td><b>DB ichida (BLOB)</b></td><td>Transactional</td><td>DB shishadi, sekin</td></tr>
+        <tr><td><b>Cloud (S3, MinIO)</b></td><td>Cheksiz, CDN, tez</td><td>Tashqi bog'liqlik</td></tr>
+        <tr><td><b>NFS / Shared FS</b></td><td>Eski legacy</td><td>Single point of failure</td></tr>
+      </tbody>
+    </table>
+    <div class="warning">
+      <b>Production qoidasi:</b> Hech qachon faylni <b>lokal diskka</b> saqlamang! Container restart'da yo'qoladi. Doim S3 yoki MinIO ishlatish.
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>File Upload — Spring Boot'da</h2>
+    <pre data-filename="application.yml"><code>spring:
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 20MB
+      file-size-threshold: 2KB        # disk'ga yozish chegarasi</code></pre>
+    <pre data-filename="FileService.java"><code>@Service
+@RequiredArgsConstructor
+public class FileService {
+    private static final Set&lt;String&gt; ALLOWED_TYPES =
+        Set.of("image/jpeg", "image/png", "image/webp", "application/pdf");
+    private static final long MAX_SIZE = 10 * 1024 * 1024;  // 10MB
+
+    public StoredFile store(MultipartFile file) {
+        // 1. Validation
+        if (file.isEmpty()) throw new BadRequestException("File is empty");
+        if (file.getSize() &gt; MAX_SIZE) throw new BadRequestException("Too large");
+
+        String contentType = file.getContentType();
+        if (!ALLOWED_TYPES.contains(contentType)) {
+            throw new BadRequestException("Type not allowed: " + contentType);
+        }
+
+        // 2. Magic byte check (faqat content-type'ga ishonmang!)
+        try (InputStream is = file.getInputStream()) {
+            String detected = new Tika().detect(is);
+            if (!ALLOWED_TYPES.contains(detected)) {
+                throw new BadRequestException("Detected type: " + detected);
+            }
+        }
+
+        // 3. Unique fayl nomi (orig nomi xavfli — path traversal)
+        String ext = StringUtils.getFilenameExtension(file.getOriginalFilename());
+        String filename = UUID.randomUUID() + "." + ext;
+
+        // 4. Save (S3 yoki lokal)
+        return storage.save(filename, file.getInputStream());
+    }
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 1</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>Avatar upload endpoint</h2>
+    <p>
+      <code>POST /users/{id}/avatar</code> — rasm yuklash. Faqat JPG/PNG, max 2MB.
+    </p>
+    <pre data-filename="AvatarUpload.java"><code>@PostMapping(value = "/users/{id}/avatar",
+             consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+public Map&lt;String, String&gt; uploadAvatar(
+        @PathVariable Long id,
+        @RequestParam("file") MultipartFile file) {
+
+    if (file.isEmpty()) throw new BadRequestException("Empty");
+    if (file.getSize() &gt; 2 * 1024 * 1024) {
+        throw new BadRequestException("Max 2MB");
+    }
+
+    String ct = file.getContentType();
+    if (!Set.of("image/jpeg", "image/png").contains(ct)) {
+        throw new BadRequestException("Only JPG/PNG");
+    }
+
+    String url = fileService.uploadAvatar(id, file);
+    return Map.of("url", url);
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 2</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>File Download endpoint</h2>
+    <p>
+      <code>GET /files/{id}</code> — fayl qaytarish. To'g'ri Content-Type va Content-Disposition.
+    </p>
+    <pre data-filename="FileDownload.java"><code>@GetMapping("/files/{id}")
+public ResponseEntity&lt;Resource&gt; download(@PathVariable Long id) {
+    StoredFile file = fileService.findById(id);
+    Resource resource = fileService.loadAsResource(file.getPath());
+
+    return ResponseEntity.ok()
+        .contentType(MediaType.parseMediaType(file.getContentType()))
+        .header(HttpHeaders.CONTENT_DISPOSITION,
+                "attachment; filename=\"" + file.getOriginalName() + "\"")
+        .contentLength(file.getSize())
+        .body(resource);
+}
+
+// Streaming uchun (katta fayllar)
+@GetMapping("/files/{id}/stream")
+public ResponseEntity&lt;StreamingResponseBody&gt; stream(@PathVariable Long id) {
+    StoredFile file = fileService.findById(id);
+
+    StreamingResponseBody body = output -&gt; {
+        try (InputStream is = storage.openStream(file.getPath())) {
+            is.transferTo(output);
+        }
+    };
+
+    return ResponseEntity.ok()
+        .contentType(MediaType.parseMediaType(file.getContentType()))
+        .body(body);
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 3</span>
+      <span class="difficulty medium"><span class="dot"></span>Medium</span>
+    </div>
+    <h2>Image resize on upload</h2>
+    <p>
+      Avatar yuklanganda 3 ta o'lcham yaratilsin: <b>thumbnail (50x50)</b>, <b>medium (200x200)</b>, <b>large (500x500)</b>.
+    </p>
+    <pre data-filename="ImageResize.java"><code>// pom.xml
+&lt;dependency&gt;
+    &lt;groupId&gt;net.coobird&lt;/groupId&gt;
+    &lt;artifactId&gt;thumbnailator&lt;/artifactId&gt;
+    &lt;version&gt;0.4.20&lt;/version&gt;
+&lt;/dependency&gt;
+
+@Service
+public class ImageProcessor {
+
+    public Map&lt;String, byte[]&gt; createThumbnails(MultipartFile file) throws IOException {
+        BufferedImage original = ImageIO.read(file.getInputStream());
+
+        Map&lt;String, byte[]&gt; result = new HashMap&lt;&gt;();
+        result.put("thumbnail", resize(original, 50, 50));
+        result.put("medium",    resize(original, 200, 200));
+        result.put("large",     resize(original, 500, 500));
+        return result;
+    }
+
+    private byte[] resize(BufferedImage img, int w, int h) throws IOException {
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        Thumbnails.of(img)
+            .size(w, h)
+            .outputFormat("jpg")
+            .outputQuality(0.85)
+            .toOutputStream(out);
+        return out.toByteArray();
+    }
+}
+
+// Service'da
+Map&lt;String, byte[]&gt; sizes = imageProcessor.createThumbnails(file);
+sizes.forEach((size, bytes) -&gt; {
+    s3.upload("avatars/" + userId + "_" + size + ".jpg", bytes);
+});</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 4</span>
+      <span class="difficulty hard"><span class="dot"></span>Hard</span>
+    </div>
+    <h2>S3 + Presigned URL (direct upload)</h2>
+    <p>
+      Katta fayllar uchun: client'ga <b>vaqtinchalik signed URL</b> bering, u to'g'ridan-to'g'ri S3'ga yuklasin. Server proxy bo'lib turmaydi.
+    </p>
+    <pre data-filename="PresignedUrl.java"><code>@RestController
+@RequestMapping("/files")
+@RequiredArgsConstructor
+public class FileController {
+    private final S3Presigner s3Presigner;
+
+    @PostMapping("/upload-url")
+    public Map&lt;String, String&gt; getUploadUrl(
+            @RequestBody UploadRequest req) {
+
+        String key = "uploads/" + UUID.randomUUID() + "-" + req.getFilename();
+
+        PutObjectRequest putRequest = PutObjectRequest.builder()
+            .bucket("my-bucket")
+            .key(key)
+            .contentType(req.getContentType())
+            .build();
+
+        PutObjectPresignRequest presignRequest = PutObjectPresignRequest.builder()
+            .signatureDuration(Duration.ofMinutes(15))
+            .putObjectRequest(putRequest)
+            .build();
+
+        URL url = s3Presigner.presignPutObject(presignRequest).url();
+
+        return Map.of("uploadUrl", url.toString(), "key", key);
+    }
+
+    @PostMapping("/confirm")
+    public StoredFile confirmUpload(@RequestBody ConfirmRequest req) {
+        // Client S3'ga yuklab bo'lgan — endi DB'ga metadata yozamiz
+        return fileService.confirmUploaded(req.getKey(), req.getMetadata());
+    }
+}
+
+// Foydasi: server'imizdan trafik o'tmaydi, S3 to'g'ridan-to'g'ri qabul qiladi.
+// 1GB fayl ham server bandwidth'ini band qilmaydi.</code></pre>
+  </section>
+
+  <!-- ==================== EMAIL ==================== -->
+
+  <section class="slide">
+    <h2>Email Sending — nazariya</h2>
+    <div class="theory-box">
+      <p><b>Email — sinxron yuborish XAVFLI.</b> SMTP server sekin (1-5 sekund), uzilishi mumkin. User HTTP javobini kutib qoladi.</p>
+      <p><b>Yechim — async yoki queue.</b></p>
+      <p>1️⃣ <b>@Async</b> — oddiy, in-process</p>
+      <p>2️⃣ <b>RabbitMQ/Kafka</b> — alohida service, retry, idempotency</p>
+      <p>3️⃣ <b>3rd-party (SendGrid, Mailgun)</b> — REST API, deliverability</p>
+    </div>
+    <pre data-filename="EmailFlow.txt"><code>SINXRON (YOMON):
+User → POST /register → save user → sendEmail() → SMTP → response (5s)
+
+ASYNC (YAXSHI):
+User → POST /register → save user → queue.publish(event) → response (50ms)
+                                          ↓
+                          Background worker → SMTP
+
+YANGI:
+                  ┌─ retry 3 marta
+Email worker ────┼─ failure notification
+                  └─ exponential backoff</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>JavaMailSender + Thymeleaf template</h2>
+    <pre data-filename="EmailSetup.java"><code>// pom.xml
+&lt;dependency&gt;
+    &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-boot-starter-mail&lt;/artifactId&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-boot-starter-thymeleaf&lt;/artifactId&gt;
+&lt;/dependency&gt;
+
+// application.yml
+spring:
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${SMTP_USER}
+    password: ${SMTP_PASS}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true</code></pre>
+    <pre data-filename="EmailService.java"><code>@Service
+@RequiredArgsConstructor
+@Slf4j
+public class EmailService {
+    private final JavaMailSender mailSender;
+    private final TemplateEngine templateEngine;
+
+    @Async("emailExecutor")  // alohida thread pool
+    public CompletableFuture&lt;Void&gt; sendWelcomeEmail(User user) {
+        try {
+            Context ctx = new Context();
+            ctx.setVariable("name", user.getName());
+            ctx.setVariable("activationLink", buildLink(user));
+
+            String html = templateEngine.process("emails/welcome", ctx);
+
+            MimeMessage msg = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(msg, true, "UTF-8");
+            helper.setFrom("noreply@example.com", "My App");
+            helper.setTo(user.getEmail());
+            helper.setSubject("Welcome to MyApp!");
+            helper.setText(html, true);  // HTML
+
+            mailSender.send(msg);
+            log.info("Welcome email sent to {}", user.getEmail());
+        } catch (Exception e) {
+            log.error("Failed to send email to {}", user.getEmail(), e);
+        }
+        return CompletableFuture.completedFuture(null);
+    }
+}
+
+// @EnableAsync ham kerak — config'da</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala</span>
+      <span class="difficulty medium"><span class="dot"></span>Medium</span>
+    </div>
+    <h2>Email with Retry + Outbox</h2>
+    <p>
+      Email yuborishda xatolik bo'lishi mumkin. <b>Outbox pattern</b> bilan reliability:
+      DB'ga yozamiz → background worker o'qib yuboradi.
+    </p>
+    <pre data-filename="OutboxPattern.java"><code>@Entity
+public class EmailOutbox {
+    @Id @GeneratedValue private Long id;
+    private String to;
+    private String subject;
+    @Column(columnDefinition = "TEXT")
+    private String htmlBody;
+    private EmailStatus status;     // PENDING, SENT, FAILED
+    private int attempts;
+    private LocalDateTime nextAttemptAt;
+    private LocalDateTime createdAt;
+}
+
+@Service
+@RequiredArgsConstructor
+public class OutboxEmailService {
+    private final EmailOutboxRepository repo;
+    private final JavaMailSender mailSender;
+
+    @Transactional
+    public void enqueue(String to, String subject, String html) {
+        EmailOutbox email = new EmailOutbox();
+        email.setTo(to); email.setSubject(subject); email.setHtmlBody(html);
+        email.setStatus(EmailStatus.PENDING);
+        email.setNextAttemptAt(LocalDateTime.now());
+        repo.save(email);
+    }
+
+    @Scheduled(fixedDelay = 30_000)  // har 30 sekund
+    @Transactional
+    public void processOutbox() {
+        List&lt;EmailOutbox&gt; pending = repo.findPendingForSending(LocalDateTime.now());
+        for (EmailOutbox email : pending) {
+            try {
+                sendNow(email);
+                email.setStatus(EmailStatus.SENT);
+            } catch (Exception e) {
+                email.setAttempts(email.getAttempts() + 1);
+                if (email.getAttempts() &gt;= 5) {
+                    email.setStatus(EmailStatus.FAILED);
+                } else {
+                    // Exponential backoff: 2^n daqiqa
+                    email.setNextAttemptAt(LocalDateTime.now()
+                        .plusMinutes((long) Math.pow(2, email.getAttempts())));
+                }
+            }
+            repo.save(email);
+        }
+    }
+}</code></pre>
+  </section>
+
+  <!-- ==================== CACHING ==================== -->
+
+  <section class="slide">
+    <h2>Caching — nazariya va patternlar</h2>
+    <div class="theory-box">
+      <p><b>Cache nima uchun?</b> Sekin operatsiyalar natijasini xotirada saqlash. DB so'rovi 100ms → Cache 1ms.</p>
+      <p><b>Asosiy patternlar:</b></p>
+    </div>
+    <table class="compare-table">
+      <thead><tr><th>Pattern</th><th>Tavsif</th></tr></thead>
+      <tbody>
+        <tr><td><b>Cache-Aside</b> (Lazy)</td><td>App o'zi tekshiradi: cache → DB → cache'ga yozish. Eng ko'p ishlatiladi.</td></tr>
+        <tr><td><b>Write-Through</b></td><td>Yozishda DB va Cache birga yangilanadi. Slow write, consistent.</td></tr>
+        <tr><td><b>Write-Behind</b> (Write-Back)</td><td>Cache'ga yoziladi, DB'ga async. Tez, lekin xavfli (data loss).</td></tr>
+        <tr><td><b>Read-Through</b></td><td>Cache miss'da cache o'zi DB'dan oladi. Cloud servislarda ko'p.</td></tr>
+      </tbody>
+    </table>
+    <div class="warning">
+      <b>Cache invalidation</b> — kompyuter fanidagi eng qiyin 2 ta narsadan biri (Phil Karlton). Eski ma'lumotni qaytarish va to'g'ri vaqtda o'chirish — qiyin masala.
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>Spring Cache + Redis</h2>
+    <pre data-filename="CacheSetup.java"><code>// pom.xml
+&lt;dependency&gt;
+    &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-boot-starter-data-redis&lt;/artifactId&gt;
+&lt;/dependency&gt;
+&lt;dependency&gt;
+    &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-boot-starter-cache&lt;/artifactId&gt;
+&lt;/dependency&gt;
+
+// application.yml
+spring:
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: ${REDIS_PASSWORD:}
+  cache:
+    type: redis
+    redis:
+      time-to-live: 600000   # 10 daqiqa default TTL
+
+// Asosiy konfigda
+@SpringBootApplication
+@EnableCaching
+@EnableAsync
+public class App { }
+
+// Custom cache config
+@Configuration
+public class CacheConfig {
+    @Bean
+    public RedisCacheManager cacheManager(RedisConnectionFactory cf) {
+        RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
+            .entryTtl(Duration.ofMinutes(10))
+            .serializeKeysWith(/* String serializer */)
+            .serializeValuesWith(/* JSON serializer */);
+        return RedisCacheManager.builder(cf)
+            .cacheDefaults(config)
+            .withCacheConfiguration("products",
+                config.entryTtl(Duration.ofHours(1)))   // alohida TTL
+            .build();
+    }
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>Cache annotations va Redis structures</h2>
+    <pre data-filename="CacheAnnotations.java"><code>@Service
+public class ProductService {
+
+    // CACHEABLE — natija cache'da bo'lsa qaytar, yo'q bo'lsa hisobla
+    @Cacheable(value = "products", key = "#id")
+    public Product findById(Long id) {
+        return productRepo.findById(id).orElseThrow();
+    }
+
+    // CACHEPUT — har doim metod ishlaydi, natija cache'ga yoziladi
+    @CachePut(value = "products", key = "#product.id")
+    public Product update(Product product) {
+        return productRepo.save(product);
+    }
+
+    // CACHEEVICT — cache'dan o'chirish
+    @CacheEvict(value = "products", key = "#id")
+    public void delete(Long id) {
+        productRepo.deleteById(id);
+    }
+
+    // Hamma cache'ni tozalash
+    @CacheEvict(value = "products", allEntries = true)
+    public void clearAll() { }
+
+    // Shartli caching
+    @Cacheable(value = "products", key = "#id", condition = "#id &gt; 100",
+               unless = "#result == null")
+    public Product conditional(Long id) { /* ... */ }
+}</code></pre>
+    <div class="def-grid">
+      <div class="def-card">
+        <h3>String</h3>
+        <p>Cache, counter, session token</p>
+      </div>
+      <div class="def-card">
+        <h3>Hash</h3>
+        <p>Obyekt fields (user:42 → name, email)</p>
+      </div>
+      <div class="def-card">
+        <h3>List</h3>
+        <p>Queue, latest items (FIFO)</p>
+      </div>
+      <div class="def-card">
+        <h3>Set</h3>
+        <p>Tags, unique visitors</p>
+      </div>
+      <div class="def-card">
+        <h3>Sorted Set</h3>
+        <p>Leaderboard, ranking</p>
+      </div>
+      <div class="def-card">
+        <h3>Stream</h3>
+        <p>Event log (Kafka kabi)</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 1</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>Simple @Cacheable</h2>
+    <p>
+      Sekin <code>getUserById</code> metodini cache qiling. 10 daqiqa TTL.
+    </p>
+    <pre data-filename="SimpleCache.java"><code>@Service
+@RequiredArgsConstructor
+public class UserService {
+    private final UserRepository userRepo;
+
+    @Cacheable(value = "users", key = "#id")
+    public User getUserById(Long id) {
+        log.info("Fetching from DB: {}", id);  // cache hit'da chiqmaydi
+        return userRepo.findById(id).orElseThrow();
+    }
+}
+
+// 1-call: SQL ishlaydi, log chiqadi
+// 2-call: cache'dan, log chiqmaydi
+// 10 daqiqadan keyin: yana SQL
+
+// application.yml
+spring:
+  cache:
+    redis:
+      time-to-live: 600000     # 10 daqiqa</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 2</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>Cache invalidation on update</h2>
+    <p>
+      <code>updateUser</code>'da cache yangilansin, <code>deleteUser</code>'da o'chirilsin.
+    </p>
+    <pre data-filename="CacheInvalidate.java"><code>@Service
+public class UserService {
+
+    @Cacheable(value = "users", key = "#id")
+    public User getUserById(Long id) {
+        return userRepo.findById(id).orElseThrow();
+    }
+
+    @CachePut(value = "users", key = "#result.id")
+    public User updateUser(Long id, UserRequest req) {
+        User user = userRepo.findById(id).orElseThrow();
+        user.setName(req.getName());
+        user.setEmail(req.getEmail());
+        return userRepo.save(user);  // natija avtomatik cache'ga
+    }
+
+    @CacheEvict(value = "users", key = "#id")
+    public void deleteUser(Long id) {
+        userRepo.deleteById(id);
+    }
+
+    // Multiple eviction
+    @Caching(evict = {
+        @CacheEvict(value = "users", key = "#id"),
+        @CacheEvict(value = "userOrders", key = "#id"),
+        @CacheEvict(value = "userStats", allEntries = true)
+    })
+    public void resetUser(Long id) { /* ... */ }
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 3</span>
+      <span class="difficulty medium"><span class="dot"></span>Medium</span>
+    </div>
+    <h2>Redis-based Rate Limiter</h2>
+    <p>
+      Foydalanuvchi <b>daqiqada 100 ta so'rov</b>dan oshib ketmasin. Redis bilan sliding window.
+    </p>
+    <pre data-filename="RateLimiter.java"><code>@Service
+@RequiredArgsConstructor
+public class RateLimiter {
+    private final StringRedisTemplate redis;
+    private static final int LIMIT = 100;
+    private static final Duration WINDOW = Duration.ofMinutes(1);
+
+    public boolean tryAcquire(String userId) {
+        String key = "rate:" + userId + ":" + (System.currentTimeMillis() / 60_000);
+
+        Long count = redis.opsForValue().increment(key);
+        if (count == 1) {
+            redis.expire(key, WINDOW);
+        }
+
+        return count &lt;= LIMIT;
+    }
+}
+
+@Component
+@RequiredArgsConstructor
+public class RateLimitFilter extends OncePerRequestFilter {
+    private final RateLimiter rateLimiter;
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest req,
+                                   HttpServletResponse res,
+                                   FilterChain chain) throws IOException, ServletException {
+        String userId = extractUserId(req);
+        if (!rateLimiter.tryAcquire(userId)) {
+            res.setStatus(HttpStatus.TOO_MANY_REQUESTS.value());
+            res.getWriter().write("{\"error\":\"Rate limit exceeded\"}");
+            return;
+        }
+        chain.doFilter(req, res);
+    }
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 4</span>
+      <span class="difficulty hard"><span class="dot"></span>Hard</span>
+    </div>
+    <h2>Distributed Lock with Redis</h2>
+    <p>
+      Bir vaqtda <b>faqat 1 ta instance</b> kritik operatsiyani bajarsin (masalan: nightly job).
+    </p>
+    <pre data-filename="DistributedLock.java"><code>@Service
+@RequiredArgsConstructor
+public class DistributedLockService {
+    private final StringRedisTemplate redis;
+
+    /**
+     * Redis'da atomik SET NX (faqat bo'lmasa o'rnatish).
+     * Lock owner — UUID, expire — qulflar abadiy qolmasligi uchun.
+     */
+    public boolean tryLock(String key, String owner, Duration ttl) {
+        Boolean acquired = redis.opsForValue()
+            .setIfAbsent("lock:" + key, owner, ttl);
+        return Boolean.TRUE.equals(acquired);
+    }
+
+    public void releaseLock(String key, String owner) {
+        // Lua script — atomik tekshirish va o'chirish
+        String script = """
+            if redis.call('GET', KEYS[1]) == ARGV[1] then
+                return redis.call('DEL', KEYS[1])
+            else
+                return 0
+            end
+        """;
+        redis.execute(
+            new DefaultRedisScript&lt;&gt;(script, Long.class),
+            List.of("lock:" + key), owner
+        );
+    }
+}
+
+@Scheduled(cron = "0 0 2 * * *")  // har kun 02:00
+public void nightlyJob() {
+    String owner = UUID.randomUUID().toString();
+    if (!lockService.tryLock("nightly-job", owner, Duration.ofMinutes(30))) {
+        log.info("Job already running on another instance");
+        return;
+    }
+    try {
+        // kritik operatsiya
+    } finally {
+        lockService.releaseLock("nightly-job", owner);
+    }
+}</code></pre>
+  </section>
+
+  <!-- ==================== DOCKER ==================== -->
+
+  <section class="slide">
+    <h2>Docker — nima va nima uchun?</h2>
+    <div class="theory-box">
+      <p><b>Muammo:</b> "Mening kompyuterimda ishlaydi" — Java versiyasi, OS, kutubxonalar farqi.</p>
+      <p><b>Docker</b> — ilovani <b>container</b>ga joylaydi: kerakli OS, kutubxonalar, kod — hammasi birga. <b>Reproducible everywhere.</b></p>
+    </div>
+    <div class="def-grid">
+      <div class="def-card">
+        <h3>Image</h3>
+        <p><b>Read-only shablon.</b> Ilovaning "fotosurati". Layer'lardan iborat.</p>
+      </div>
+      <div class="def-card">
+        <h3>Container</h3>
+        <p><b>Image'ning ishlab turgan nusxasi.</b> Process kabi — start/stop/delete.</p>
+      </div>
+      <div class="def-card">
+        <h3>Layer</h3>
+        <p>Image'ning bir qatlami. Cache'lanadi va qayta foydalaniladi. Build tez bo'lishi uchun.</p>
+      </div>
+    </div>
+    <pre data-filename="docker-vs-vm.txt"><code>VM (Virtual Machine)        vs       Docker Container
+┌────────────────────┐               ┌────────────────────┐
+│   App   │   App    │               │  App │ App │ App   │
+├─────────┼──────────┤               ├──────┴─────┴───────┤
+│  Guest OS (Linux)  │               │  Docker Engine     │
+├────────────────────┤               ├────────────────────┤
+│   Hypervisor       │               │   Host OS          │
+├────────────────────┤               ├────────────────────┤
+│   Host OS          │               │   Hardware         │
+└────────────────────┘               └────────────────────┘
+   ~ GB, sekin                          ~ MB, soniyalarda</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>Dockerfile + Multi-stage build</h2>
+    <pre data-filename="Dockerfile"><code># Multi-stage build — image kichik bo'lishi uchun
+
+# STAGE 1: Build (Maven + JDK)
+FROM eclipse-temurin:21-jdk AS build
+WORKDIR /workspace
+
+# Dependencies'ni alohida layer qilamiz (cache uchun)
+COPY pom.xml .
+COPY .mvn .mvn
+COPY mvnw .
+RUN ./mvnw dependency:go-offline -B
+
+# Endi source kod
+COPY src ./src
+RUN ./mvnw clean package -DskipTests
+
+# STAGE 2: Runtime (JRE only — kichikroq)
+FROM eclipse-temurin:21-jre
+WORKDIR /app
+
+# Build stage'dan JAR ni olamiz
+COPY --from=build /workspace/target/*.jar app.jar
+
+# Non-root user (xavfsizlik)
+RUN groupadd -r spring &amp;&amp; useradd -r -g spring spring
+USER spring
+
+EXPOSE 8080
+
+# JVM tuning
+ENTRYPOINT ["java", \
+    "-XX:+UseContainerSupport", \
+    "-XX:MaxRAMPercentage=75.0", \
+    "-jar", "app.jar"]</code></pre>
+    <pre data-filename="terminal.sh"><code># Build
+docker build -t my-app:1.0 .
+
+# Run
+docker run -d --name app -p 8080:8080 -e SPRING_PROFILES_ACTIVE=prod my-app:1.0
+
+# Logs
+docker logs -f app
+
+# Shell ichiga kirish
+docker exec -it app bash
+
+# To'xtatish va o'chirish
+docker stop app &amp;&amp; docker rm app</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>Docker Compose — multi-service</h2>
+    <pre data-filename="docker-compose.yml"><code>version: '3.9'
+
+services:
+  app:
+    build: .
+    image: my-app:latest
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_URL: jdbc:postgresql://db:5432/mydb
+      DB_USER: admin
+      DB_PASSWORD: ${DB_PASSWORD}
+      REDIS_HOST: redis
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: unless-stopped
+
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: mydb
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "admin"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./certs:/etc/nginx/certs:ro
+    depends_on:
+      - app
+
+volumes:
+  postgres_data:
+  redis_data:</code></pre>
+    <pre data-filename="commands.sh"><code>docker compose up -d              # ishga tushirish
+docker compose logs -f app        # log
+docker compose down               # to'xtatish
+docker compose down -v            # + volume'larni o'chirish</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala</span>
+      <span class="difficulty medium"><span class="dot"></span>Medium</span>
+    </div>
+    <h2>Production Dockerfile</h2>
+    <p>
+      Spring Boot ilovasini production'ga tayyorlash: <b>multi-stage</b>, <b>JVM tuning</b>, <b>health check</b>, <b>non-root user</b>.
+    </p>
+    <pre data-filename="ProdDockerfile"><code># --- BUILD STAGE ---
+FROM maven:3.9-eclipse-temurin-21 AS build
+WORKDIR /build
+
+COPY pom.xml .
+RUN mvn dependency:go-offline -B
+
+COPY src ./src
+RUN mvn clean package -DskipTests -B \
+    &amp;&amp; java -Djarmode=layertools -jar target/*.jar extract
+
+# --- RUNTIME STAGE ---
+FROM eclipse-temurin:21-jre-alpine
+
+# Security: non-root user
+RUN addgroup -S spring &amp;&amp; adduser -S spring -G spring
+USER spring:spring
+
+WORKDIR /app
+
+# Layered jar (faster rebuilds, smaller layers)
+COPY --from=build --chown=spring:spring /build/dependencies/ ./
+COPY --from=build --chown=spring:spring /build/spring-boot-loader/ ./
+COPY --from=build --chown=spring:spring /build/snapshot-dependencies/ ./
+COPY --from=build --chown=spring:spring /build/application/ ./
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --retries=3 \
+    CMD wget --quiet --tries=1 --spider http://localhost:8080/actuator/health || exit 1
+
+EXPOSE 8080
+
+ENTRYPOINT ["java", \
+    "-XX:+UseContainerSupport", \
+    "-XX:MaxRAMPercentage=75.0", \
+    "-XX:+UseG1GC", \
+    "-Djava.security.egd=file:/dev/./urandom", \
+    "org.springframework.boot.loader.launch.JarLauncher"]</code></pre>
+  </section>
+
+  <!-- ==================== TESTING ==================== -->
+
+  <section class="slide">
+    <h2>Testing Pyramid — nazariya</h2>
+    <div class="theory-box">
+      <p><b>Mike Cohn'ning Testing Pyramid'i</b> — testlarning soni va turi.</p>
+    </div>
+    <pre data-filename="pyramid.txt"><code>                  /\
+                 /  \
+                /E2E \           ← Kam, sekin, qimmat
+               /──────\
+              /        \
+             /Integration\        ← O'rta, real DB/HTTP
+            /────────────\
+           /              \
+          /     Unit       \      ← Ko'p, tez, arzon
+         /__________________\
+              Tezlik &amp; Soni
+</code></pre>
+    <table class="compare-table">
+      <thead><tr><th>Daraja</th><th>Maqsadi</th><th>Misol</th></tr></thead>
+      <tbody>
+        <tr><td><b>Unit</b></td><td>Bir method/class</td><td>JUnit + Mockito</td></tr>
+        <tr><td><b>Integration</b></td><td>Komponentlar birga</td><td>@SpringBootTest + Testcontainers</td></tr>
+        <tr><td><b>E2E</b></td><td>To'liq user flow</td><td>Selenium, Playwright, Cypress</td></tr>
+      </tbody>
+    </table>
+    <div class="note">
+      <b>Qoida 70/20/10:</b> 70% unit, 20% integration, 10% E2E.
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>JUnit 5 + Mockito</h2>
+    <pre data-filename="UserServiceTest.java"><code>@ExtendWith(MockitoExtension.class)
+class UserServiceTest {
+
+    @Mock UserRepository userRepo;
+    @Mock PasswordEncoder encoder;
+    @InjectMocks UserService service;
+
+    @Test
+    @DisplayName("Yangi user yaratganda parol BCrypt'ga aylanishi kerak")
+    void shouldHashPasswordOnCreate() {
+        // GIVEN — tayyorlash
+        UserRequest req = new UserRequest("Akobir", "test@mail.com", "plainPass");
+        when(encoder.encode("plainPass")).thenReturn("$2a$12$hashed...");
+        when(userRepo.save(any(User.class))).thenAnswer(inv -&gt; inv.getArgument(0));
+
+        // WHEN — sinash
+        User result = service.create(req);
+
+        // THEN — tekshirish
+        assertThat(result.getName()).isEqualTo("Akobir");
+        assertThat(result.getPasswordHash()).startsWith("$2a$12$");
+
+        // Verify — mock chaqirilganini tekshirish
+        verify(encoder).encode("plainPass");
+        verify(userRepo).save(argThat(u -&gt; u.getEmail().equals("test@mail.com")));
+    }
+
+    @Test
+    void shouldThrowWhenEmailExists() {
+        when(userRepo.existsByEmail("test@mail.com")).thenReturn(true);
+
+        assertThatThrownBy(() -&gt; service.create(new UserRequest("X", "test@mail.com", "p")))
+            .isInstanceOf(EmailExistsException.class)
+            .hasMessageContaining("test@mail.com");
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"", " ", "no-at-sign", "@no-domain"})
+    void shouldRejectInvalidEmails(String email) {
+        assertThatThrownBy(() -&gt; service.validate(email))
+            .isInstanceOf(InvalidEmailException.class);
+    }
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>Spring Boot Test Slices</h2>
+    <pre data-filename="TestSlices.java"><code>// 1. @SpringBootTest — TO'LIQ context
+@SpringBootTest
+@AutoConfigureMockMvc
+class FullIntegrationTest {
+    @Autowired MockMvc mockMvc;
+    // hamma bean'lar yuklanadi (sekin)
+}
+
+// 2. @WebMvcTest — faqat WEB qatlam
+@WebMvcTest(UserController.class)
+class UserControllerTest {
+    @Autowired MockMvc mockMvc;
+    @MockBean UserService userService;  // service mock'lanadi
+
+    @Test
+    void shouldReturn404() throws Exception {
+        when(userService.findById(999L)).thenThrow(new NotFoundException());
+
+        mockMvc.perform(get("/users/999"))
+            .andExpect(status().isNotFound())
+            .andExpect(jsonPath("$.error").value("NOT_FOUND"));
+    }
+}
+
+// 3. @DataJpaTest — faqat JPA qatlam, in-memory DB
+@DataJpaTest
+class UserRepositoryTest {
+    @Autowired UserRepository repo;
+    @Autowired TestEntityManager em;
+
+    @Test
+    void shouldFindByEmail() {
+        em.persistAndFlush(new User("Akobir", "a@mail.com"));
+        Optional&lt;User&gt; found = repo.findByEmail("a@mail.com");
+        assertThat(found).isPresent();
+    }
+}
+
+// 4. Testcontainers — real DB
+@Testcontainers
+@SpringBootTest
+class WithRealDbTest {
+    @Container
+    static PostgreSQLContainer&lt;?&gt; postgres = new PostgreSQLContainer&lt;&gt;("postgres:16");
+
+    @DynamicPropertySource
+    static void configure(DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", postgres::getJdbcUrl);
+    }
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 1</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>Unit test for Calculator</h2>
+    <p>
+      <code>Calculator</code> klassining <code>add</code>, <code>divide</code> metodlarini test qiling. Edge case'lar bilan.
+    </p>
+    <pre data-filename="CalculatorTest.java"><code>class CalculatorTest {
+
+    Calculator calc = new Calculator();
+
+    @Test
+    void shouldAddPositiveNumbers() {
+        assertThat(calc.add(2, 3)).isEqualTo(5);
+    }
+
+    @Test
+    void shouldAddNegativeNumbers() {
+        assertThat(calc.add(-2, -3)).isEqualTo(-5);
+    }
+
+    @Test
+    void shouldDivideCorrectly() {
+        assertThat(calc.divide(10, 2)).isEqualTo(5.0);
+    }
+
+    @Test
+    void shouldThrowWhenDivideByZero() {
+        assertThatThrownBy(() -&gt; calc.divide(10, 0))
+            .isInstanceOf(ArithmeticException.class)
+            .hasMessage("Cannot divide by zero");
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "2, 3, 5",
+        "0, 0, 0",
+        "-5, 5, 0",
+        "100, 200, 300"
+    })
+    void shouldAddVariousNumbers(int a, int b, int expected) {
+        assertThat(calc.add(a, b)).isEqualTo(expected);
+    }
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 2</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>Mockito bilan Service test</h2>
+    <p>
+      <code>OrderService.placeOrder</code> — Repository va EmailService'ni mock qiling.
+    </p>
+    <pre data-filename="OrderServiceTest.java"><code>@ExtendWith(MockitoExtension.class)
+class OrderServiceTest {
+
+    @Mock OrderRepository orderRepo;
+    @Mock EmailService emailService;
+    @Mock InventoryService inventory;
+    @InjectMocks OrderService orderService;
+
+    @Test
+    void shouldPlaceOrderAndSendEmail() {
+        // Given
+        OrderRequest req = new OrderRequest(100L, "PRODUCT_X", 2);
+        when(inventory.hasStock("PRODUCT_X", 2)).thenReturn(true);
+        when(orderRepo.save(any(Order.class)))
+            .thenAnswer(inv -&gt; {
+                Order o = inv.getArgument(0);
+                o.setId(42L);
+                return o;
+            });
+
+        // When
+        Order result = orderService.placeOrder(req);
+
+        // Then
+        assertThat(result.getId()).isEqualTo(42L);
+        verify(inventory).reserveStock("PRODUCT_X", 2);
+        verify(emailService).sendOrderConfirmation(42L);
+    }
+
+    @Test
+    void shouldFailWhenOutOfStock() {
+        when(inventory.hasStock(any(), anyInt())).thenReturn(false);
+
+        assertThatThrownBy(() -&gt; orderService.placeOrder(new OrderRequest(1L, "X", 5)))
+            .isInstanceOf(OutOfStockException.class);
+
+        verify(orderRepo, never()).save(any());
+        verifyNoInteractions(emailService);
+    }
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 3</span>
+      <span class="difficulty medium"><span class="dot"></span>Medium</span>
+    </div>
+    <h2>@WebMvcTest — Controller test</h2>
+    <p>
+      <code>UserController</code> uchun web qatlam test'i: 200, 404, 400 holatlarini tekshirish.
+    </p>
+    <pre data-filename="UserControllerWebTest.java"><code>@WebMvcTest(UserController.class)
+class UserControllerTest {
+
+    @Autowired MockMvc mockMvc;
+    @Autowired ObjectMapper mapper;
+    @MockBean UserService service;
+
+    @Test
+    void shouldReturnUserWhenFound() throws Exception {
+        when(service.findById(1L)).thenReturn(new User(1L, "Akobir", "a@mail.com"));
+
+        mockMvc.perform(get("/api/users/1"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id").value(1))
+            .andExpect(jsonPath("$.name").value("Akobir"));
+    }
+
+    @Test
+    void shouldReturn404WhenNotFound() throws Exception {
+        when(service.findById(999L)).thenThrow(new UserNotFoundException(999L));
+
+        mockMvc.perform(get("/api/users/999"))
+            .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturn400OnInvalidRequest() throws Exception {
+        UserRequest invalid = new UserRequest("", "not-email", -1);
+
+        mockMvc.perform(post("/api/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(invalid)))
+            .andExpect(status().isBadRequest())
+            .andExpect(jsonPath("$.errors.name").exists())
+            .andExpect(jsonPath("$.errors.email").exists());
+    }
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 4</span>
+      <span class="difficulty hard"><span class="dot"></span>Hard</span>
+    </div>
+    <h2>Integration test with Testcontainers</h2>
+    <p>
+      Real PostgreSQL va Redis bilan to'liq integration test. Docker container'larida.
+    </p>
+    <pre data-filename="IntegrationTest.java"><code>@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
+@Testcontainers
+@Transactional
+class FullStackIntegrationTest {
+
+    @Container
+    static PostgreSQLContainer&lt;?&gt; postgres =
+        new PostgreSQLContainer&lt;&gt;("postgres:16-alpine");
+
+    @Container
+    static GenericContainer&lt;?&gt; redis =
+        new GenericContainer&lt;&gt;("redis:7-alpine").withExposedPorts(6379);
+
+    @DynamicPropertySource
+    static void config(DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url",      postgres::getJdbcUrl);
+        registry.add("spring.datasource.username", postgres::getUsername);
+        registry.add("spring.datasource.password", postgres::getPassword);
+        registry.add("spring.data.redis.host",     redis::getHost);
+        registry.add("spring.data.redis.port",     () -&gt; redis.getMappedPort(6379));
+    }
+
+    @Autowired TestRestTemplate rest;
+    @Autowired UserRepository userRepo;
+
+    @Test
+    void shouldRegisterAndLogin() {
+        // Register
+        ResponseEntity&lt;UserResponse&gt; register = rest.postForEntity(
+            "/api/auth/register",
+            new RegisterRequest("Akobir", "a@mail.com", "Pass123!"),
+            UserResponse.class
+        );
+        assertThat(register.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(userRepo.findByEmail("a@mail.com")).isPresent();
+
+        // Login
+        ResponseEntity&lt;TokenResponse&gt; login = rest.postForEntity(
+            "/api/auth/login",
+            new LoginRequest("a@mail.com", "Pass123!"),
+            TokenResponse.class
+        );
+        assertThat(login.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(login.getBody().getAccessToken()).isNotBlank();
+    }
+}</code></pre>
+  </section>
+
+  <!-- ==================== CI/CD + DEPLOYMENT ==================== -->
+
+  <section class="slide">
+    <h2>CI/CD — Continuous Integration / Delivery</h2>
+    <div class="theory-box">
+      <p><b>CI (Continuous Integration)</b> — har <code>git push</code>'da avtomatik <b>build + test</b>.</p>
+      <p><b>CD (Continuous Delivery/Deployment)</b> — testdan o'tgan kod avtomatik staging/production'ga.</p>
+      <p><b>Maqsad:</b> oddiy "deploy" bosqichini olib tashlash. Har soat — yangi versiya.</p>
+    </div>
+    <pre data-filename="pipeline.txt"><code>Developer git push
+        ↓
+┌──────────────────────────────────┐
+│  CI/CD Pipeline (GitHub Actions) │
+├──────────────────────────────────┤
+│  1. Checkout                     │
+│  2. Setup JDK                    │
+│  3. Cache Maven                  │
+│  4. Build (mvn package)          │
+│  5. Unit tests                   │
+│  6. Integration tests            │
+│  7. Code quality (SonarQube)     │
+│  8. Security scan                │
+│  9. Build Docker image           │
+│ 10. Push to registry             │
+│ 11. Deploy to staging            │
+│ 12. Smoke tests                  │
+│ 13. Deploy to production         │
+└──────────────────────────────────┘</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>GitHub Actions — misol</h2>
+    <pre data-filename=".github/workflows/ci.yml"><code>name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: test
+        ports: [5432:5432]
+        options: --health-cmd pg_isready --health-interval 5s
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Build
+        run: ./mvnw clean package -B
+
+      - name: Test
+        run: ./mvnw test -B
+        env:
+          DB_URL: jdbc:postgresql://localhost:5432/test
+
+      - name: SonarCloud
+        run: ./mvnw sonar:sonar -Dsonar.token=${{ secrets.SONAR_TOKEN }}
+
+      - name: Build Docker
+        if: github.ref == 'refs/heads/main'
+        run: |
+          docker build -t my-app:${{ github.sha }} .
+          docker tag my-app:${{ github.sha }} my-app:latest
+
+      - name: Push to registry
+        if: github.ref == 'refs/heads/main'
+        run: |
+          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+          docker push my-app:${{ github.sha }}
+
+      - name: Deploy
+        if: github.ref == 'refs/heads/main'
+        run: |
+          ssh user@server "docker pull my-app:latest &amp;&amp; \
+                          docker compose up -d --no-deps app"</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>Deployment Strategies</h2>
+    <table class="compare-table">
+      <thead><tr><th>Strategy</th><th>Tavsif</th><th>Foydasi/Minus</th></tr></thead>
+      <tbody>
+        <tr><td><b>Recreate</b></td><td>Eski to'xtaydi → yangi ishga tushadi</td><td>Oson, lekin downtime bor</td></tr>
+        <tr><td><b>Rolling Update</b></td><td>Bir-bir instance yangilanadi</td><td>Zero downtime, lekin 2 ta versiya birga</td></tr>
+        <tr><td><b>Blue-Green</b></td><td>Yangi versiya yon-yonida, traffic switch</td><td>Tez rollback, lekin 2x resurs</td></tr>
+        <tr><td><b>Canary</b></td><td>5% traffic yangi → kuzatish → 100%</td><td>Xavfsiz, lekin murakkab</td></tr>
+        <tr><td><b>Feature Flag</b></td><td>Kod deploy, lekin flag bilan o'chiriladi</td><td>Eng moslashuvchan</td></tr>
+      </tbody>
+    </table>
+    <pre data-filename="blue-green.txt"><code>BLUE (v1.0) — production traffic        GREEN (v1.1) — yangi versiya
+       ↓                                          ↓
+    [Users] →→→→→ [Load Balancer] →→→ [v1.0] ←→ [DB]
+                         ↑                         ↑
+                         │                         │
+                         └─── Switch! ──── [v1.1] ─┘
+                              (1 sekund)
+
+Test failed → switch orqaga (instant rollback)</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>Monitoring va Observability</h2>
+    <div class="theory-box">
+      <p><b>Observability</b> — 3 ta ustun: <b>Metrics</b>, <b>Logs</b>, <b>Traces</b>.</p>
+    </div>
+    <table class="compare-table">
+      <thead><tr><th>Vosita</th><th>Maqsad</th></tr></thead>
+      <tbody>
+        <tr><td><b>Prometheus</b></td><td>Metrics yig'ish (CPU, request count, latency)</td></tr>
+        <tr><td><b>Grafana</b></td><td>Vizualizatsiya — dashboard'lar</td></tr>
+        <tr><td><b>Loki / ELK</b></td><td>Strukturali log'larni saqlash va qidirish</td></tr>
+        <tr><td><b>Jaeger / Zipkin</b></td><td>Distributed tracing — request qaerda sekin</td></tr>
+        <tr><td><b>Sentry</b></td><td>Error tracking — exception'larni o'qish</td></tr>
+        <tr><td><b>PagerDuty</b></td><td>On-call alerting — uxlaganda ham SMS</td></tr>
+      </tbody>
+    </table>
+    <pre data-filename="application.yml"><code>management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, prometheus
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      application: ${spring.application.name}
+      environment: ${SPRING_PROFILES_ACTIVE:dev}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">📝 Amaliy topshiriqlar</span>
+      <span class="difficulty hard"><span class="dot"></span>Mustaqil</span>
+    </div>
+    <h2>10 ta murakkab vazifa</h2>
+    <p>Quyidagi vazifalarni production-ready ilovada bajaring:</p>
+    <ul style="font-size: 16px;">
+      <li>
+        <b>1. S3 + MinIO.</b> Local'da MinIO ishlatib, prod'da AWS S3 — bir xil kod.
+      </li>
+      <li>
+        <b>2. Email queue with RabbitMQ.</b> Email'larni RabbitMQ orqali async yuborish + retry policy.
+      </li>
+      <li>
+        <b>3. Redis caching with cache warming.</b> App startup'da cache'ni avval to'ldirib qo'yish.
+      </li>
+      <li>
+        <b>4. Multi-stage Dockerfile.</b> Image &lt; 200MB bo'lsin. Distroless base bilan.
+      </li>
+      <li>
+        <b>5. Docker Compose stack.</b> App + Postgres + Redis + Nginx + Prometheus + Grafana.
+      </li>
+      <li>
+        <b>6. Test coverage 80%+.</b> JaCoCo bilan o'lchang. Pure logic — 100%, controllers — 70%.
+      </li>
+      <li>
+        <b>7. CI/CD with quality gates.</b> Test failed yoki coverage &lt; 80% bo'lsa — deploy bekor.
+      </li>
+      <li>
+        <b>8. Blue-Green deployment.</b> Nginx upstream'lar va load balancer bilan.
+      </li>
+      <li>
+        <b>9. Observability stack.</b> Micrometer + Prometheus + Grafana dashboard.
+      </li>
+      <li>
+        <b>10. Graceful shutdown.</b> SIGTERM'da yangi request'larni rad qilish, mavjudlarini tugatish.
+      </li>
+    </ul>
+    <div class="note">
+      Har bir vazifa uchun: <b>12-factor app</b> printsiplari, <b>infrastructure as code</b> (Terraform/Ansible), <b>secrets management</b> (Vault).
+    </div>
+  </section>
+
+  <section class="slide slide-title">
+    <div class="topic-pill">🎯 Yakun</div>
+    <h1>Dars yakuni</h1>
+    <p>
+      Professional Backend — endi siz <b>Senior darajada</b> ilova yarata olasiz: production-ready, scalable, testable, deployable.
+    </p>
+    <div class="note">
+      <b>Keyingi mavzu:</b> Microservices — Microservice Architecture, API Gateway, Config Server, Service Discovery, Kafka, RabbitMQ va Monitoring.
+    </div>
+  </section>
+
+</div>
+
+<div class="toast" id="toast">✓ Kod nusxalandi!</div>
+
+<div class="controls">
+  <div class="progress-line" id="progressLine"></div>
+  <button class="nav-arrow" id="prevBtn" onclick="prevSlide()" title="Oldingi (←)">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+  </button>
+  <div class="pagination" id="pagination"></div>
+  <button class="nav-arrow" id="nextBtn" onclick="nextSlide()" title="Keyingi (→)">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+  </button>
+</div>
+
+<script>
+  function wrapCodeBlocks() {
+    document.querySelectorAll('pre').forEach(pre => {
+      if (pre.closest('.code-window')) return;
+      const filename = pre.dataset.filename || 'Example.java';
+      const wrapper = document.createElement('div');
+      wrapper.className = 'code-window';
+      wrapper.innerHTML = `
+        <div class="code-header">
+          <div class="traffic-lights">
+            <span class="light close"></span><span class="light minimize"></span><span class="light maximize"></span>
+          </div>
+          <div class="code-filename">${filename}</div>
+          <div class="code-actions">
+            <button class="code-btn reset-btn">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              Reset
+            </button>
+            <button class="code-btn copy-btn">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+              Copy
+            </button>
+          </div>
+        </div>
+        <div class="code-body"></div>
+      `;
+      pre.setAttribute('contenteditable', 'true');
+      pre.setAttribute('spellcheck', 'false');
+      const original = pre.innerHTML;
+      pre.dataset.original = original;
+      pre.parentNode.insertBefore(wrapper, pre);
+      wrapper.querySelector('.code-body').appendChild(pre);
+      wrapper.querySelector('.copy-btn').addEventListener('click', () => {
+        navigator.clipboard.writeText(pre.textContent).then(() => {
+          const btn = wrapper.querySelector('.copy-btn');
+          btn.classList.add('copied');
+          btn.innerHTML = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg> Nusxalandi`;
+          showToast('✓ Kod nusxalandi!');
+          setTimeout(() => {
+            btn.classList.remove('copied');
+            btn.innerHTML = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg> Copy`;
+          }, 2000);
+        });
+      });
+      wrapper.querySelector('.reset-btn').addEventListener('click', () => {
+        pre.innerHTML = original;
+        showToast('↺ Kod tiklandi');
+      });
+    });
+  }
+  function showToast(message) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.classList.add('show');
+    clearTimeout(window._toastTimer);
+    window._toastTimer = setTimeout(() => toast.classList.remove('show'), 1800);
+  }
+  wrapCodeBlocks();
+
+  function wrapSolutions() {
+    const eyeIcon = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>`;
+    const eyeOffIcon = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"/></svg>`;
+    document.querySelectorAll('.slide').forEach(slide => {
+      if (!slide.querySelector('.problem-header')) return;
+      slide.querySelectorAll('.code-window').forEach(cw => {
+        if (cw.parentNode.classList.contains('solution-content')) return;
+        const wrap = document.createElement('div');
+        wrap.className = 'solution-wrap';
+        const btn = document.createElement('button');
+        btn.className = 'show-solution-btn';
+        btn.innerHTML = eyeIcon + ' Yechimni ko\'rsatish';
+        const content = document.createElement('div');
+        content.className = 'solution-content';
+        cw.parentNode.insertBefore(wrap, cw);
+        content.appendChild(cw);
+        wrap.appendChild(btn);
+        wrap.appendChild(content);
+        btn.addEventListener('click', () => {
+          const isShown = content.classList.toggle('shown');
+          btn.classList.toggle('active', isShown);
+          btn.innerHTML = isShown ? eyeOffIcon + ' Yechimni yashirish' : eyeIcon + ' Yechimni ko\'rsatish';
+        });
+      });
+    });
+  }
+  wrapSolutions();
+
+  const slides = document.querySelectorAll('.slide');
+  const totalSlides = slides.length;
+  const pagination = document.getElementById('pagination');
+  let currentIndex = 0;
+  document.getElementById('totalSlides').textContent = totalSlides;
+  const pageDots = [];
+  for (let i = 0; i < totalSlides; i++) {
+    const dot = document.createElement('button');
+    dot.className = 'page-dot';
+    dot.textContent = String(i + 1).padStart(2, '0');
+    dot.addEventListener('click', () => { currentIndex = i; showSlide(i); });
+    pagination.appendChild(dot);
+    pageDots.push(dot);
+  }
+  function showSlide(index) {
+    slides.forEach(s => s.classList.remove('active'));
+    slides[index].classList.add('active');
+    document.getElementById('currentSlide').textContent = index + 1;
+    pageDots.forEach((d, i) => { d.classList.toggle('active', i === index); d.classList.toggle('visited', i < index); });
+    const percent = ((index + 1) / totalSlides * 100);
+    document.getElementById('progressLine').style.width = percent + '%';
+    document.getElementById('prevBtn').disabled = index === 0;
+    document.getElementById('nextBtn').disabled = index === totalSlides - 1;
+    slides[index].scrollTop = 0;
+    const activeDot = pageDots[index];
+    if (activeDot) activeDot.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  }
+  function nextSlide() { if (currentIndex < totalSlides - 1) { currentIndex++; showSlide(currentIndex); } }
+  function prevSlide() { if (currentIndex > 0) { currentIndex--; showSlide(currentIndex); } }
+  document.addEventListener('keydown', (e) => {
+    if (e.target.isContentEditable) return;
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); nextSlide(); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); prevSlide(); }
+    else if (e.key === 'Home') { currentIndex = 0; showSlide(0); }
+    else if (e.key === 'End') { currentIndex = totalSlides - 1; showSlide(currentIndex); }
+  });
+  showSlide(0);
+</script>
+
+<script>
+(function(_0x){
+  var _a=String.fromCharCode,
+      _b=[169,32,77,117,97,108,108,105,102,58,32,82,117,115,116,97,109,111,118,32,65,107,111,98,105,114],
+      _c=[95,120,57,52,107,55,116,57,114,53,95,115,105,103],
+      _d=[95,120,57,52,104,53,100,55],
+      _t='',_n='',_h='';
+  for(var i=0;i<_b.length;i++)_t+=_a(_b[i]);
+  for(var i=0;i<_c.length;i++)_n+=_a(_c[i]);
+  for(var i=0;i<_d.length;i++)_h+=_a(_d[i]);
+  function _mk(visible){
+    var d=document.createElement('div');
+    d.setAttribute('data-x',_t);
+    if(visible){
+      d.id=_n; d.textContent=_t;
+      d.style.cssText='position:fixed;bottom:96px;right:16px;z-index:99999;background:rgba(15,15,25,0.75);color:rgba(255,255,255,0.85);padding:6px 14px;border-radius:20px;font-family:system-ui,-apple-system,sans-serif;font-size:11px;font-weight:600;backdrop-filter:blur(10px);border:1px solid rgba(139,92,246,0.3);pointer-events:none;user-select:none;letter-spacing:0.03em;box-shadow:0 4px 12px rgba(0,0,0,0.3);';
+    }else{
+      d.className=_h+Math.random().toString(36).slice(2,7); d.textContent=_t;
+      d.style.cssText='position:absolute;left:-99999px;top:-99999px;opacity:0;pointer-events:none;width:1px;height:1px;overflow:hidden;';
+    }
+    return d;
+  }
+  function _ensure(){
+    if(!document.body)return;
+    if(!document.getElementById(_n)){ document.body.appendChild(_mk(true)); }
+    var hidden=document.querySelectorAll('[class^="'+_h+'"]');
+    if(hidden.length<5){ for(var i=hidden.length;i<5;i++){ document.body.appendChild(_mk(false)); } }
+  }
+  function _setup(){
+    _ensure();
+    try{
+      new MutationObserver(function(muts){
+        for(var i=0;i<muts.length;i++){
+          var m=muts[i];
+          if(m.removedNodes.length>0||m.type==='attributes'){ _ensure(); break; }
+        }
+      }).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['id','class','style']});
+    }catch(e){}
+    setInterval(_ensure,1500);
+  }
+  if(document.body)_setup();
+  else document.addEventListener('DOMContentLoaded',_setup);
+  try{
+    console.log('%c '+_t+' ','background:linear-gradient(135deg,#8b5cf6,#f472b6);color:white;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:bold;');
+    Object.defineProperty(window,_n+'_lock',{value:_t,writable:false,configurable:false});
+  }catch(e){}
+})();
+</script>
+
+</body>
+</html>

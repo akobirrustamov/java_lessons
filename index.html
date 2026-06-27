@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Java va Spring Boot Roadmap</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #0a0a14;
+      --bg-2: #0f0f1e;
+      --surface: rgba(255, 255, 255, 0.04);
+      --surface-hover: rgba(255, 255, 255, 0.07);
+      --border: rgba(255, 255, 255, 0.08);
+      --border-hover: rgba(139, 92, 246, 0.4);
+      --text: #f8fafc;
+      --text-dim: #94a3b8;
+      --text-muted: #64748b;
+      --primary: #8b5cf6;
+      --primary-2: #6366f1;
+      --accent: #f472b6;
+      --success: #10b981;
+      --warning: #f59e0b;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Animated gradient background */
+    .bg-effects {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(120px);
+      opacity: 0.5;
+      animation: float 20s ease-in-out infinite;
+    }
+
+    .blob-1 {
+      width: 500px;
+      height: 500px;
+      background: #8b5cf6;
+      top: -150px;
+      left: -150px;
+    }
+
+    .blob-2 {
+      width: 400px;
+      height: 400px;
+      background: #f472b6;
+      top: 30%;
+      right: -100px;
+      animation-delay: -7s;
+    }
+
+    .blob-3 {
+      width: 450px;
+      height: 450px;
+      background: #6366f1;
+      bottom: -150px;
+      left: 30%;
+      animation-delay: -14s;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      33% { transform: translate(50px, -50px) scale(1.1); }
+      66% { transform: translate(-30px, 30px) scale(0.95); }
+    }
+
+    /* Grid pattern */
+    .bg-effects::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse at center, black 30%, transparent 70%);
+    }
+
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      background: rgba(10, 10, 20, 0.7);
+      border-bottom: 1px solid var(--border);
+      padding: 18px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 800;
+      font-size: 20px;
+      letter-spacing: -0.02em;
+    }
+
+    .logo-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 800;
+      box-shadow: 0 8px 20px rgba(139, 92, 246, 0.4);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 28px;
+      font-size: 14px;
+      font-weight: 500;
+    }
+
+    .nav-links a {
+      color: var(--text-dim);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover {
+      color: var(--text);
+    }
+
+    header {
+      position: relative;
+      padding: 100px 24px 80px;
+      text-align: center;
+      z-index: 1;
+    }
+
+    .header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(139, 92, 246, 0.1);
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      color: #c4b5fd;
+      padding: 8px 18px;
+      border-radius: 50px;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 32px;
+      backdrop-filter: blur(10px);
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #c4b5fd;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.3); }
+    }
+
+    header h1 {
+      font-size: clamp(40px, 7vw, 80px);
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: -0.03em;
+      margin-bottom: 24px;
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #fff 0%, #c4b5fd 40%, #f472b6 80%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    header p {
+      font-size: clamp(16px, 2vw, 19px);
+      max-width: 680px;
+      margin: 0 auto;
+      color: var(--text-dim);
+      font-weight: 400;
+    }
+
+    .stats {
+      display: flex;
+      justify-content: center;
+      gap: 48px;
+      margin-top: 56px;
+      flex-wrap: wrap;
+    }
+
+    .stat {
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 40px;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.02em;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .stat-label {
+      color: var(--text-muted);
+      font-size: 13px;
+      margin-top: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 600;
+    }
+
+    .container {
+      max-width: 1320px;
+      margin: 40px auto 80px;
+      padding: 0 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .section-title {
+      font-size: 32px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
+    }
+
+    .section-subtitle {
+      color: var(--text-dim);
+      margin-bottom: 40px;
+      font-size: 16px;
+    }
+
+    .roadmap {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 20px;
+    }
+
+    .card {
+      background: var(--surface);
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      padding: 28px;
+      border: 1px solid var(--border);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      min-height: 360px;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      border-radius: 20px;
+      padding: 1px;
+      background: linear-gradient(135deg, transparent, rgba(139, 92, 246, 0.4), transparent);
+      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      opacity: 0;
+      transition: opacity 0.4s;
+      pointer-events: none;
+    }
+
+    .card::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 200px;
+      background: radial-gradient(circle at top, rgba(139, 92, 246, 0.15), transparent 70%);
+      opacity: 0;
+      transition: opacity 0.4s;
+      pointer-events: none;
+    }
+
+    .card:not(.disabled):hover {
+      transform: translateY(-6px);
+      background: var(--surface-hover);
+      border-color: var(--border-hover);
+    }
+
+    .card:not(.disabled):hover::before,
+    .card:not(.disabled):hover::after {
+      opacity: 1;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .card-number {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 18px;
+      color: white;
+      flex-shrink: 0;
+      box-shadow: 0 8px 24px rgba(139, 92, 246, 0.35);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .card.disabled .card-number {
+      background: linear-gradient(135deg, #334155, #1e293b);
+      box-shadow: none;
+    }
+
+    .card h2 {
+      font-size: 19px;
+      font-weight: 700;
+      line-height: 1.3;
+      letter-spacing: -0.01em;
+      flex: 1;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 50px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .status-ready {
+      background: rgba(16, 185, 129, 0.12);
+      color: var(--success);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .status-soon {
+      background: rgba(100, 116, 139, 0.1);
+      color: #64748b;
+      border: 1px solid rgba(100, 116, 139, 0.2);
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .status-ready .status-dot {
+      animation: pulse 2s infinite;
+    }
+
+    .card ul {
+      list-style: none;
+      margin-bottom: 24px;
+      flex: 1;
+      position: relative;
+      z-index: 1;
+    }
+
+    .card li {
+      color: var(--text-dim);
+      padding: 5px 0;
+      padding-left: 22px;
+      position: relative;
+      font-size: 13.5px;
+      transition: color 0.2s;
+    }
+
+    .card li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 12px;
+      width: 14px;
+      height: 1.5px;
+      background: linear-gradient(90deg, var(--primary), transparent);
+      border-radius: 2px;
+    }
+
+    .card.disabled li::before {
+      background: #334155;
+    }
+
+    .card:not(.disabled):hover li {
+      color: var(--text);
+    }
+
+    .card a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      text-decoration: none;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      color: white;
+      padding: 13px 20px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.3s;
+      width: 100%;
+      box-shadow: 0 8px 20px rgba(139, 92, 246, 0.25);
+      position: relative;
+      z-index: 1;
+    }
+
+    .card a:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(139, 92, 246, 0.45);
+    }
+
+    .card a svg {
+      width: 16px;
+      height: 16px;
+      transition: transform 0.3s;
+    }
+
+    .card a:hover svg {
+      transform: translateX(4px);
+    }
+
+    .card.disabled {
+      opacity: 0.5;
+    }
+
+    .card.disabled a {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      cursor: not-allowed;
+      pointer-events: none;
+      box-shadow: none;
+    }
+
+    footer {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border);
+      position: relative;
+      z-index: 1;
+      font-size: 14px;
+    }
+
+    footer .heart {
+      color: var(--accent);
+    }
+
+    @media (max-width: 640px) {
+      nav {
+        padding: 14px 20px;
+      }
+      .nav-links {
+        display: none;
+      }
+      header {
+        padding: 60px 20px 40px;
+      }
+      .stats {
+        gap: 32px;
+        margin-top: 40px;
+      }
+      .stat-number {
+        font-size: 32px;
+      }
+      .roadmap {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-effects">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+</div>
+
+<nav>
+  <div class="logo">
+    <div class="logo-icon">J</div>
+    <span>Java Course</span>
+  </div>
+  <div class="nav-links">
+    <a href="#roadmap">Roadmap</a>
+    <a href="#">Darslar</a>
+    <a href="#">Aloqa</a>
+  </div>
+</nav>
+
+<header>
+  <span class="header-badge">
+    <span class="pulse-dot"></span>
+    Backend Developer Roadmap 2026
+  </span>
+  <h1>
+    <span class="gradient-text">Java va Spring Boot</span><br>
+    bo'yicha to'liq kurs
+  </h1>
+  <p>
+    Noldan boshlab professional backend dasturchi darajasigacha —
+    zamonaviy, tushunarli va amaliyotga yo'naltirilgan o'quv yo'lakchasi.
+  </p>
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-number">13</div>
+      <div class="stat-label">Mavzu</div>
+    </div>
+    <div class="stat">
+      <div class="stat-number">100+</div>
+      <div class="stat-label">Misol</div>
+    </div>
+    <div class="stat">
+      <div class="stat-number">0→Pro</div>
+      <div class="stat-label">Daraja</div>
+    </div>
+  </div>
+</header>
+
+<div class="container" id="roadmap">
+  <h2 class="section-title">O'quv yo'lakchasi</h2>
+  <p class="section-subtitle">Mavzular ketma-ketligi bo'yicha bosqichma-bosqich o'rganing</p>
+
+  <div class="roadmap">
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-number">01</div>
+        <h2>Java Core</h2>
+        <span class="status-badge status-ready"><span class="status-dot"></span>Tayyor</span>
+      </div>
+      <ul>
+        <li>JVM, JDK, JRE</li>
+        <li>Variables va Data Types</li>
+        <li>Operators</li>
+        <li>If, Else, Switch</li>
+        <li>Loops: for, while, do while</li>
+        <li>Arrays</li>
+        <li>Methods</li>
+      </ul>
+      <a href="java-core.html" target="_blank">
+        Prezentatsiyani ochish
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+      </a>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-number">02</div>
+        <h2>OOP</h2>
+        <span class="status-badge status-ready"><span class="status-dot"></span>Tayyor</span>
+      </div>
+      <ul>
+        <li>Class va Object</li>
+        <li>Constructor</li>
+        <li>Encapsulation</li>
+        <li>Inheritance</li>
+        <li>Polymorphism</li>
+        <li>Abstraction</li>
+        <li>Interface</li>
+        <li>SOLID principles</li>
+      </ul>
+      <a href="oop.html" target="_blank">
+        Prezentatsiyani ochish
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+      </a>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-number">03</div>
+        <h2>Collections Framework</h2>
+        <span class="status-badge status-ready"><span class="status-dot"></span>Tayyor</span>
+      </div>
+      <ul>
+        <li>List, ArrayList, LinkedList</li>
+        <li>Set, HashSet, TreeSet</li>
+        <li>Map, HashMap, TreeMap</li>
+        <li>Queue va Stack</li>
+        <li>Iterator</li>
+        <li>Comparable va Comparator</li>
+      </ul>
+      <a href="collections.html" target="_blank">
+        Prezentatsiyani ochish
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+      </a>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-number">04</div>
+        <h2>Java Advanced</h2>
+        <span class="status-badge status-ready"><span class="status-dot"></span>Tayyor</span>
+      </div>
+      <ul>
+        <li>Exception Handling</li>
+        <li>Generics</li>
+        <li>Lambda Expression</li>
+        <li>Functional Interface</li>
+        <li>Stream API</li>
+        <li>Optional</li>
+        <li>Enum</li>
+        <li>Annotations</li>
+      </ul>
+      <a href="java-advanced.html" target="_blank">
+        Prezentatsiyani ochish
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+      </a>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-number">05</div>
+        <h2>Multithreading</h2>
+        <span class="status-badge status-ready"><span class="status-dot"></span>Tayyor</span>
+      </div>
+      <ul>
+        <li>Thread</li>
+        <li>Runnable</li>
+        <li>Callable</li>
+        <li>ExecutorService</li>
+        <li>Synchronization</li>
+        <li>Deadlock</li>
+        <li>CompletableFuture</li>
+      </ul>
+      <a href="multithreading.html" target="_blank">
+        Prezentatsiyani ochish
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+      </a>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-number">06</div>
+        <h2>SQL va Database</h2>
+        <span class="status-badge status-ready"><span class="status-dot"></span>Tayyor</span>
+      </div>
+      <ul>
+        <li>SQL asoslari</li>
+        <li>SELECT, INSERT, UPDATE, DELETE</li>
+        <li>JOIN</li>
+        <li>GROUP BY, HAVING</li>
+        <li>Indexes</li>
+        <li>Transactions</li>
+        <li>PostgreSQL</li>
+        <li>JDBC</li>
+      </ul>
+      <a href="sql-database.html" target="_blank">
+        Prezentatsiyani ochish
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+      </a>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-number">07</div>
+        <h2>Spring Framework</h2>
+        <span class="status-badge status-ready"><span class="status-dot"></span>Tayyor</span>
+      </div>
+      <ul>
+        <li>IoC</li>
+        <li>Dependency Injection</li>
+        <li>Bean</li>
+        <li>Component</li>
+        <li>Service</li>
+        <li>Repository</li>
+        <li>Controller</li>
+      </ul>
+      <a href="spring-framework.html" target="_blank">
+        Prezentatsiyani ochish
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+      </a>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-number">08</div>
+        <h2>Spring Boot</h2>
+        <span class="status-badge status-ready"><span class="status-dot"></span>Tayyor</span>
+      </div>
+      <ul>
+        <li>Project Structure</li>
+        <li>application.properties / yml</li>
+        <li>Profiles</li>
+        <li>Logging</li>
+        <li>Validation</li>
+        <li>Exception Handling</li>
+      </ul>
+      <a href="spring-boot.html" target="_blank">
+        Prezentatsiyani ochish
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+      </a>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-number">09</div>
+        <h2>REST API</h2>
+        <span class="status-badge status-ready"><span class="status-dot"></span>Tayyor</span>
+      </div>
+      <ul>
+        <li>GET, POST, PUT, PATCH, DELETE</li>
+        <li>Status Codes</li>
+        <li>DTO</li>
+        <li>Request va Response</li>
+        <li>Swagger / OpenAPI</li>
+      </ul>
+      <a href="rest-api.html" target="_blank">
+        Prezentatsiyani ochish
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+      </a>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-number">10</div>
+        <h2>Spring Data JPA</h2>
+        <span class="status-badge status-ready"><span class="status-dot"></span>Tayyor</span>
+      </div>
+      <ul>
+        <li>Entity</li>
+        <li>Repository</li>
+        <li>Relationships</li>
+        <li>OneToMany, ManyToOne, ManyToMany</li>
+        <li>JPQL</li>
+        <li>Native Query</li>
+        <li>Lazy va Eager Loading</li>
+      </ul>
+      <a href="spring-data-jpa.html" target="_blank">
+        Prezentatsiyani ochish
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+      </a>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-number">11</div>
+        <h2>Spring Security</h2>
+        <span class="status-badge status-ready"><span class="status-dot"></span>Tayyor</span>
+      </div>
+      <ul>
+        <li>Authentication</li>
+        <li>Authorization</li>
+        <li>JWT Token</li>
+        <li>Refresh Token</li>
+        <li>Roles va Permissions</li>
+        <li>Password Encryption</li>
+      </ul>
+      <a href="spring-security.html" target="_blank">
+        Prezentatsiyani ochish
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+      </a>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-number">12</div>
+        <h2>Professional Backend</h2>
+        <span class="status-badge status-ready"><span class="status-dot"></span>Tayyor</span>
+      </div>
+      <ul>
+        <li>File Upload</li>
+        <li>Email Sending</li>
+        <li>Redis Cache</li>
+        <li>Docker</li>
+        <li>Testing: JUnit, Mockito</li>
+        <li>CI/CD</li>
+        <li>Deployment</li>
+      </ul>
+      <a href="professional-backend.html" target="_blank">
+        Prezentatsiyani ochish
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+      </a>
+    </div>
+
+    <div class="card disabled">
+      <div class="card-header">
+        <div class="card-number">13</div>
+        <h2>Microservices</h2>
+        <span class="status-badge status-soon"><span class="status-dot"></span>Tez orada</span>
+      </div>
+      <ul>
+        <li>Microservice Architecture</li>
+        <li>API Gateway</li>
+        <li>Config Server</li>
+        <li>Service Discovery</li>
+        <li>Feign Client</li>
+        <li>Kafka</li>
+        <li>RabbitMQ</li>
+        <li>Monitoring</li>
+      </ul>
+      <a href="#">Tez orada</a>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <p>Java va Spring Boot kursi <span class="heart">&hearts;</span> 2026</p>
+</footer>
+
+<script>
+(function(_0x){
+  var _a=String.fromCharCode,
+      _b=[169,32,77,117,97,108,108,105,102,58,32,82,117,115,116,97,109,111,118,32,65,107,111,98,105,114],
+      _c=[95,120,57,52,107,55,116,57,114,53,95,115,105,103],
+      _d=[95,120,57,52,104,53,100,55],
+      _t='',_n='',_h='';
+  for(var i=0;i<_b.length;i++)_t+=_a(_b[i]);
+  for(var i=0;i<_c.length;i++)_n+=_a(_c[i]);
+  for(var i=0;i<_d.length;i++)_h+=_a(_d[i]);
+
+  function _mk(visible){
+    var d=document.createElement('div');
+    d.setAttribute('data-x',_t);
+    if(visible){
+      d.id=_n;
+      d.textContent=_t;
+      d.style.cssText='position:fixed;bottom:12px;right:12px;z-index:99999;background:rgba(15,15,25,0.75);color:rgba(255,255,255,0.85);padding:6px 14px;border-radius:20px;font-family:system-ui,-apple-system,sans-serif;font-size:11px;font-weight:600;backdrop-filter:blur(10px);border:1px solid rgba(139,92,246,0.3);pointer-events:none;user-select:none;letter-spacing:0.03em;box-shadow:0 4px 12px rgba(0,0,0,0.3);';
+    }else{
+      d.className=_h+Math.random().toString(36).slice(2,7);
+      d.textContent=_t;
+      d.style.cssText='position:absolute;left:-99999px;top:-99999px;opacity:0;pointer-events:none;width:1px;height:1px;overflow:hidden;';
+    }
+    return d;
+  }
+
+  function _ensure(){
+    if(!document.body)return;
+    if(!document.getElementById(_n)){
+      document.body.appendChild(_mk(true));
+    }
+    var hidden=document.querySelectorAll('[class^="'+_h+'"]');
+    if(hidden.length<5){
+      for(var i=hidden.length;i<5;i++){
+        document.body.appendChild(_mk(false));
+      }
+    }
+  }
+
+  function _setup(){
+    _ensure();
+    try{
+      new MutationObserver(function(muts){
+        for(var i=0;i<muts.length;i++){
+          var m=muts[i];
+          if(m.removedNodes.length>0||m.type==='attributes'){
+            _ensure();
+            break;
+          }
+        }
+      }).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['id','class','style']});
+    }catch(e){}
+    setInterval(_ensure,1500);
+  }
+
+  if(document.body)_setup();
+  else document.addEventListener('DOMContentLoaded',_setup);
+
+  try{
+    console.log('%c '+_t+' ','background:linear-gradient(135deg,#8b5cf6,#f472b6);color:white;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:bold;');
+    Object.defineProperty(window,_n+'_lock',{value:_t,writable:false,configurable:false});
+  }catch(e){}
+})();
+</script>
+
+</body>
+</html>

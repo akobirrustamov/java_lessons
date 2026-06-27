@@ -1,0 +1,1387 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Spring Boot — Prezentatsiya</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0a0a14; --surface: rgba(255, 255, 255, 0.04); --border: rgba(255, 255, 255, 0.08);
+      --text: #f8fafc; --text-dim: #94a3b8; --text-muted: #64748b;
+      --primary: #8b5cf6; --primary-2: #6366f1; --accent: #f472b6;
+      --slide-bg: #ffffff; --slide-bg-2: #fafafe;
+      --code-bg: #0f172a; --code-text: #e2e8f0;
+    }
+    html, body { height: 100%; overflow: hidden; }
+    body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
+    .bg-effects { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+    .blob { position: absolute; border-radius: 50%; filter: blur(140px); opacity: 0.4; }
+    .blob-1 { width: 500px; height: 500px; background: #8b5cf6; top: -100px; left: -150px; }
+    .blob-2 { width: 400px; height: 400px; background: #f472b6; bottom: -100px; right: -100px; }
+    .top { position: fixed; top: 0; left: 0; right: 0; z-index: 100; backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); background: rgba(10, 10, 20, 0.7); border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+    .top-left { display: flex; align-items: center; gap: 14px; }
+    .back-btn { display: inline-flex; align-items: center; gap: 8px; color: var(--text); text-decoration: none; background: var(--surface); border: 1px solid var(--border); padding: 9px 16px; border-radius: 10px; font-weight: 600; font-size: 14px; transition: all 0.2s; }
+    .back-btn:hover { background: rgba(139, 92, 246, 0.15); border-color: rgba(139, 92, 246, 0.4); }
+    .topic-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); color: #c4b5fd; padding: 8px 14px; border-radius: 50px; font-size: 12px; font-weight: 600; }
+    .pulse-dot { width: 6px; height: 6px; border-radius: 50%; background: #c4b5fd; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+    .slide-counter { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--border); padding: 9px 16px; border-radius: 10px; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; color: var(--text-dim); }
+    .slide-counter .current { color: var(--text); }
+    .presentation { position: fixed; top: 72px; bottom: 86px; left: 0; right: 0; display: flex; align-items: center; justify-content: center; padding: 24px; z-index: 1; }
+    .slide { display: none; background: linear-gradient(135deg, var(--slide-bg) 0%, var(--slide-bg-2) 100%); color: #0f172a; width: 100%; max-width: 1180px; height: 100%; max-height: 100%; padding: 56px 64px; border-radius: 28px; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05); flex-direction: column; justify-content: center; overflow-y: auto; position: relative; }
+    .slide.active { display: flex; animation: slideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+    .slide > * { min-width: 0; max-width: 100%; }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(30px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    .slide::before { content: ''; position: absolute; top: 0; right: 0; width: 280px; height: 280px; background: radial-gradient(circle, rgba(139, 92, 246, 0.08), transparent 70%); border-radius: 50%; pointer-events: none; }
+    .slide::after { content: ''; position: absolute; bottom: 0; left: 0; width: 240px; height: 240px; background: radial-gradient(circle, rgba(244, 114, 182, 0.08), transparent 70%); border-radius: 50%; pointer-events: none; }
+    .slide h1 { font-size: clamp(36px, 5vw, 60px); font-weight: 900; letter-spacing: -0.03em; margin-bottom: 24px; line-height: 1.1; background: linear-gradient(135deg, #1e1b4b 0%, #6366f1 50%, #8b5cf6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; position: relative; z-index: 1; }
+    .slide h2 { font-size: clamp(28px, 4vw, 44px); font-weight: 800; letter-spacing: -0.02em; margin-bottom: 28px; color: #1e1b4b; line-height: 1.15; position: relative; z-index: 1; }
+    .slide h2::before { content: ''; display: inline-block; width: 6px; height: 32px; background: linear-gradient(180deg, var(--primary), var(--accent)); border-radius: 4px; margin-right: 16px; vertical-align: middle; transform: translateY(-3px); }
+    .slide p { font-size: 19px; margin-bottom: 18px; color: #334155; position: relative; z-index: 1; line-height: 1.7; }
+    .slide ul { font-size: 18px; list-style: none; padding-left: 0; position: relative; z-index: 1; }
+    .slide li { position: relative; padding: 10px 0 10px 32px; color: #1e293b; line-height: 1.6; }
+    .slide li::before { content: ''; position: absolute; left: 8px; top: 20px; width: 8px; height: 8px; background: linear-gradient(135deg, var(--primary), var(--accent)); border-radius: 50%; box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.12); }
+    .slide b { color: var(--primary-2); font-weight: 700; }
+    .slide-title { text-align: center; justify-content: center; }
+    .slide-title h1 { font-size: clamp(48px, 8vw, 88px); text-align: center; }
+    .slide-title p { text-align: center; max-width: 700px; margin-left: auto; margin-right: auto; font-size: 22px; }
+    .topic-pill { display: inline-flex; align-items: center; gap: 10px; background: linear-gradient(135deg, rgba(139, 92, 246, 0.12), rgba(244, 114, 182, 0.12)); border: 1px solid rgba(139, 92, 246, 0.3); color: var(--primary); padding: 10px 22px; border-radius: 50px; font-weight: 700; font-size: 14px; margin: 0 auto 32px; width: fit-content; text-transform: uppercase; letter-spacing: 0.08em; }
+    .code-window { background: var(--code-bg); border-radius: 14px; margin: 20px 0; position: relative; z-index: 1; border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05); max-width: 100%; min-width: 0; display: flex; flex-direction: column; overflow: hidden; }
+    .code-header { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: linear-gradient(180deg, #2d3548 0%, #1e2536 100%); border-bottom: 1px solid rgba(255, 255, 255, 0.08); user-select: none; }
+    .traffic-lights { display: flex; gap: 8px; align-items: center; }
+    .light { width: 12px; height: 12px; border-radius: 50%; border: 0.5px solid rgba(0, 0, 0, 0.2); cursor: pointer; transition: filter 0.2s; }
+    .light:hover { filter: brightness(1.15); }
+    .light.close { background: #ff5f57; } .light.minimize { background: #febc2e; } .light.maximize { background: #28c840; }
+    .code-filename { flex: 1; text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: #94a3b8; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .code-filename::before { content: '🚀'; font-size: 12px; }
+    .code-actions { display: flex; gap: 6px; align-items: center; }
+    .code-btn { display: inline-flex; align-items: center; gap: 5px; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.08); color: #cbd5e1; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; }
+    .code-btn:hover { background: rgba(139, 92, 246, 0.2); border-color: rgba(139, 92, 246, 0.4); color: white; }
+    .code-btn.copied { background: rgba(16, 185, 129, 0.2); border-color: rgba(16, 185, 129, 0.4); color: #6ee7b7; }
+    .code-btn svg { width: 12px; height: 12px; }
+    .code-body { position: relative; background: var(--code-bg); min-width: 0; max-width: 100%; overflow: hidden; }
+    pre { background: transparent; color: var(--code-text); padding: 22px 24px; overflow-x: auto; overflow-y: auto; max-height: 50vh; font-size: 15px; margin: 0; font-family: 'JetBrains Mono', 'Consolas', monospace; line-height: 1.7; tab-size: 4; outline: none; white-space: pre; word-wrap: normal; scrollbar-width: thin; scrollbar-color: rgba(139, 92, 246, 0.4) rgba(255, 255, 255, 0.04); }
+    pre::-webkit-scrollbar { height: 10px; width: 10px; }
+    pre::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.04); border-radius: 5px; }
+    pre::-webkit-scrollbar-thumb { background: linear-gradient(135deg, rgba(139, 92, 246, 0.5), rgba(244, 114, 182, 0.5)); border-radius: 5px; border: 2px solid transparent; background-clip: padding-box; }
+    pre[contenteditable="true"] { caret-color: #c084fc; }
+    pre[contenteditable="true"]:focus { background: rgba(139, 92, 246, 0.04); }
+    pre code { display: block; font-family: inherit; }
+    code { font-family: 'JetBrains Mono', monospace; font-size: 0.95em; }
+    p code, li code, .note code, td code, th code { background: rgba(139, 92, 246, 0.1); color: var(--primary); padding: 2px 8px; border-radius: 6px; font-size: 0.9em; font-weight: 600; }
+    .toast { position: fixed; bottom: 110px; left: 50%; transform: translateX(-50%) translateY(20px); background: rgba(16, 185, 129, 0.95); color: white; padding: 10px 20px; border-radius: 10px; font-size: 13px; font-weight: 600; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4); opacity: 0; pointer-events: none; transition: all 0.3s; z-index: 200; backdrop-filter: blur(10px); }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .problem-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; position: relative; z-index: 1; }
+    .problem-num { display: inline-flex; align-items: center; gap: 6px; background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: white; padding: 5px 14px; border-radius: 50px; font-size: 12px; font-weight: 700; letter-spacing: 0.05em; font-family: 'JetBrains Mono', monospace; }
+    .difficulty { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 50px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+    .difficulty.easy { background: rgba(16, 185, 129, 0.12); color: #059669; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .difficulty.medium { background: rgba(245, 158, 11, 0.12); color: #d97706; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .difficulty.hard { background: rgba(239, 68, 68, 0.12); color: #dc2626; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .difficulty .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .example-block { background: #f1f5f9; border-left: 4px solid var(--primary); padding: 14px 18px; border-radius: 10px; margin: 12px 0; font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #1e293b; line-height: 1.7; position: relative; z-index: 1; }
+    .example-title { font-family: 'Inter', sans-serif; font-weight: 700; color: var(--primary); font-size: 13px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .example-block b { color: var(--primary); }
+    .constraints { background: rgba(99, 102, 241, 0.05); border: 1px dashed rgba(99, 102, 241, 0.3); padding: 12px 18px; border-radius: 10px; font-size: 14px; color: #475569; margin: 12px 0; position: relative; z-index: 1; }
+    .constraints b { color: var(--primary); }
+    .solution-wrap { margin-top: 18px; position: relative; z-index: 1; }
+    .show-solution-btn { display: inline-flex; align-items: center; gap: 10px; background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: white; border: none; padding: 12px 22px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.3s; font-family: 'Inter', sans-serif; box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3); }
+    .show-solution-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(139, 92, 246, 0.45); }
+    .show-solution-btn svg { width: 16px; height: 16px; }
+    .show-solution-btn.active { background: linear-gradient(135deg, #ec4899, #f43f5e); box-shadow: 0 8px 20px rgba(244, 63, 94, 0.3); }
+    .solution-content { max-height: 0; overflow: hidden; opacity: 0; margin-top: 0; transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, margin-top 0.3s ease; }
+    .solution-content.shown { max-height: 2500px; opacity: 1; margin-top: 16px; }
+    .note { background: linear-gradient(135deg, #fef3c7, #fef9c3); border-left: 4px solid #f59e0b; padding: 18px 22px; border-radius: 14px; margin-top: 24px; font-size: 17px; color: #78350f; position: relative; z-index: 1; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15); }
+    .note::before { content: '💡'; margin-right: 8px; }
+    .note b { color: #92400e; } .note code { background: rgba(245, 158, 11, 0.2); color: #78350f; }
+    .warning { background: linear-gradient(135deg, #fee2e2, #fecaca); border-left: 4px solid #ef4444; padding: 18px 22px; border-radius: 14px; margin-top: 24px; font-size: 17px; color: #7f1d1d; position: relative; z-index: 1; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15); }
+    .warning::before { content: '⚠️'; margin-right: 8px; }
+    .warning b { color: #991b1b; } .warning code { background: rgba(239, 68, 68, 0.2); color: #7f1d1d; }
+    .def-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 16px; position: relative; z-index: 1; }
+    .def-card { background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px 24px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04); transition: all 0.3s; }
+    .def-card:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(139, 92, 246, 0.12); }
+    .def-card h3 { font-family: 'JetBrains Mono', monospace; font-size: 22px; color: var(--primary); margin-bottom: 8px; font-weight: 700; }
+    .def-card p { font-size: 15px; margin: 0; color: #475569; }
+    .theory-box { background: linear-gradient(135deg, #ede9fe, #fce7f3); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 16px; padding: 22px 26px; margin: 18px 0; position: relative; z-index: 1; box-shadow: 0 8px 20px rgba(139, 92, 246, 0.08); }
+    .theory-box::before { content: '🧠 NAZARIYA'; display: block; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; color: var(--primary); letter-spacing: 0.1em; margin-bottom: 10px; }
+    .theory-box p { font-size: 17px; margin-bottom: 8px; color: #1e1b4b; }
+    .theory-box p:last-child { margin-bottom: 0; }
+    .compare-table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); position: relative; z-index: 1; margin-top: 12px; }
+    .compare-table th { background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: white; padding: 14px 16px; text-align: left; font-weight: 700; font-size: 14px; }
+    .compare-table td { padding: 12px 16px; border-bottom: 1px solid #e2e8f0; font-size: 15px; color: #334155; }
+    .compare-table tr:last-child td { border-bottom: none; }
+    .compare-table tr:hover td { background: #f8fafc; }
+    .controls { position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; backdrop-filter: blur(20px) saturate(180%); background: rgba(10, 10, 20, 0.75); border-top: 1px solid var(--border); padding: 14px 20px; display: flex; justify-content: center; align-items: center; gap: 12px; }
+    .nav-arrow { display: inline-flex; align-items: center; justify-content: center; background: var(--surface); color: var(--text); border: 1px solid var(--border); width: 38px; height: 38px; border-radius: 10px; cursor: pointer; transition: all 0.2s; flex-shrink: 0; }
+    .nav-arrow:hover:not(:disabled) { background: linear-gradient(135deg, var(--primary), var(--primary-2)); border-color: transparent; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(139, 92, 246, 0.4); }
+    .nav-arrow:disabled { opacity: 0.3; cursor: not-allowed; }
+    .nav-arrow svg { width: 16px; height: 16px; }
+    .pagination { display: flex; align-items: center; gap: 6px; overflow-x: auto; scrollbar-width: none; max-width: calc(100vw - 200px); padding: 4px; scroll-behavior: smooth; }
+    .pagination::-webkit-scrollbar { display: none; }
+    .page-dot { display: inline-flex; align-items: center; justify-content: center; min-width: 34px; height: 34px; padding: 0 10px; background: var(--surface); color: var(--text-dim); border: 1px solid var(--border); border-radius: 9px; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; font-weight: 600; cursor: pointer; transition: all 0.2s; flex-shrink: 0; }
+    .page-dot:hover { color: var(--text); border-color: rgba(139, 92, 246, 0.4); background: rgba(139, 92, 246, 0.1); transform: translateY(-1px); }
+    .page-dot.active { background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: white; border-color: transparent; box-shadow: 0 6px 16px rgba(139, 92, 246, 0.45); transform: scale(1.08); }
+    .page-dot.visited { color: var(--text); background: rgba(139, 92, 246, 0.08); border-color: rgba(139, 92, 246, 0.2); }
+    .progress-line { position: absolute; top: 0; left: 0; height: 3px; background: linear-gradient(90deg, var(--primary), var(--accent)); transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 12px rgba(139, 92, 246, 0.6); border-radius: 0 3px 3px 0; }
+    @media (max-width: 768px) {
+      .top { padding: 12px 16px; } .topic-badge { display: none; }
+      .slide { padding: 32px 24px; border-radius: 20px; }
+      pre { font-size: 13px; padding: 18px; }
+      .nav-arrow { width: 36px; height: 36px; }
+      .pagination { max-width: calc(100vw - 110px); gap: 4px; }
+      .page-dot { min-width: 30px; height: 30px; font-size: 11.5px; padding: 0 6px; }
+      .slide h2::before { width: 4px; height: 24px; }
+    }
+    @media print {
+      html, body { height: auto; overflow: visible; } body { background: white; }
+      .top, .controls, .bg-effects { display: none; }
+      .presentation { position: static; display: block; padding: 0; }
+      .slide { display: flex !important; page-break-after: always; box-shadow: none; border: 1px solid #ddd; max-width: 100%; height: auto; max-height: none; margin-bottom: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-effects">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+</div>
+
+<div class="top">
+  <div class="top-left">
+    <a href="index.html" class="back-btn">
+      <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+      Roadmap
+    </a>
+    <div class="topic-badge">
+      <span class="pulse-dot"></span>
+      8-Mavzu · Spring Boot
+    </div>
+  </div>
+  <div class="slide-counter">
+    <span class="current" id="currentSlide">1</span>
+    <span>/</span>
+    <span id="totalSlides">0</span>
+  </div>
+</div>
+
+<div class="presentation">
+
+  <section class="slide slide-title">
+    <div class="topic-pill">⚡ 8-Mavzu</div>
+    <h1>Spring Boot</h1>
+    <p>
+      Spring Framework ustiga qurilgan <b>opinionated</b> qatlam. Auto-configuration, starter'lar va embedded server bilan — daqiqada production-ready ilova.
+    </p>
+    <div class="note">
+      <b>Dars maqsadi:</b> Auto-configuration, starter dependencies, application.properties/yml, profiles, logging, validation va exception handling'ni nazariya va amaliyot bilan chuqur o'rganamiz.
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>Spring Boot nima?</h2>
+    <p>
+      <b>Spring Boot</b> — 2014-yilda chiqarilgan, Spring'ni <b>oddiy va tez</b> ishlatish uchun yaratilgan framework.
+    </p>
+    <div class="theory-box">
+      <p><b>Asosiy g'oya:</b> "Convention over Configuration" — har bir konfiguratsiyani qo'lda yozish o'rniga, <b>oqilona standart</b>larni belgilash.</p>
+      <p>Spring Boot 4 ta asosiy printsipga tayanadi:</p>
+    </div>
+    <ul>
+      <li><b>Auto-configuration</b> — kerakli konfiguratsiya avtomatik qo'shiladi</li>
+      <li><b>Starter dependencies</b> — bog'liqliklarning tematik to'plamlari</li>
+      <li><b>Embedded server</b> — Tomcat/Jetty/Undertow JAR ichida</li>
+      <li><b>Production-ready</b> — Actuator, metrics, health checks tayyor</li>
+    </ul>
+    <div class="note">
+      Natija: <code>java -jar app.jar</code> bilan ishga tushadigan <b>standalone ilova</b>. Tashqi server o'rnatish shart emas.
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>Auto-configuration — ichki ishlash</h2>
+    <div class="theory-box">
+      <p><b>Auto-configuration nima?</b> Classpath'da qaysi kutubxonalar borligini ko'rib, Spring kerakli bean'larni <b>avtomatik yaratadi</b>.</p>
+      <p><b>Misol:</b> classpath'da <code>spring-boot-starter-web</code> bo'lsa → Tomcat + DispatcherServlet + Jackson tayyor.</p>
+      <p><b>Asosiy mexanizm:</b> <code>META-INF/spring/org.springframework.boot.autoconfigure.AutoConfiguration.imports</code> faylida ro'yxat. Har bir konfiguratsiya <code>@Conditional...</code> orqali "qachon ishga tushishi"ni belgilaydi.</p>
+    </div>
+    <pre data-filename="AutoConfig.java"><code>// Spring Boot'ning ichki konfiguratsiyasi (soddalashtirilgan)
+@AutoConfiguration
+@ConditionalOnClass(DataSource.class)        // DataSource klassi bo'lsa
+@ConditionalOnMissingBean(DataSource.class)  // bizning DataSource yo'q bo'lsa
+@EnableConfigurationProperties(DataSourceProperties.class)
+public class DataSourceAutoConfiguration {
+
+    @Bean
+    public DataSource dataSource(DataSourceProperties props) {
+        return DataSourceBuilder.create()
+            .url(props.getUrl())
+            .username(props.getUsername())
+            .build();
+    }
+}</code></pre>
+    <div class="note">
+      <b>Auto-config'ni o'chirish:</b> <code>@SpringBootApplication(exclude = DataSourceAutoConfiguration.class)</code> yoki <code>spring.autoconfigure.exclude</code> property.
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>Starter Dependencies</h2>
+    <p>
+      <b>Starter</b> — ma'lum vazifa uchun kerakli barcha bog'liqliklarni o'z ichiga olgan paket.
+    </p>
+    <table class="compare-table">
+      <thead><tr><th>Starter</th><th>Nima beradi</th></tr></thead>
+      <tbody>
+        <tr><td><code>spring-boot-starter-web</code></td><td>Web ilova: Tomcat, MVC, Jackson</td></tr>
+        <tr><td><code>spring-boot-starter-data-jpa</code></td><td>JPA, Hibernate, DataSource</td></tr>
+        <tr><td><code>spring-boot-starter-security</code></td><td>Spring Security to'liq</td></tr>
+        <tr><td><code>spring-boot-starter-test</code></td><td>JUnit 5, Mockito, AssertJ</td></tr>
+        <tr><td><code>spring-boot-starter-validation</code></td><td>Bean Validation (Hibernate Validator)</td></tr>
+        <tr><td><code>spring-boot-starter-actuator</code></td><td>Health, metrics, prod tools</td></tr>
+        <tr><td><code>spring-boot-starter-data-redis</code></td><td>Redis bilan ishlash</td></tr>
+      </tbody>
+    </table>
+    <pre data-filename="pom.xml"><code>&lt;dependency&gt;
+    &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-boot-starter-web&lt;/artifactId&gt;
+&lt;/dependency&gt;
+&lt;!-- Bu bitta dependency 30+ kutubxonani olib keladi! --&gt;</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>Project Structure</h2>
+    <pre data-filename="structure.txt"><code>my-app/
+├── pom.xml                         # Maven dependencies
+├── src/
+│   ├── main/
+│   │   ├── java/
+│   │   │   └── com/example/
+│   │   │       ├── MyApplication.java     # main metod
+│   │   │       ├── controller/
+│   │   │       ├── service/
+│   │   │       ├── repository/
+│   │   │       ├── entity/
+│   │   │       ├── dto/
+│   │   │       └── config/
+│   │   └── resources/
+│   │       ├── application.yml            # konfiguratsiya
+│   │       ├── application-dev.yml        # dev profile
+│   │       ├── application-prod.yml       # prod profile
+│   │       ├── static/                    # CSS, JS
+│   │       └── templates/                 # Thymeleaf
+│   └── test/
+│       └── java/com/example/...           # testlar</code></pre>
+    <pre data-filename="MyApplication.java"><code>@SpringBootApplication
+// ↑ aslida 3 ta annotatsiya:
+// @SpringBootConfiguration — @Configuration ning maxsus turi
+// @EnableAutoConfiguration  — auto-config'ni yoqadi
+// @ComponentScan            — Bu paket va child'larini skanlaydi
+
+public class MyApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(MyApplication.class, args);
+    }
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>application.properties vs application.yml</h2>
+    <pre data-filename="application.properties"><code># application.properties — kalit-qiymat
+server.port=8080
+spring.application.name=my-app
+
+spring.datasource.url=jdbc:postgresql://localhost:5432/mydb
+spring.datasource.username=admin
+spring.datasource.password=secret
+
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+
+logging.level.com.example=DEBUG
+logging.level.org.springframework.web=INFO</code></pre>
+    <pre data-filename="application.yml"><code># application.yml — ierarxik, o'qish oson
+server:
+  port: 8080
+
+spring:
+  application:
+    name: my-app
+  datasource:
+    url: jdbc:postgresql://localhost:5432/mydb
+    username: admin
+    password: secret
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+logging:
+  level:
+    com.example: DEBUG
+    org.springframework.web: INFO</code></pre>
+    <div class="note">
+      Ko'p kompaniyalar <b>YAML</b>'ni tanlashadi — qisqaroq va o'qish oson. Lekin <b>indentatsiyaga e'tibor</b> bering!
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>Property hierarchy — qaysi qiymat qo'llaniladi?</h2>
+    <div class="theory-box">
+      <p>Spring Boot konfiguratsiya qiymatlarini <b>ko'p manbadan</b> oladi. <b>Aniq tartib bo'yicha</b> qaysi biri ustun keladi.</p>
+      <p><b>Yuqoridagi pastdagini bekor qiladi</b> (override):</p>
+    </div>
+    <pre data-filename="precedence.txt"><code>1. Command-line argumentlar           ← eng yuqori prioritet
+   java -jar app.jar --server.port=9000
+
+2. SPRING_APPLICATION_JSON
+   { "server": { "port": 9000 } }
+
+3. JNDI atributlari (java:comp/env)
+
+4. Java System properties
+   -Dserver.port=9000
+
+5. OS Environment variables
+   SERVER_PORT=9000 java -jar app.jar
+
+6. application-{profile}.yml (active profile)
+7. application-{profile}.properties
+
+8. application.yml / application.properties  ← eng past prioritet
+
+9. @PropertySource annotatsiya bilan</code></pre>
+    <div class="note">
+      <b>Amaliyot:</b> Production'da <b>environment variables</b> ishlatish tavsiya etiladi (12-factor app printsipi). Parol va sirlarni hech qachon kod ichiga yozmang!
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 1</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>application.yml dan ma'lumot olish</h2>
+    <p>
+      <code>app.name</code>, <code>app.version</code> va <code>app.author</code> ni <code>application.yml</code>'dan oling va <code>InfoController</code>'da chiqaring.
+    </p>
+    <pre data-filename="application.yml"><code>app:
+  name: My Backend
+  version: 1.0.0
+  author: Akobir</code></pre>
+    <pre data-filename="InfoController.java"><code>@RestController
+@RequestMapping("/info")
+public class InfoController {
+
+    @Value("${app.name}")
+    private String name;
+
+    @Value("${app.version}")
+    private String version;
+
+    @Value("${app.author}")
+    private String author;
+
+    @GetMapping
+    public Map&lt;String, String&gt; info() {
+        return Map.of(
+            "name", name,
+            "version", version,
+            "author", author
+        );
+    }
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 2</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>Default qiymat bilan @Value</h2>
+    <p>
+      <code>app.greeting</code> property yo'q bo'lsa "Salom" default qiymatini olsin.
+    </p>
+    <pre data-filename="GreetingService.java"><code>@Service
+public class GreetingService {
+
+    @Value("${app.greeting:Salom}")  // : dan keyin default qiymat
+    private String greeting;
+
+    public String greet(String name) {
+        return greeting + ", " + name + "!";
+    }
+}
+
+// application.yml da bo'lmasa → "Salom"
+// Bor bo'lsa → property qiymati</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 3</span>
+      <span class="difficulty medium"><span class="dot"></span>Medium</span>
+    </div>
+    <h2>@ConfigurationProperties — tip-safe config</h2>
+    <p>
+      Murakkab konfiguratsiyani bitta klassga to'plang. Validation ham qo'shing.
+    </p>
+    <pre data-filename="application.yml"><code>app:
+  smtp:
+    host: smtp.gmail.com
+    port: 587
+    username: admin@mail.com
+  cors:
+    allowed-origins:
+      - http://localhost:3000
+      - https://example.com
+    max-age: 3600</code></pre>
+    <pre data-filename="AppProperties.java"><code>@Component
+@ConfigurationProperties(prefix = "app")
+@Validated
+public class AppProperties {
+
+    private Smtp smtp;
+    private Cors cors;
+
+    public static class Smtp {
+        @NotBlank private String host;
+        @Min(1) @Max(65535) private int port;
+        @Email private String username;
+        // getter/setter
+    }
+
+    public static class Cors {
+        @NotEmpty private List&lt;String&gt; allowedOrigins;
+        private int maxAge = 3600;
+        // getter/setter
+    }
+    // getter/setter
+}
+
+@RestController
+public class ConfigController {
+    private final AppProperties props;
+    public ConfigController(AppProperties props) { this.props = props; }
+
+    @GetMapping("/config")
+    public AppProperties config() { return props; }
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 4</span>
+      <span class="difficulty hard"><span class="dot"></span>Hard</span>
+    </div>
+    <h2>Environment variable bilan override</h2>
+    <p>
+      <code>application.yml</code>da database parolini <code>${DB_PASSWORD:dev_pass}</code> qilib yozing. Dev'da default, prod'da environment variable orqali bering.
+    </p>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      Local: <code>java -jar app.jar</code> → password = "dev_pass"<br>
+      Prod: <code>DB_PASSWORD=super_secret java -jar app.jar</code> → "super_secret"<br>
+      Docker: <code>docker run -e DB_PASSWORD=xxx my-app</code>
+    </div>
+    <pre data-filename="application.yml"><code>spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/mydb}
+    username: ${DB_USER:admin}
+    password: ${DB_PASSWORD:dev_pass}
+
+# Format: ${ENV_VAR:default_value}
+# ENV_VAR — environment variable nomi
+# default_value — yo'q bo'lganda
+
+# Kebab-case'dan UPPER_SNAKE_CASE'ga avtomatik konvertatsiya:
+# server.servlet.context-path → SERVER_SERVLET_CONTEXT_PATH</code></pre>
+    <div class="warning">
+      <b>Xavfsizlik:</b> Parol va sirlarni hech qachon git'ga commit qilmang! <code>.env</code>, secret manager (HashiCorp Vault, AWS Secrets), yoki Kubernetes Secrets ishlating.
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>Profiles — muhitlar uchun</h2>
+    <p>
+      Bir xil kod, lekin <b>dev</b>, <b>test</b>, <b>prod</b> uchun turli konfiguratsiya.
+    </p>
+    <pre data-filename="application.yml"><code># application.yml — umumiy
+spring:
+  application:
+    name: my-app
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+
+server:
+  port: 8080</code></pre>
+    <pre data-filename="application-dev.yml"><code># dev profile
+spring:
+  datasource:
+    url: jdbc:h2:mem:devdb
+    username: sa
+  jpa:
+    show-sql: true
+
+logging:
+  level:
+    com.example: DEBUG</code></pre>
+    <pre data-filename="application-prod.yml"><code># prod profile
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+  jpa:
+    show-sql: false
+
+logging:
+  level:
+    com.example: WARN</code></pre>
+    <div class="note">
+      Profile'ni aktivlashtirish: <code>SPRING_PROFILES_ACTIVE=prod</code> yoki <code>--spring.profiles.active=prod</code>.
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala</span>
+      <span class="difficulty medium"><span class="dot"></span>Medium</span>
+    </div>
+    <h2>Multi-profile EmailService</h2>
+    <p>
+      <code>EmailService</code> interfeysi: <b>dev</b>'da console'ga yozadi, <b>prod</b>'da haqiqiy SMTP'ga jo'natadi. Profile orqali tanlanadi.
+    </p>
+    <pre data-filename="EmailServices.java"><code>public interface EmailService {
+    void send(String to, String subject, String body);
+}
+
+@Service
+@Profile("dev")
+@Slf4j
+public class ConsoleEmailService implements EmailService {
+    @Override
+    public void send(String to, String subject, String body) {
+        log.info("FAKE EMAIL → {}: [{}] {}", to, subject, body);
+    }
+}
+
+@Service
+@Profile("prod")
+public class SmtpEmailService implements EmailService {
+    private final JavaMailSender mailSender;
+
+    public SmtpEmailService(JavaMailSender mailSender) {
+        this.mailSender = mailSender;
+    }
+
+    @Override
+    public void send(String to, String subject, String body) {
+        SimpleMailMessage msg = new SimpleMailMessage();
+        msg.setTo(to);
+        msg.setSubject(subject);
+        msg.setText(body);
+        mailSender.send(msg);
+    }
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>Logging — SLF4J va Logback</h2>
+    <div class="theory-box">
+      <p><b>SLF4J (Simple Logging Facade for Java)</b> — logging uchun "fasad" (interfeys). U haqiqiy logging implementatsiyani yashiradi.</p>
+      <p><b>Logback</b> — SLF4J ning standart implementatsiyasi (Spring Boot'ning default'i).</p>
+      <p><b>Foyda:</b> Boshqa logging kutubxonasini ishlatmoqchi bo'lsangiz (Log4j2), kod o'zgartirilmaydi — faqat dependency.</p>
+    </div>
+    <table class="compare-table">
+      <thead><tr><th>Level</th><th>Qachon ishlatish</th></tr></thead>
+      <tbody>
+        <tr><td><code>TRACE</code></td><td>Eng detal — kerakli har bir qadam</td></tr>
+        <tr><td><code>DEBUG</code></td><td>Debug uchun — dev environment</td></tr>
+        <tr><td><code>INFO</code></td><td>Muhim hodisalar — startup, business event</td></tr>
+        <tr><td><code>WARN</code></td><td>Potensial muammo — lekin ish davom etadi</td></tr>
+        <tr><td><code>ERROR</code></td><td>Xato — diqqat talab qiluvchi</td></tr>
+      </tbody>
+    </table>
+    <div class="note">
+      Default Spring Boot logging level: <b>INFO</b>. <code>logging.level.root=WARN</code> bilan o'zgartiriladi.
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>Logging amaliy</h2>
+    <pre data-filename="UserService.java"><code>@Service
+public class UserService {
+    private static final Logger log = LoggerFactory.getLogger(UserService.class);
+
+    public User createUser(UserRequest req) {
+        log.debug("Creating user with email: {}", req.getEmail());
+
+        if (userRepo.existsByEmail(req.getEmail())) {
+            log.warn("Duplicate email attempt: {}", req.getEmail());
+            throw new EmailExistsException();
+        }
+
+        User user = userRepo.save(new User(req));
+        log.info("User created: id={}, email={}", user.getId(), user.getEmail());
+
+        return user;
+    }
+}
+
+// Lombok bilan oson
+@Service
+@Slf4j  // log avtomatik yaratiladi
+public class OrderService {
+    public void process(Order order) {
+        log.info("Processing order {}", order.getId());
+        try {
+            // ...
+        } catch (Exception e) {
+            log.error("Failed to process order {}", order.getId(), e);
+        }
+    }
+}</code></pre>
+    <pre data-filename="application.yml"><code>logging:
+  level:
+    root: INFO
+    com.example: DEBUG
+    org.hibernate.SQL: DEBUG          # SQL query'larni ko'rish
+  pattern:
+    console: "%d{HH:mm:ss} %-5level [%thread] %logger{36} - %msg%n"
+  file:
+    name: logs/app.log
+    max-size: 10MB
+    max-history: 30</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 1</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>Service'da log qo'shish</h2>
+    <p>
+      <code>ProductService</code>da: yangi mahsulot qo'shilganda <b>INFO</b>, ko'p so'rovlar bo'lganda <b>WARN</b>, exception'da <b>ERROR</b> log yozing.
+    </p>
+    <pre data-filename="LoggingService.java"><code>@Service
+@Slf4j
+public class ProductService {
+    private final ProductRepository repo;
+    private final AtomicInteger requestCount = new AtomicInteger(0);
+
+    public ProductService(ProductRepository repo) { this.repo = repo; }
+
+    public Product create(Product p) {
+        int count = requestCount.incrementAndGet();
+        if (count &gt; 100) {
+            log.warn("High request rate: {} requests", count);
+        }
+
+        try {
+            Product saved = repo.save(p);
+            log.info("Product created: id={}, name={}", saved.getId(), saved.getName());
+            return saved;
+        } catch (Exception e) {
+            log.error("Failed to create product: {}", p.getName(), e);
+            throw e;
+        }
+    }
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 2</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>Faqat ma'lum paket uchun DEBUG</h2>
+    <p>
+      Faqat <code>com.example.service</code> paketida DEBUG log'lar chiqsin, qolganida INFO.
+    </p>
+    <pre data-filename="application.yml"><code>logging:
+  level:
+    root: INFO                              # umumiy
+    com.example.service: DEBUG              # faqat service paketi
+    org.springframework.web: WARN           # web ortiqcha log'larini kamaytirish
+    org.hibernate.SQL: DEBUG                # SQL'larni ko'rish
+    org.hibernate.type.descriptor.sql: TRACE # parametrlarni ham
+
+# Yoki Properties formatda:
+# logging.level.com.example.service=DEBUG
+# logging.level.org.springframework.web=WARN</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 3</span>
+      <span class="difficulty medium"><span class="dot"></span>Medium</span>
+    </div>
+    <h2>Request ID bilan log (MDC)</h2>
+    <p>
+      Har bir HTTP request uchun <b>noyob ID</b> generate qiling va u barcha log qatorlariga avtomatik qo'shilsin.
+    </p>
+    <pre data-filename="RequestIdFilter.java"><code>@Component
+@Order(1)
+public class RequestIdFilter extends OncePerRequestFilter {
+    public static final String REQ_ID = "requestId";
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest req,
+                                   HttpServletResponse res,
+                                   FilterChain chain)
+            throws ServletException, IOException {
+        try {
+            String reqId = UUID.randomUUID().toString().substring(0, 8);
+            MDC.put(REQ_ID, reqId);          // MDC — Mapped Diagnostic Context
+            res.setHeader("X-Request-Id", reqId);
+            chain.doFilter(req, res);
+        } finally {
+            MDC.clear();
+        }
+    }
+}</code></pre>
+    <pre data-filename="application.yml"><code>logging:
+  pattern:
+    console: "%d{HH:mm:ss} %-5level [%X{requestId}] %logger - %msg%n"
+    # %X{requestId} — MDC'dan oladi
+
+# Endi har log qatorida [a1b2c3d4] formatda ID chiqadi
+# Bir request bo'yicha hamma log'larni grep qilish oson</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 4</span>
+      <span class="difficulty hard"><span class="dot"></span>Hard</span>
+    </div>
+    <h2>Strukturali JSON log (Production)</h2>
+    <p>
+      Prod'da har log qatori <b>JSON formatda</b> bo'lsin — ELK/Splunk/Datadog uchun parse qilish uchun.
+    </p>
+    <pre data-filename="pom.xml"><code>&lt;dependency&gt;
+    &lt;groupId&gt;net.logstash.logback&lt;/groupId&gt;
+    &lt;artifactId&gt;logstash-logback-encoder&lt;/artifactId&gt;
+    &lt;version&gt;7.4&lt;/version&gt;
+&lt;/dependency&gt;</code></pre>
+    <pre data-filename="logback-spring.xml"><code>&lt;configuration&gt;
+    &lt;springProfile name="prod"&gt;
+        &lt;appender name="JSON" class="ch.qos.logback.core.ConsoleAppender"&gt;
+            &lt;encoder class="net.logstash.logback.encoder.LogstashEncoder"/&gt;
+        &lt;/appender&gt;
+        &lt;root level="INFO"&gt;
+            &lt;appender-ref ref="JSON"/&gt;
+        &lt;/root&gt;
+    &lt;/springProfile&gt;
+
+    &lt;springProfile name="dev"&gt;
+        &lt;include resource="org/springframework/boot/logging/logback/console-appender.xml"/&gt;
+        &lt;root level="DEBUG"&gt;
+            &lt;appender-ref ref="CONSOLE"/&gt;
+        &lt;/root&gt;
+    &lt;/springProfile&gt;
+&lt;/configuration&gt;</code></pre>
+    <pre data-filename="output.json"><code>{
+  "@timestamp": "2025-12-25T10:30:00.123Z",
+  "level": "INFO",
+  "logger_name": "com.example.UserService",
+  "message": "User created: id=42",
+  "requestId": "a1b2c3d4",
+  "thread_name": "http-nio-8080-exec-1"
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>Bean Validation — JSR-380</h2>
+    <div class="theory-box">
+      <p><b>Bean Validation</b> — Java EE standarti (JSR-380). Obyekt field'lariga <b>annotatsiya</b> qo'yish orqali validatsiya qoidalarini belgilash.</p>
+      <p><b>Hibernate Validator</b> — bu standartning eng mashhur implementatsiyasi. Spring Boot'da <code>spring-boot-starter-validation</code> bilan keladi.</p>
+      <p><b>Foyda:</b> Validatsiya kodi — <b>annotatsiya bo'lib</b> obyekt ichida turadi. DRY principle.</p>
+    </div>
+    <table class="compare-table">
+      <thead><tr><th>Annotation</th><th>Tavsif</th></tr></thead>
+      <tbody>
+        <tr><td><code>@NotNull</code></td><td>null bo'lmasin</td></tr>
+        <tr><td><code>@NotBlank</code></td><td>String null/bo'sh/probelli bo'lmasin</td></tr>
+        <tr><td><code>@NotEmpty</code></td><td>String yoki collection bo'sh emas</td></tr>
+        <tr><td><code>@Size(min, max)</code></td><td>String/collection o'lchami</td></tr>
+        <tr><td><code>@Min</code>, <code>@Max</code></td><td>Sonning chegarasi</td></tr>
+        <tr><td><code>@Email</code></td><td>Email format</td></tr>
+        <tr><td><code>@Pattern(regexp)</code></td><td>Regex bilan tekshirish</td></tr>
+        <tr><td><code>@Positive</code>, <code>@Negative</code></td><td>Musbat/manfiy son</td></tr>
+        <tr><td><code>@Past</code>, <code>@Future</code></td><td>Sanaga oid</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="slide">
+    <h2>Validation amaliy</h2>
+    <pre data-filename="UserRequest.java"><code>public class UserRequest {
+
+    @NotBlank(message = "Ism bo'sh bo'lmasligi kerak")
+    @Size(min = 2, max = 50, message = "Ism 2-50 belgi")
+    private String name;
+
+    @NotBlank
+    @Email(message = "To'g'ri email kiriting")
+    private String email;
+
+    @Min(value = 0, message = "Yosh manfiy bo'lmaydi")
+    @Max(value = 120, message = "Yosh 120 dan kam")
+    private int age;
+
+    @Pattern(regexp = "^\\+998\\d{9}$", message = "+998XXXXXXXXX formatida")
+    private String phone;
+
+    @NotNull
+    @Past(message = "Tug'ilgan sana o'tmishda bo'lishi kerak")
+    private LocalDate birthDate;
+
+    // getter/setter
+}
+
+@RestController
+@RequestMapping("/users")
+public class UserController {
+
+    @PostMapping
+    public User create(@Valid @RequestBody UserRequest req) {
+        // ↑ @Valid — validatsiyani ishga tushiradi
+        // Xato bo'lsa MethodArgumentNotValidException
+        return userService.create(req);
+    }
+}</code></pre>
+    <div class="note">
+      <code>@Valid</code> — DTO ichidagi nested obyektlarni ham tekshiradi. <code>@Validated</code> — class level'da, group'lar bilan ishlash uchun.
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>Validation natijasini ushlash</h2>
+    <pre data-filename="ValidationHandler.java"><code>@RestControllerAdvice
+public class ValidationHandler {
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map&lt;String, Object&gt; handle(MethodArgumentNotValidException ex) {
+        Map&lt;String, String&gt; errors = new HashMap&lt;&gt;();
+
+        ex.getBindingResult().getFieldErrors().forEach(err -&gt;
+            errors.put(err.getField(), err.getDefaultMessage())
+        );
+
+        return Map.of(
+            "timestamp", LocalDateTime.now(),
+            "status", 400,
+            "errors", errors
+        );
+    }
+}
+
+// Misol response (xato):
+// POST /users { "name": "", "email": "bad", "age": -5 }
+//
+// {
+//   "timestamp": "2025-12-25T10:30:00",
+//   "status": 400,
+//   "errors": {
+//     "name": "Ism bo'sh bo'lmasligi kerak",
+//     "email": "To'g'ri email kiriting",
+//     "age": "Yosh manfiy bo'lmaydi"
+//   }
+// }</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 1</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>ProductRequest validation</h2>
+    <p>
+      <code>name</code> 3-100 belgi, <code>price</code> musbat va 1 mln dan kam, <code>category</code> majburiy.
+    </p>
+    <pre data-filename="ProductRequest.java"><code>public class ProductRequest {
+
+    @NotBlank(message = "Nom bo'sh bo'lmasligi kerak")
+    @Size(min = 3, max = 100, message = "Nom 3-100 belgi")
+    private String name;
+
+    @Positive(message = "Narx musbat bo'lishi kerak")
+    @DecimalMax(value = "1000000", message = "Narx 1 mln dan kam")
+    private BigDecimal price;
+
+    @NotBlank(message = "Kategoriya kerak")
+    private String category;
+
+    // getter/setter
+}
+
+@PostMapping("/products")
+public Product create(@Valid @RequestBody ProductRequest req) {
+    return productService.create(req);
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 2</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>Path va Query parametr validation</h2>
+    <p>
+      <code>GET /users/{id}?page=N&amp;size=M</code> — id musbat, page≥0, size 1-100.
+    </p>
+    <pre data-filename="UserController.java"><code>@RestController
+@RequestMapping("/users")
+@Validated  // class level @Validated kerak!
+public class UserController {
+
+    @GetMapping("/{id}")
+    public User get(@PathVariable @Positive Long id) {
+        return service.get(id);
+    }
+
+    @GetMapping
+    public List&lt;User&gt; list(
+            @RequestParam(defaultValue = "0") @Min(0) int page,
+            @RequestParam(defaultValue = "20") @Min(1) @Max(100) int size) {
+        return service.list(page, size);
+    }
+}
+
+// @PathVariable yoki @RequestParam validation uchun
+// class level'da @Validated kerak (DTO'lar uchun shart emas).
+// Xato — ConstraintViolationException</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 3</span>
+      <span class="difficulty medium"><span class="dot"></span>Medium</span>
+    </div>
+    <h2>Custom validator — UzPhone</h2>
+    <p>
+      <code>@UzPhone</code> annotatsiya yarating: <b>+998XXXXXXXXX</b> formatini tekshirsin (9 ta raqam).
+    </p>
+    <pre data-filename="UzPhone.java"><code>@Target({ElementType.FIELD, ElementType.PARAMETER})
+@Retention(RetentionPolicy.RUNTIME)
+@Constraint(validatedBy = UzPhoneValidator.class)
+public @interface UzPhone {
+    String message() default "Telefon formati: +998XXXXXXXXX";
+    Class&lt;?&gt;[] groups() default {};
+    Class&lt;? extends Payload&gt;[] payload() default {};
+}
+
+public class UzPhoneValidator implements ConstraintValidator&lt;UzPhone, String&gt; {
+
+    private static final Pattern PATTERN = Pattern.compile("^\\+998\\d{9}$");
+
+    @Override
+    public boolean isValid(String value, ConstraintValidatorContext ctx) {
+        if (value == null) return true;  // null bo'lsa — boshqa @NotNull tekshiradi
+        return PATTERN.matcher(value).matches();
+    }
+}
+
+// Foydalanish
+public class UserRequest {
+    @UzPhone
+    private String phone;
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>Exception Handling — local va global</h2>
+    <pre data-filename="LocalHandler.java"><code>// 1. LOCAL — bir Controller ichida
+@RestController
+public class UserController {
+
+    @ExceptionHandler(UserNotFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleNotFound(UserNotFoundException ex) {
+        return new ErrorResponse("USER_NOT_FOUND", ex.getMessage());
+    }
+
+    @GetMapping("/users/{id}")
+    public User get(@PathVariable Long id) {
+        return service.findById(id)
+            .orElseThrow(() -&gt; new UserNotFoundException(id));
+    }
+}</code></pre>
+    <pre data-filename="GlobalHandler.java"><code>// 2. GLOBAL — barcha controller'lar uchun
+@RestControllerAdvice
+@Slf4j
+public class GlobalExceptionHandler {
+
+    @ExceptionHandler(EntityNotFoundException.class)
+    public ResponseEntity&lt;ErrorResponse&gt; handleNotFound(EntityNotFoundException ex) {
+        log.warn("Entity not found: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .body(new ErrorResponse("NOT_FOUND", ex.getMessage()));
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity&lt;ErrorResponse&gt; handleForbidden(AccessDeniedException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+            .body(new ErrorResponse("FORBIDDEN", "Ruxsat yo'q"));
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity&lt;ErrorResponse&gt; handleGeneric(Exception ex) {
+        log.error("Unexpected error", ex);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(new ErrorResponse("INTERNAL_ERROR", "Server xatosi"));
+    }
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>ProblemDetail — RFC 7807</h2>
+    <div class="theory-box">
+      <p><b>ProblemDetail</b> (Spring 6+) — HTTP API xatolari uchun <b>standart format</b>. RFC 7807 standarti.</p>
+      <p>JSON yoki XML formatida bir xil ko'rinishdagi xatolar. Frontend uchun parse qilish oson.</p>
+    </div>
+    <pre data-filename="ProblemHandler.java"><code>@RestControllerAdvice
+public class ProblemHandler {
+
+    @ExceptionHandler(UserNotFoundException.class)
+    public ProblemDetail handleNotFound(UserNotFoundException ex) {
+        ProblemDetail problem = ProblemDetail.forStatus(HttpStatus.NOT_FOUND);
+        problem.setTitle("User Not Found");
+        problem.setDetail(ex.getMessage());
+        problem.setType(URI.create("https://api.example.com/errors/user-not-found"));
+        problem.setProperty("userId", ex.getUserId());
+        problem.setProperty("timestamp", Instant.now());
+        return problem;
+    }
+}
+
+// Response:
+// {
+//   "type": "https://api.example.com/errors/user-not-found",
+//   "title": "User Not Found",
+//   "status": 404,
+//   "detail": "User with id 42 not found",
+//   "instance": "/users/42",
+//   "userId": 42,
+//   "timestamp": "2025-12-25T10:30:00Z"
+// }</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>Spring Boot Actuator</h2>
+    <div class="theory-box">
+      <p><b>Actuator</b> — production'ga tayyor ilova uchun <b>monitoring va boshqaruv</b> endpoint'lari. Health check, metrics, info, env va h.k.</p>
+      <p><code>spring-boot-starter-actuator</code> dependency qo'shilsa, avtomatik faollashadi.</p>
+    </div>
+    <table class="compare-table">
+      <thead><tr><th>Endpoint</th><th>Tavsif</th></tr></thead>
+      <tbody>
+        <tr><td><code>/actuator/health</code></td><td>Ilova sog'lig'i (UP/DOWN)</td></tr>
+        <tr><td><code>/actuator/info</code></td><td>App info (version, git)</td></tr>
+        <tr><td><code>/actuator/metrics</code></td><td>Performance metric'lar</td></tr>
+        <tr><td><code>/actuator/env</code></td><td>Environment properties</td></tr>
+        <tr><td><code>/actuator/loggers</code></td><td>Runtime'da log level'ni o'zgartirish</td></tr>
+        <tr><td><code>/actuator/threaddump</code></td><td>Thread dump (debug uchun)</td></tr>
+        <tr><td><code>/actuator/heapdump</code></td><td>Heap dump (memory leak)</td></tr>
+      </tbody>
+    </table>
+    <pre data-filename="application.yml"><code>management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics, loggers
+  endpoint:
+    health:
+      show-details: when-authorized
+  info:
+    git:
+      enabled: true</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>DevTools va Spring Boot Test</h2>
+    <p><b>Spring Boot DevTools</b> — dev'da hayotni osonlashtirish:</p>
+    <pre data-filename="pom.xml"><code>&lt;dependency&gt;
+    &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-boot-devtools&lt;/artifactId&gt;
+    &lt;scope&gt;runtime&lt;/scope&gt;
+    &lt;optional&gt;true&lt;/optional&gt;
+&lt;/dependency&gt;</code></pre>
+    <ul>
+      <li><b>Automatic restart</b> — kod o'zgarganda app qayta ishga tushadi</li>
+      <li><b>LiveReload</b> — brauzer avtomatik yangilanadi</li>
+      <li><b>Property defaults</b> — dev'ga moslashtirilgan default'lar</li>
+    </ul>
+    <pre data-filename="UserServiceTest.java"><code>@SpringBootTest          // butun context'ni ko'taradi
+class UserServiceIntegrationTest {
+    @Autowired UserService service;
+
+    @Test void shouldCreateUser() { /* ... */ }
+}
+
+@WebMvcTest(UserController.class)  // faqat web qatlam
+class UserControllerTest {
+    @Autowired MockMvc mockMvc;
+    @MockBean UserService service;       // service mock'lanadi
+
+    @Test
+    void shouldReturn404() throws Exception {
+        mockMvc.perform(get("/users/999"))
+               .andExpect(status().isNotFound());
+    }
+}
+
+@DataJpaTest             // faqat JPA qatlam, in-memory DB
+class UserRepositoryTest { /* ... */ }</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">📝 Amaliy topshiriqlar</span>
+      <span class="difficulty hard"><span class="dot"></span>Mustaqil</span>
+    </div>
+    <h2>10 ta murakkab vazifa</h2>
+    <p>Quyidagi vazifalarni Spring Boot loyihasida bajaring:</p>
+    <ul style="font-size: 16px;">
+      <li>
+        <b>1. Multi-profile loyiha.</b> dev (H2), test (Testcontainers), prod (PostgreSQL) — har biri uchun alohida config.
+      </li>
+      <li>
+        <b>2. @ConfigurationProperties nested.</b> Murakkab konfiguratsiyani type-safe class'larga ajrating (nested obyektlar bilan).
+      </li>
+      <li>
+        <b>3. Custom validator group'lar bilan.</b> Bir DTO uchun: create'da hamma field majburiy, update'da ixtiyoriy.
+      </li>
+      <li>
+        <b>4. Global Exception Handler.</b> 10+ exception turi uchun ProblemDetail formatda javob.
+      </li>
+      <li>
+        <b>5. MDC bilan log enrichment.</b> Request ID, user ID, IP — har log qatorga avtomatik qo'shilsin.
+      </li>
+      <li>
+        <b>6. Async + log context.</b> <code>@Async</code> metodda parent thread'ning MDC'sini saqlash (TaskDecorator).
+      </li>
+      <li>
+        <b>7. Conditional bean.</b> <code>app.features.cache=true</code> bo'lsa Redis cache, aks holda in-memory cache.
+      </li>
+      <li>
+        <b>8. Custom Actuator endpoint.</b> <code>/actuator/cache-stats</code> — cache hit/miss ratio'sini ko'rsatsin.
+      </li>
+      <li>
+        <b>9. Integration test with Testcontainers.</b> PostgreSQL'ni Docker container'da ko'tarib, real test yozish.
+      </li>
+      <li>
+        <b>10. Production-ready config.</b> Secrets externalization, structured logging, health checks, graceful shutdown.
+      </li>
+    </ul>
+    <div class="note">
+      Har bir vazifa uchun: <b>12-factor app</b> tamoyillariga rioya qiling, secrets'ni hech qachon kod ichiga yozmang.
+    </div>
+  </section>
+
+  <section class="slide slide-title">
+    <div class="topic-pill">🎯 Yakun</div>
+    <h1>Dars yakuni</h1>
+    <p>
+      Spring Boot — endi siz <b>production-ready</b> Java ilovalar yarata olasiz: auto-config, profile'lar, logging, validation va exception handling sizning quroliz!
+    </p>
+    <div class="note">
+      <b>Keyingi mavzu:</b> REST API — HTTP metodlar (GET, POST, PUT, DELETE), Status Code'lar, DTO, Request/Response, Swagger/OpenAPI.
+    </div>
+  </section>
+
+</div>
+
+<div class="toast" id="toast">✓ Kod nusxalandi!</div>
+
+<div class="controls">
+  <div class="progress-line" id="progressLine"></div>
+  <button class="nav-arrow" id="prevBtn" onclick="prevSlide()" title="Oldingi (←)">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+  </button>
+  <div class="pagination" id="pagination"></div>
+  <button class="nav-arrow" id="nextBtn" onclick="nextSlide()" title="Keyingi (→)">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+  </button>
+</div>
+
+<script>
+  function wrapCodeBlocks() {
+    document.querySelectorAll('pre').forEach(pre => {
+      if (pre.closest('.code-window')) return;
+      const filename = pre.dataset.filename || 'Example.java';
+      const wrapper = document.createElement('div');
+      wrapper.className = 'code-window';
+      wrapper.innerHTML = `
+        <div class="code-header">
+          <div class="traffic-lights">
+            <span class="light close"></span><span class="light minimize"></span><span class="light maximize"></span>
+          </div>
+          <div class="code-filename">${filename}</div>
+          <div class="code-actions">
+            <button class="code-btn reset-btn">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              Reset
+            </button>
+            <button class="code-btn copy-btn">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+              Copy
+            </button>
+          </div>
+        </div>
+        <div class="code-body"></div>
+      `;
+      pre.setAttribute('contenteditable', 'true');
+      pre.setAttribute('spellcheck', 'false');
+      const original = pre.innerHTML;
+      pre.dataset.original = original;
+      pre.parentNode.insertBefore(wrapper, pre);
+      wrapper.querySelector('.code-body').appendChild(pre);
+      wrapper.querySelector('.copy-btn').addEventListener('click', () => {
+        navigator.clipboard.writeText(pre.textContent).then(() => {
+          const btn = wrapper.querySelector('.copy-btn');
+          btn.classList.add('copied');
+          btn.innerHTML = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg> Nusxalandi`;
+          showToast('✓ Kod nusxalandi!');
+          setTimeout(() => {
+            btn.classList.remove('copied');
+            btn.innerHTML = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg> Copy`;
+          }, 2000);
+        });
+      });
+      wrapper.querySelector('.reset-btn').addEventListener('click', () => {
+        pre.innerHTML = original;
+        showToast('↺ Kod tiklandi');
+      });
+    });
+  }
+  function showToast(message) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.classList.add('show');
+    clearTimeout(window._toastTimer);
+    window._toastTimer = setTimeout(() => toast.classList.remove('show'), 1800);
+  }
+  wrapCodeBlocks();
+
+  function wrapSolutions() {
+    const eyeIcon = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>`;
+    const eyeOffIcon = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"/></svg>`;
+    document.querySelectorAll('.slide').forEach(slide => {
+      if (!slide.querySelector('.problem-header')) return;
+      slide.querySelectorAll('.code-window').forEach(cw => {
+        if (cw.parentNode.classList.contains('solution-content')) return;
+        const wrap = document.createElement('div');
+        wrap.className = 'solution-wrap';
+        const btn = document.createElement('button');
+        btn.className = 'show-solution-btn';
+        btn.innerHTML = eyeIcon + ' Yechimni ko\'rsatish';
+        const content = document.createElement('div');
+        content.className = 'solution-content';
+        cw.parentNode.insertBefore(wrap, cw);
+        content.appendChild(cw);
+        wrap.appendChild(btn);
+        wrap.appendChild(content);
+        btn.addEventListener('click', () => {
+          const isShown = content.classList.toggle('shown');
+          btn.classList.toggle('active', isShown);
+          btn.innerHTML = isShown ? eyeOffIcon + ' Yechimni yashirish' : eyeIcon + ' Yechimni ko\'rsatish';
+        });
+      });
+    });
+  }
+  wrapSolutions();
+
+  const slides = document.querySelectorAll('.slide');
+  const totalSlides = slides.length;
+  const pagination = document.getElementById('pagination');
+  let currentIndex = 0;
+  document.getElementById('totalSlides').textContent = totalSlides;
+  const pageDots = [];
+  for (let i = 0; i < totalSlides; i++) {
+    const dot = document.createElement('button');
+    dot.className = 'page-dot';
+    dot.textContent = String(i + 1).padStart(2, '0');
+    dot.addEventListener('click', () => { currentIndex = i; showSlide(i); });
+    pagination.appendChild(dot);
+    pageDots.push(dot);
+  }
+  function showSlide(index) {
+    slides.forEach(s => s.classList.remove('active'));
+    slides[index].classList.add('active');
+    document.getElementById('currentSlide').textContent = index + 1;
+    pageDots.forEach((d, i) => { d.classList.toggle('active', i === index); d.classList.toggle('visited', i < index); });
+    const percent = ((index + 1) / totalSlides * 100);
+    document.getElementById('progressLine').style.width = percent + '%';
+    document.getElementById('prevBtn').disabled = index === 0;
+    document.getElementById('nextBtn').disabled = index === totalSlides - 1;
+    slides[index].scrollTop = 0;
+    const activeDot = pageDots[index];
+    if (activeDot) activeDot.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  }
+  function nextSlide() { if (currentIndex < totalSlides - 1) { currentIndex++; showSlide(currentIndex); } }
+  function prevSlide() { if (currentIndex > 0) { currentIndex--; showSlide(currentIndex); } }
+  document.addEventListener('keydown', (e) => {
+    if (e.target.isContentEditable) return;
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); nextSlide(); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); prevSlide(); }
+    else if (e.key === 'Home') { currentIndex = 0; showSlide(0); }
+    else if (e.key === 'End') { currentIndex = totalSlides - 1; showSlide(currentIndex); }
+  });
+  showSlide(0);
+</script>
+
+<script>
+(function(_0x){
+  var _a=String.fromCharCode,
+      _b=[169,32,77,117,97,108,108,105,102,58,32,82,117,115,116,97,109,111,118,32,65,107,111,98,105,114],
+      _c=[95,120,57,52,107,55,116,57,114,53,95,115,105,103],
+      _d=[95,120,57,52,104,53,100,55],
+      _t='',_n='',_h='';
+  for(var i=0;i<_b.length;i++)_t+=_a(_b[i]);
+  for(var i=0;i<_c.length;i++)_n+=_a(_c[i]);
+  for(var i=0;i<_d.length;i++)_h+=_a(_d[i]);
+  function _mk(visible){
+    var d=document.createElement('div');
+    d.setAttribute('data-x',_t);
+    if(visible){
+      d.id=_n; d.textContent=_t;
+      d.style.cssText='position:fixed;bottom:96px;right:16px;z-index:99999;background:rgba(15,15,25,0.75);color:rgba(255,255,255,0.85);padding:6px 14px;border-radius:20px;font-family:system-ui,-apple-system,sans-serif;font-size:11px;font-weight:600;backdrop-filter:blur(10px);border:1px solid rgba(139,92,246,0.3);pointer-events:none;user-select:none;letter-spacing:0.03em;box-shadow:0 4px 12px rgba(0,0,0,0.3);';
+    }else{
+      d.className=_h+Math.random().toString(36).slice(2,7); d.textContent=_t;
+      d.style.cssText='position:absolute;left:-99999px;top:-99999px;opacity:0;pointer-events:none;width:1px;height:1px;overflow:hidden;';
+    }
+    return d;
+  }
+  function _ensure(){
+    if(!document.body)return;
+    if(!document.getElementById(_n)){ document.body.appendChild(_mk(true)); }
+    var hidden=document.querySelectorAll('[class^="'+_h+'"]');
+    if(hidden.length<5){ for(var i=hidden.length;i<5;i++){ document.body.appendChild(_mk(false)); } }
+  }
+  function _setup(){
+    _ensure();
+    try{
+      new MutationObserver(function(muts){
+        for(var i=0;i<muts.length;i++){
+          var m=muts[i];
+          if(m.removedNodes.length>0||m.type==='attributes'){ _ensure(); break; }
+        }
+      }).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['id','class','style']});
+    }catch(e){}
+    setInterval(_ensure,1500);
+  }
+  if(document.body)_setup();
+  else document.addEventListener('DOMContentLoaded',_setup);
+  try{
+    console.log('%c '+_t+' ','background:linear-gradient(135deg,#8b5cf6,#f472b6);color:white;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:bold;');
+    Object.defineProperty(window,_n+'_lock',{value:_t,writable:false,configurable:false});
+  }catch(e){}
+})();
+</script>
+
+</body>
+</html>

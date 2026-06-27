@@ -1,0 +1,1434 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Spring Security — Prezentatsiya</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0a0a14; --surface: rgba(255, 255, 255, 0.04); --border: rgba(255, 255, 255, 0.08);
+      --text: #f8fafc; --text-dim: #94a3b8; --text-muted: #64748b;
+      --primary: #8b5cf6; --primary-2: #6366f1; --accent: #f472b6;
+      --slide-bg: #ffffff; --slide-bg-2: #fafafe;
+      --code-bg: #0f172a; --code-text: #e2e8f0;
+    }
+    html, body { height: 100%; overflow: hidden; }
+    body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
+    .bg-effects { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+    .blob { position: absolute; border-radius: 50%; filter: blur(140px); opacity: 0.4; }
+    .blob-1 { width: 500px; height: 500px; background: #8b5cf6; top: -100px; left: -150px; }
+    .blob-2 { width: 400px; height: 400px; background: #f472b6; bottom: -100px; right: -100px; }
+    .top { position: fixed; top: 0; left: 0; right: 0; z-index: 100; backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); background: rgba(10, 10, 20, 0.7); border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+    .top-left { display: flex; align-items: center; gap: 14px; }
+    .back-btn { display: inline-flex; align-items: center; gap: 8px; color: var(--text); text-decoration: none; background: var(--surface); border: 1px solid var(--border); padding: 9px 16px; border-radius: 10px; font-weight: 600; font-size: 14px; transition: all 0.2s; }
+    .back-btn:hover { background: rgba(139, 92, 246, 0.15); border-color: rgba(139, 92, 246, 0.4); }
+    .topic-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); color: #c4b5fd; padding: 8px 14px; border-radius: 50px; font-size: 12px; font-weight: 600; }
+    .pulse-dot { width: 6px; height: 6px; border-radius: 50%; background: #c4b5fd; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+    .slide-counter { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--border); padding: 9px 16px; border-radius: 10px; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; color: var(--text-dim); }
+    .slide-counter .current { color: var(--text); }
+    .presentation { position: fixed; top: 72px; bottom: 86px; left: 0; right: 0; display: flex; align-items: center; justify-content: center; padding: 24px; z-index: 1; }
+    .slide { display: none; background: linear-gradient(135deg, var(--slide-bg) 0%, var(--slide-bg-2) 100%); color: #0f172a; width: 100%; max-width: 1180px; height: 100%; max-height: 100%; padding: 56px 64px; border-radius: 28px; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05); flex-direction: column; justify-content: center; overflow-y: auto; position: relative; }
+    .slide.active { display: flex; animation: slideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+    .slide > * { min-width: 0; max-width: 100%; }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(30px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    .slide::before { content: ''; position: absolute; top: 0; right: 0; width: 280px; height: 280px; background: radial-gradient(circle, rgba(139, 92, 246, 0.08), transparent 70%); border-radius: 50%; pointer-events: none; }
+    .slide::after { content: ''; position: absolute; bottom: 0; left: 0; width: 240px; height: 240px; background: radial-gradient(circle, rgba(244, 114, 182, 0.08), transparent 70%); border-radius: 50%; pointer-events: none; }
+    .slide h1 { font-size: clamp(36px, 5vw, 60px); font-weight: 900; letter-spacing: -0.03em; margin-bottom: 24px; line-height: 1.1; background: linear-gradient(135deg, #1e1b4b 0%, #6366f1 50%, #8b5cf6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; position: relative; z-index: 1; }
+    .slide h2 { font-size: clamp(28px, 4vw, 44px); font-weight: 800; letter-spacing: -0.02em; margin-bottom: 28px; color: #1e1b4b; line-height: 1.15; position: relative; z-index: 1; }
+    .slide h2::before { content: ''; display: inline-block; width: 6px; height: 32px; background: linear-gradient(180deg, var(--primary), var(--accent)); border-radius: 4px; margin-right: 16px; vertical-align: middle; transform: translateY(-3px); }
+    .slide p { font-size: 19px; margin-bottom: 18px; color: #334155; position: relative; z-index: 1; line-height: 1.7; }
+    .slide ul { font-size: 18px; list-style: none; padding-left: 0; position: relative; z-index: 1; }
+    .slide li { position: relative; padding: 10px 0 10px 32px; color: #1e293b; line-height: 1.6; }
+    .slide li::before { content: ''; position: absolute; left: 8px; top: 20px; width: 8px; height: 8px; background: linear-gradient(135deg, var(--primary), var(--accent)); border-radius: 50%; box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.12); }
+    .slide b { color: var(--primary-2); font-weight: 700; }
+    .slide-title { text-align: center; justify-content: center; }
+    .slide-title h1 { font-size: clamp(48px, 8vw, 88px); text-align: center; }
+    .slide-title p { text-align: center; max-width: 700px; margin-left: auto; margin-right: auto; font-size: 22px; }
+    .topic-pill { display: inline-flex; align-items: center; gap: 10px; background: linear-gradient(135deg, rgba(139, 92, 246, 0.12), rgba(244, 114, 182, 0.12)); border: 1px solid rgba(139, 92, 246, 0.3); color: var(--primary); padding: 10px 22px; border-radius: 50px; font-weight: 700; font-size: 14px; margin: 0 auto 32px; width: fit-content; text-transform: uppercase; letter-spacing: 0.08em; }
+    .code-window { background: var(--code-bg); border-radius: 14px; margin: 20px 0; position: relative; z-index: 1; border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05); max-width: 100%; min-width: 0; display: flex; flex-direction: column; overflow: hidden; }
+    .code-header { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: linear-gradient(180deg, #2d3548 0%, #1e2536 100%); border-bottom: 1px solid rgba(255, 255, 255, 0.08); user-select: none; }
+    .traffic-lights { display: flex; gap: 8px; align-items: center; }
+    .light { width: 12px; height: 12px; border-radius: 50%; border: 0.5px solid rgba(0, 0, 0, 0.2); cursor: pointer; transition: filter 0.2s; }
+    .light:hover { filter: brightness(1.15); }
+    .light.close { background: #ff5f57; } .light.minimize { background: #febc2e; } .light.maximize { background: #28c840; }
+    .code-filename { flex: 1; text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: #94a3b8; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .code-filename::before { content: '🔐'; font-size: 12px; }
+    .code-actions { display: flex; gap: 6px; align-items: center; }
+    .code-btn { display: inline-flex; align-items: center; gap: 5px; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.08); color: #cbd5e1; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; }
+    .code-btn:hover { background: rgba(139, 92, 246, 0.2); border-color: rgba(139, 92, 246, 0.4); color: white; }
+    .code-btn.copied { background: rgba(16, 185, 129, 0.2); border-color: rgba(16, 185, 129, 0.4); color: #6ee7b7; }
+    .code-btn svg { width: 12px; height: 12px; }
+    .code-body { position: relative; background: var(--code-bg); min-width: 0; max-width: 100%; overflow: hidden; }
+    pre { background: transparent; color: var(--code-text); padding: 22px 24px; overflow-x: auto; overflow-y: auto; max-height: 50vh; font-size: 15px; margin: 0; font-family: 'JetBrains Mono', 'Consolas', monospace; line-height: 1.7; tab-size: 4; outline: none; white-space: pre; word-wrap: normal; scrollbar-width: thin; scrollbar-color: rgba(139, 92, 246, 0.4) rgba(255, 255, 255, 0.04); }
+    pre::-webkit-scrollbar { height: 10px; width: 10px; }
+    pre::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.04); border-radius: 5px; }
+    pre::-webkit-scrollbar-thumb { background: linear-gradient(135deg, rgba(139, 92, 246, 0.5), rgba(244, 114, 182, 0.5)); border-radius: 5px; border: 2px solid transparent; background-clip: padding-box; }
+    pre[contenteditable="true"] { caret-color: #c084fc; }
+    pre[contenteditable="true"]:focus { background: rgba(139, 92, 246, 0.04); }
+    pre code { display: block; font-family: inherit; }
+    code { font-family: 'JetBrains Mono', monospace; font-size: 0.95em; }
+    p code, li code, .note code, td code, th code { background: rgba(139, 92, 246, 0.1); color: var(--primary); padding: 2px 8px; border-radius: 6px; font-size: 0.9em; font-weight: 600; }
+    .toast { position: fixed; bottom: 110px; left: 50%; transform: translateX(-50%) translateY(20px); background: rgba(16, 185, 129, 0.95); color: white; padding: 10px 20px; border-radius: 10px; font-size: 13px; font-weight: 600; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4); opacity: 0; pointer-events: none; transition: all 0.3s; z-index: 200; backdrop-filter: blur(10px); }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .problem-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; position: relative; z-index: 1; }
+    .problem-num { display: inline-flex; align-items: center; gap: 6px; background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: white; padding: 5px 14px; border-radius: 50px; font-size: 12px; font-weight: 700; letter-spacing: 0.05em; font-family: 'JetBrains Mono', monospace; }
+    .difficulty { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 50px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+    .difficulty.easy { background: rgba(16, 185, 129, 0.12); color: #059669; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .difficulty.medium { background: rgba(245, 158, 11, 0.12); color: #d97706; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .difficulty.hard { background: rgba(239, 68, 68, 0.12); color: #dc2626; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .difficulty .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+    .example-block { background: #f1f5f9; border-left: 4px solid var(--primary); padding: 14px 18px; border-radius: 10px; margin: 12px 0; font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #1e293b; line-height: 1.7; position: relative; z-index: 1; }
+    .example-title { font-family: 'Inter', sans-serif; font-weight: 700; color: var(--primary); font-size: 13px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .example-block b { color: var(--primary); }
+    .constraints { background: rgba(99, 102, 241, 0.05); border: 1px dashed rgba(99, 102, 241, 0.3); padding: 12px 18px; border-radius: 10px; font-size: 14px; color: #475569; margin: 12px 0; position: relative; z-index: 1; }
+    .constraints b { color: var(--primary); }
+    .solution-wrap { margin-top: 18px; position: relative; z-index: 1; }
+    .show-solution-btn { display: inline-flex; align-items: center; gap: 10px; background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: white; border: none; padding: 12px 22px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.3s; font-family: 'Inter', sans-serif; box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3); }
+    .show-solution-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(139, 92, 246, 0.45); }
+    .show-solution-btn svg { width: 16px; height: 16px; }
+    .show-solution-btn.active { background: linear-gradient(135deg, #ec4899, #f43f5e); box-shadow: 0 8px 20px rgba(244, 63, 94, 0.3); }
+    .solution-content { max-height: 0; overflow: hidden; opacity: 0; margin-top: 0; transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, margin-top 0.3s ease; }
+    .solution-content.shown { max-height: 2500px; opacity: 1; margin-top: 16px; }
+    .note { background: linear-gradient(135deg, #fef3c7, #fef9c3); border-left: 4px solid #f59e0b; padding: 18px 22px; border-radius: 14px; margin-top: 24px; font-size: 17px; color: #78350f; position: relative; z-index: 1; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15); }
+    .note::before { content: '💡'; margin-right: 8px; }
+    .note b { color: #92400e; } .note code { background: rgba(245, 158, 11, 0.2); color: #78350f; }
+    .warning { background: linear-gradient(135deg, #fee2e2, #fecaca); border-left: 4px solid #ef4444; padding: 18px 22px; border-radius: 14px; margin-top: 24px; font-size: 17px; color: #7f1d1d; position: relative; z-index: 1; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15); }
+    .warning::before { content: '⚠️'; margin-right: 8px; }
+    .warning b { color: #991b1b; } .warning code { background: rgba(239, 68, 68, 0.2); color: #7f1d1d; }
+    .def-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 16px; position: relative; z-index: 1; }
+    .def-card { background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px 24px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04); transition: all 0.3s; }
+    .def-card:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(139, 92, 246, 0.12); }
+    .def-card h3 { font-family: 'JetBrains Mono', monospace; font-size: 22px; color: var(--primary); margin-bottom: 8px; font-weight: 700; }
+    .def-card p { font-size: 15px; margin: 0; color: #475569; }
+    .theory-box { background: linear-gradient(135deg, #ede9fe, #fce7f3); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 16px; padding: 22px 26px; margin: 18px 0; position: relative; z-index: 1; box-shadow: 0 8px 20px rgba(139, 92, 246, 0.08); }
+    .theory-box::before { content: '🧠 NAZARIYA'; display: block; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; color: var(--primary); letter-spacing: 0.1em; margin-bottom: 10px; }
+    .theory-box p { font-size: 17px; margin-bottom: 8px; color: #1e1b4b; }
+    .theory-box p:last-child { margin-bottom: 0; }
+    .compare-table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); position: relative; z-index: 1; margin-top: 12px; }
+    .compare-table th { background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: white; padding: 14px 16px; text-align: left; font-weight: 700; font-size: 14px; }
+    .compare-table td { padding: 12px 16px; border-bottom: 1px solid #e2e8f0; font-size: 15px; color: #334155; }
+    .compare-table tr:last-child td { border-bottom: none; }
+    .compare-table tr:hover td { background: #f8fafc; }
+    .jwt-part { display: inline-block; padding: 4px 10px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 12px; margin-right: 4px; }
+    .jwt-header { background: #fee2e2; color: #991b1b; }
+    .jwt-payload { background: #fce7f3; color: #831843; }
+    .jwt-signature { background: #d1fae5; color: #065f46; }
+    .controls { position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; backdrop-filter: blur(20px) saturate(180%); background: rgba(10, 10, 20, 0.75); border-top: 1px solid var(--border); padding: 14px 20px; display: flex; justify-content: center; align-items: center; gap: 12px; }
+    .nav-arrow { display: inline-flex; align-items: center; justify-content: center; background: var(--surface); color: var(--text); border: 1px solid var(--border); width: 38px; height: 38px; border-radius: 10px; cursor: pointer; transition: all 0.2s; flex-shrink: 0; }
+    .nav-arrow:hover:not(:disabled) { background: linear-gradient(135deg, var(--primary), var(--primary-2)); border-color: transparent; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(139, 92, 246, 0.4); }
+    .nav-arrow:disabled { opacity: 0.3; cursor: not-allowed; }
+    .nav-arrow svg { width: 16px; height: 16px; }
+    .pagination { display: flex; align-items: center; gap: 6px; overflow-x: auto; scrollbar-width: none; max-width: calc(100vw - 200px); padding: 4px; scroll-behavior: smooth; }
+    .pagination::-webkit-scrollbar { display: none; }
+    .page-dot { display: inline-flex; align-items: center; justify-content: center; min-width: 34px; height: 34px; padding: 0 10px; background: var(--surface); color: var(--text-dim); border: 1px solid var(--border); border-radius: 9px; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; font-weight: 600; cursor: pointer; transition: all 0.2s; flex-shrink: 0; }
+    .page-dot:hover { color: var(--text); border-color: rgba(139, 92, 246, 0.4); background: rgba(139, 92, 246, 0.1); transform: translateY(-1px); }
+    .page-dot.active { background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: white; border-color: transparent; box-shadow: 0 6px 16px rgba(139, 92, 246, 0.45); transform: scale(1.08); }
+    .page-dot.visited { color: var(--text); background: rgba(139, 92, 246, 0.08); border-color: rgba(139, 92, 246, 0.2); }
+    .progress-line { position: absolute; top: 0; left: 0; height: 3px; background: linear-gradient(90deg, var(--primary), var(--accent)); transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 12px rgba(139, 92, 246, 0.6); border-radius: 0 3px 3px 0; }
+    @media (max-width: 768px) {
+      .top { padding: 12px 16px; } .topic-badge { display: none; }
+      .slide { padding: 32px 24px; border-radius: 20px; }
+      pre { font-size: 13px; padding: 18px; }
+      .nav-arrow { width: 36px; height: 36px; }
+      .pagination { max-width: calc(100vw - 110px); gap: 4px; }
+      .page-dot { min-width: 30px; height: 30px; font-size: 11.5px; padding: 0 6px; }
+      .slide h2::before { width: 4px; height: 24px; }
+    }
+    @media print {
+      html, body { height: auto; overflow: visible; } body { background: white; }
+      .top, .controls, .bg-effects { display: none; }
+      .presentation { position: static; display: block; padding: 0; }
+      .slide { display: flex !important; page-break-after: always; box-shadow: none; border: 1px solid #ddd; max-width: 100%; height: auto; max-height: none; margin-bottom: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-effects">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+</div>
+
+<div class="top">
+  <div class="top-left">
+    <a href="index.html" class="back-btn">
+      <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+      Roadmap
+    </a>
+    <div class="topic-badge">
+      <span class="pulse-dot"></span>
+      11-Mavzu · Spring Security
+    </div>
+  </div>
+  <div class="slide-counter">
+    <span class="current" id="currentSlide">1</span>
+    <span>/</span>
+    <span id="totalSlides">0</span>
+  </div>
+</div>
+
+<div class="presentation">
+
+  <section class="slide slide-title">
+    <div class="topic-pill">⚡ 11-Mavzu</div>
+    <h1>Spring Security</h1>
+    <p>
+      Java backend'ning <b>xavfsizlik qalqoni</b>. Authentication, Authorization, JWT, Roles va kuchli kriptografiya.
+    </p>
+    <div class="note">
+      <b>Dars maqsadi:</b> Spring Security arxitekturasi, Authentication flow, JWT tuzilmasi, Authorization (URL va method-level), BCrypt va xavfsiz API yaratishni chuqur o'rganamiz.
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>Authentication vs Authorization</h2>
+    <div class="theory-box">
+      <p><b>Authentication (kim?)</b> — foydalanuvchining <b>kimligini</b> aniqlash. Login, parol, token tekshirish.</p>
+      <p><b>Authorization (nima qila oladi?)</b> — autentifikatsiyadan o'tgan user'ga <b>nima ruxsat</b> berilganini tekshirish.</p>
+      <p><b>Tartib:</b> avval Authentication, keyin Authorization.</p>
+    </div>
+    <table class="compare-table">
+      <thead><tr><th></th><th>Authentication</th><th>Authorization</th></tr></thead>
+      <tbody>
+        <tr><td>Savol</td><td>Sen kimsan?</td><td>Senga nima ruxsat?</td></tr>
+        <tr><td>Misol</td><td>Login va parol</td><td>Admin huquqi</td></tr>
+        <tr><td>HTTP code</td><td>401 Unauthorized</td><td>403 Forbidden</td></tr>
+        <tr><td>Spring class</td><td><code>Authentication</code></td><td><code>GrantedAuthority</code></td></tr>
+      </tbody>
+    </table>
+    <div class="note">
+      <b>Aralashtirmang:</b> 401 = "men senga ishonmayman" (login qil), 403 = "kim ekanligingni bilaman, lekin bu joyga ruxsat yo'q".
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>Spring Security arxitekturasi — Filter Chain</h2>
+    <div class="theory-box">
+      <p>Spring Security <b>Servlet Filter chain</b> ustiga qurilgan. Har bir HTTP so'rov filter'lar zanjiridan o'tadi.</p>
+      <p>Filter'lar <b>aniq tartibda</b> ishlaydi: SecurityContextPersistenceFilter → AuthenticationFilter → AuthorizationFilter va h.k.</p>
+    </div>
+    <pre data-filename="filter-chain.txt"><code>HTTP Request
+     ↓
+┌────────────────────────────────────────────┐
+│  Servlet Filter Chain                       │
+│                                             │
+│  1. SecurityContextPersistenceFilter        │ ← context'ni tiklash
+│  2. HeaderWriterFilter                      │ ← security headers
+│  3. CorsFilter                              │ ← CORS
+│  4. CsrfFilter                              │ ← CSRF
+│  5. LogoutFilter                            │
+│  6. UsernamePasswordAuthenticationFilter    │ ← form login
+│  7. JwtAuthenticationFilter (custom)        │ ← JWT
+│  8. SessionManagementFilter                 │
+│  9. ExceptionTranslationFilter              │ ← 401/403
+│ 10. AuthorizationFilter                     │ ← qoidalar tekshirish
+└──────────────────┬─────────────────────────┘
+                   ↓
+              DispatcherServlet → Controller</code></pre>
+    <div class="note">
+      Custom JWT filter qo'shganda — odatda <code>UsernamePasswordAuthenticationFilter</code> dan oldin qo'yiladi.
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>SecurityFilterChain konfiguratsiyasi</h2>
+    <pre data-filename="SecurityConfig.java"><code>@Configuration
+@EnableWebSecurity
+@EnableMethodSecurity  // @PreAuthorize uchun
+public class SecurityConfig {
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        return http
+            .csrf(csrf -&gt; csrf.disable())   // API uchun (JWT bilan)
+            .cors(Customizer.withDefaults())
+            .sessionManagement(s -&gt; s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(auth -&gt; auth
+                .requestMatchers("/api/auth/**", "/api/public/**").permitAll()
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/products/**").hasAnyRole("ADMIN", "MANAGER")
+                .anyRequest().authenticated()
+            )
+            .exceptionHandling(ex -&gt; ex
+                .authenticationEntryPoint(authEntryPoint)  // 401
+                .accessDeniedHandler(accessDeniedHandler)  // 403
+            )
+            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+            .build();
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder(12);  // strength 12 = ~250ms hash
+    }
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>UserDetailsService va UserDetails</h2>
+    <div class="theory-box">
+      <p><b>UserDetailsService</b> — Spring Security'ning "DB'dan user'ni qanday olish" haqidagi savolga javob beruvchi interface.</p>
+      <p><b>UserDetails</b> — Spring Security tushunadigan user obyekti formati.</p>
+    </div>
+    <pre data-filename="UserDetailsService.java"><code>@Service
+@RequiredArgsConstructor
+public class CustomUserDetailsService implements UserDetailsService {
+
+    private final UserRepository userRepository;
+
+    @Override
+    public UserDetails loadUserByUsername(String email)
+            throws UsernameNotFoundException {
+        User user = userRepository.findByEmail(email)
+            .orElseThrow(() -&gt; new UsernameNotFoundException("User not found"));
+
+        return org.springframework.security.core.userdetails.User.builder()
+            .username(user.getEmail())
+            .password(user.getPasswordHash())   // hash, plain emas!
+            .authorities(getAuthorities(user))
+            .accountExpired(false)
+            .accountLocked(!user.isActive())
+            .credentialsExpired(false)
+            .disabled(!user.isEnabled())
+            .build();
+    }
+
+    private List&lt;GrantedAuthority&gt; getAuthorities(User user) {
+        return user.getRoles().stream()
+            .map(role -&gt; new SimpleGrantedAuthority("ROLE_" + role.getName()))
+            .toList();
+    }
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>Password Encryption — BCrypt</h2>
+    <div class="theory-box">
+      <p><b>Hech qachon parolni plain text yoki MD5/SHA1 bilan saqlash mumkin emas!</b></p>
+      <p><b>BCrypt</b> — adaptive hash function (1999). Eng tavsiya etilgan algoritm:</p>
+      <p>1️⃣ <b>Salt</b> — har parol uchun avtomatik random qiymat qo'shiladi (rainbow table'larga qarshi)</p>
+      <p>2️⃣ <b>Cost factor</b> — hisoblash murakkabligi (default 10, har +1 — 2x sekin)</p>
+      <p>3️⃣ <b>Self-contained</b> — hash ichida salt va cost ham bor</p>
+    </div>
+    <pre data-filename="BCrypt.java"><code>PasswordEncoder encoder = new BCryptPasswordEncoder(12);
+
+String hash = encoder.encode("mySecretPass");
+// $2a$12$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy
+//  │   │   │
+//  │   │   └── salt + hash (53 belgi)
+//  │   └────── cost factor (12)
+//  └────────── BCrypt algoritm versiyasi
+
+// Tekshirish (har safar yangi hash, lekin matches() ishlaydi)
+boolean matches = encoder.matches("mySecretPass", hash);  // true
+
+// Register'da
+user.setPasswordHash(encoder.encode(rawPassword));
+userRepo.save(user);
+
+// Login'da
+if (!encoder.matches(rawPassword, user.getPasswordHash())) {
+    throw new BadCredentialsException("Wrong password");
+}</code></pre>
+    <div class="warning">
+      <b>Xavfsizlik qoidalari:</b> 1) Cost ≥ 10. 2) Parolni JSON response'da qaytarmang. 3) Login API'da timing attack'larga qarshi har doim password tekshiring (user yo'q bo'lsa ham).
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>Form Login va HTTP Basic</h2>
+    <pre data-filename="FormBasic.java"><code>// FORM LOGIN — klassik web ilovalar uchun
+@Bean
+public SecurityFilterChain formChain(HttpSecurity http) throws Exception {
+    return http
+        .authorizeHttpRequests(auth -&gt; auth
+            .requestMatchers("/login", "/register").permitAll()
+            .anyRequest().authenticated()
+        )
+        .formLogin(form -&gt; form
+            .loginPage("/login")               // custom login sahifa
+            .defaultSuccessUrl("/dashboard")
+            .failureUrl("/login?error=true")
+            .permitAll()
+        )
+        .logout(logout -&gt; logout
+            .logoutSuccessUrl("/login?logout=true")
+            .deleteCookies("JSESSIONID")
+            .permitAll()
+        )
+        .build();
+}
+
+// HTTP BASIC — oddiy API'lar uchun (faqat HTTPS'da!)
+@Bean
+public SecurityFilterChain basicChain(HttpSecurity http) throws Exception {
+    return http
+        .httpBasic(Customizer.withDefaults())
+        .authorizeHttpRequests(auth -&gt; auth.anyRequest().authenticated())
+        .build();
+}
+
+// Browser request:
+// Authorization: Basic YWRtaW46cGFzc3dvcmQ=
+// (base64-encoded "admin:password")</code></pre>
+    <div class="warning">
+      <b>HTTP Basic</b> — har request bilan parol yuboriladi (base64, lekin shifrlanmagan). Faqat HTTPS'da!
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 1</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>Public va Protected endpoint'lar</h2>
+    <p>
+      <code>/api/public/**</code>, <code>/swagger-ui/**</code>, <code>/health</code> — hammasiga ochiq. Qolgan barchasi — auth talab.
+    </p>
+    <pre data-filename="PublicEndpoints.java"><code>@Bean
+public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    return http
+        .csrf(csrf -&gt; csrf.disable())
+        .authorizeHttpRequests(auth -&gt; auth
+            .requestMatchers(
+                "/api/public/**",
+                "/api/auth/**",
+                "/swagger-ui/**",
+                "/v3/api-docs/**",
+                "/health",
+                "/actuator/health"
+            ).permitAll()
+            .anyRequest().authenticated()
+        )
+        .build();
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 2</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>User register endpoint</h2>
+    <p>
+      <code>POST /api/auth/register</code> — yangi user yaratish (parol BCrypt bilan).
+    </p>
+    <pre data-filename="AuthController.java"><code>@RestController
+@RequestMapping("/api/auth")
+@RequiredArgsConstructor
+public class AuthController {
+    private final UserRepository userRepo;
+    private final PasswordEncoder passwordEncoder;
+
+    @PostMapping("/register")
+    @ResponseStatus(HttpStatus.CREATED)
+    public UserResponse register(@Valid @RequestBody RegisterRequest req) {
+
+        if (userRepo.existsByEmail(req.getEmail())) {
+            throw new EmailExistsException();
+        }
+
+        User user = new User();
+        user.setName(req.getName());
+        user.setEmail(req.getEmail());
+        user.setPasswordHash(passwordEncoder.encode(req.getPassword()));
+        user.setEnabled(true);
+        user.getRoles().add(Role.USER);  // default role
+
+        User saved = userRepo.save(user);
+        return UserResponse.from(saved);  // password HASH chiqarilmaydi!
+    }
+}
+
+public class RegisterRequest {
+    @NotBlank @Size(min = 2, max = 50)
+    private String name;
+
+    @NotBlank @Email
+    private String email;
+
+    @NotBlank @Size(min = 8)
+    @Pattern(regexp = "^(?=.*[A-Z])(?=.*[a-z])(?=.*\\d).+$",
+             message = "Katta, kichik harf va raqam bo'lishi shart")
+    private String password;
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 3</span>
+      <span class="difficulty medium"><span class="dot"></span>Medium</span>
+    </div>
+    <h2>AuthenticationManager bilan login</h2>
+    <p>
+      <code>POST /api/auth/login</code> — AuthenticationManager orqali login va token qaytarish.
+    </p>
+    <pre data-filename="LoginEndpoint.java"><code>@Bean
+public AuthenticationManager authManager(
+        AuthenticationConfiguration config) throws Exception {
+    return config.getAuthenticationManager();
+}
+
+@PostMapping("/login")
+public TokenResponse login(@Valid @RequestBody LoginRequest req) {
+    Authentication auth = authenticationManager.authenticate(
+        new UsernamePasswordAuthenticationToken(
+            req.getEmail(), req.getPassword()
+        )
+    );
+
+    // Muvaffaqiyatli — token generate qilamiz
+    UserDetails user = (UserDetails) auth.getPrincipal();
+    String accessToken = jwtService.generateAccessToken(user);
+    String refreshToken = jwtService.generateRefreshToken(user);
+
+    return new TokenResponse(accessToken, refreshToken, "Bearer", 3600);
+}
+
+// AuthenticationManager o'zi:
+// 1. UserDetailsService orqali user'ni topadi
+// 2. PasswordEncoder bilan parolni tekshiradi
+// 3. Muvaffaqiyat bo'lsa Authentication qaytaradi
+// 4. Xato bo'lsa AuthenticationException tashlaydi</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 4</span>
+      <span class="difficulty hard"><span class="dot"></span>Hard</span>
+    </div>
+    <h2>Brute force himoyasi</h2>
+    <p>
+      Login'da <b>5 ta noto'g'ri urinishdan</b> keyin akkauntni <b>15 daqiqaga blokirovka</b> qilish.
+    </p>
+    <pre data-filename="BruteForce.java"><code>@Service
+@RequiredArgsConstructor
+public class LoginAttemptService {
+    private final Cache&lt;String, Integer&gt; attemptsCache = Caffeine.newBuilder()
+        .expireAfterWrite(15, TimeUnit.MINUTES)
+        .maximumSize(10000)
+        .build();
+    private static final int MAX_ATTEMPTS = 5;
+
+    public void loginSucceeded(String key) {
+        attemptsCache.invalidate(key);
+    }
+
+    public void loginFailed(String key) {
+        int attempts = attemptsCache.get(key, k -&gt; 0) + 1;
+        attemptsCache.put(key, attempts);
+    }
+
+    public boolean isBlocked(String key) {
+        Integer attempts = attemptsCache.getIfPresent(key);
+        return attempts != null &amp;&amp; attempts &gt;= MAX_ATTEMPTS;
+    }
+}
+
+@PostMapping("/login")
+public TokenResponse login(@RequestBody LoginRequest req, HttpServletRequest http) {
+    String key = req.getEmail() + ":" + http.getRemoteAddr();
+
+    if (loginAttemptService.isBlocked(key)) {
+        throw new AccountLockedException("Try again in 15 min");
+    }
+
+    try {
+        Authentication auth = authManager.authenticate(/* ... */);
+        loginAttemptService.loginSucceeded(key);
+        return generateTokens(auth);
+    } catch (AuthenticationException e) {
+        loginAttemptService.loginFailed(key);
+        throw e;
+    }
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>Session vs Token-based Auth</h2>
+    <table class="compare-table">
+      <thead><tr><th></th><th>Session-based</th><th>Token-based (JWT)</th></tr></thead>
+      <tbody>
+        <tr><td>Saqlash joyi</td><td>Server xotirasi/DB</td><td>Client (browser)</td></tr>
+        <tr><td>Stateless</td><td>❌ (stateful)</td><td>✅</td></tr>
+        <tr><td>Scalability</td><td>Cookie sticky kerak</td><td>Har server tushunadi</td></tr>
+        <tr><td>Mobile app</td><td>Qiyin (cookie yo'q)</td><td>Tabiiy</td></tr>
+        <tr><td>Revoke (chiqarish)</td><td>Oson (DB'dan o'chir)</td><td>Qiyin (blacklist kerak)</td></tr>
+        <tr><td>CSRF xavfi</td><td>Bor</td><td>Yo'q (Bearer header)</td></tr>
+        <tr><td>O'lchami</td><td>Session ID — kichik</td><td>JWT — kattaroq</td></tr>
+      </tbody>
+    </table>
+    <div class="note">
+      Zamonaviy API'larda <b>JWT</b> mashhur — chunki microservice'lar va mobile app'lar uchun yaxshi mos keladi. Lekin Session'lar hali ham server-rendered web ilovalar uchun ko'p ishlatiladi.
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>JWT — JSON Web Token tuzilmasi</h2>
+    <div class="theory-box">
+      <p><b>JWT (RFC 7519)</b> — JSON ma'lumotni xavfsiz uzatish standarti.</p>
+      <p>JWT 3 qismdan iborat, <code>.</code> bilan ajratilgan:</p>
+    </div>
+    <pre data-filename="jwt-structure.txt"><code><span class="jwt-part jwt-header">HEADER</span>.<span class="jwt-part jwt-payload">PAYLOAD</span>.<span class="jwt-part jwt-signature">SIGNATURE</span>
+
+Misol JWT:
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NSIsIm5hbWUiOiJBa29iaXIiLCJpYXQiOjE3MzAwMDB9.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+
+Decode qilingach:
+
+<span class="jwt-part jwt-header">HEADER</span> (Algorithm + Type):
+{
+  "alg": "HS256",   // algoritm: HMAC SHA256
+  "typ": "JWT"
+}
+
+<span class="jwt-part jwt-payload">PAYLOAD</span> (Claims):
+{
+  "sub": "12345",         // subject (user id)
+  "name": "Akobir",       // custom claim
+  "iat": 1730000000,      // issued at
+  "exp": 1730003600,      // expiration
+  "roles": ["USER"]
+}
+
+<span class="jwt-part jwt-signature">SIGNATURE</span> (HMAC):
+HMACSHA256(
+  base64UrlEncode(header) + "." + base64UrlEncode(payload),
+  SECRET_KEY
+)</code></pre>
+    <div class="warning">
+      <b>MUHIM:</b> Payload <b>shifrlanmagan</b> — faqat base64-encoded! Sirli ma'lumotni JWT'ga yozmang. Signature faqat <b>tahrirni</b> oldini oladi.
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>Access Token va Refresh Token</h2>
+    <div class="theory-box">
+      <p><b>Muammo:</b> Access Token uzoq amal qilsa — o'g'irlangan tokenni ishlatish oson. Qisqa bo'lsa — har 15 daqiqada login qilish kerak.</p>
+      <p><b>Yechim — ikkita token:</b></p>
+      <p>1️⃣ <b>Access Token</b> — qisqa muddatli (15-60 daqiqa). Har API'ga yuboriladi.</p>
+      <p>2️⃣ <b>Refresh Token</b> — uzoq muddatli (7-30 kun). Faqat yangi access olish uchun. Server'da DB'da saqlanadi (revoke qilish uchun).</p>
+    </div>
+    <pre data-filename="token-flow.txt"><code>1. LOGIN
+   POST /auth/login → { accessToken, refreshToken }
+   Browser saqlaydi (httpOnly cookie yoki localStorage)
+
+2. API CALL
+   GET /api/users
+   Authorization: Bearer eyJ... (accessToken)
+   → 200 OK
+
+3. ACCESS TOKEN EXPIRED
+   GET /api/users
+   Authorization: Bearer eyJ... (eski)
+   → 401 Unauthorized
+
+4. REFRESH
+   POST /auth/refresh
+   { "refreshToken": "..." }
+   → { "accessToken": "yangi", "refreshToken": "yangi" }
+
+5. RETRY
+   GET /api/users
+   Authorization: Bearer yangi
+   → 200 OK</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>JWT yaratish va validation</h2>
+    <pre data-filename="JwtService.java"><code>@Service
+@RequiredArgsConstructor
+public class JwtService {
+    @Value("${app.jwt.secret}")  // 256-bit kalit
+    private String secret;
+
+    @Value("${app.jwt.access-ttl}")
+    private long accessTtl;  // 3600 sekund
+
+    public String generateAccessToken(UserDetails user) {
+        return Jwts.builder()
+            .setSubject(user.getUsername())
+            .claim("roles", user.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority).toList())
+            .setIssuedAt(new Date())
+            .setExpiration(new Date(System.currentTimeMillis() + accessTtl * 1000))
+            .signWith(Keys.hmacShaKeyFor(secret.getBytes()), SignatureAlgorithm.HS256)
+            .compact();
+    }
+
+    public Claims parseToken(String token) {
+        return Jwts.parserBuilder()
+            .setSigningKey(Keys.hmacShaKeyFor(secret.getBytes()))
+            .build()
+            .parseClaimsJws(token)
+            .getBody();
+    }
+
+    public boolean isValid(String token) {
+        try {
+            parseToken(token);
+            return true;
+        } catch (ExpiredJwtException | MalformedJwtException | SignatureException e) {
+            return false;
+        }
+    }
+
+    public String getUsername(String token) {
+        return parseToken(token).getSubject();
+    }
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>JWT Authentication Filter</h2>
+    <pre data-filename="JwtFilter.java"><code>@Component
+@RequiredArgsConstructor
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
+    private final JwtService jwtService;
+    private final UserDetailsService userDetailsService;
+
+    @Override
+    protected void doFilterInternal(HttpServletRequest req,
+                                   HttpServletResponse res,
+                                   FilterChain chain)
+            throws ServletException, IOException {
+
+        String authHeader = req.getHeader("Authorization");
+
+        if (authHeader != null &amp;&amp; authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+
+            if (jwtService.isValid(token)) {
+                String username = jwtService.getUsername(token);
+                UserDetails user = userDetailsService.loadUserByUsername(username);
+
+                UsernamePasswordAuthenticationToken auth =
+                    new UsernamePasswordAuthenticationToken(
+                        user, null, user.getAuthorities()
+                    );
+                auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(req));
+
+                SecurityContextHolder.getContext().setAuthentication(auth);
+            }
+        }
+
+        chain.doFilter(req, res);
+    }
+}
+
+// SecurityConfig'da:
+// .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala</span>
+      <span class="difficulty medium"><span class="dot"></span>Medium</span>
+    </div>
+    <h2>Refresh Token endpoint</h2>
+    <p>
+      <code>POST /auth/refresh</code> — eski refresh token bilan yangi access + refresh yaratish (token rotation).
+    </p>
+    <pre data-filename="RefreshEndpoint.java"><code>@Entity
+public class RefreshToken {
+    @Id @GeneratedValue private Long id;
+    @Column(unique = true)
+    private String token;
+    @ManyToOne
+    private User user;
+    private LocalDateTime expiresAt;
+    private boolean revoked;
+}
+
+@PostMapping("/refresh")
+public TokenResponse refresh(@RequestBody RefreshRequest req) {
+    RefreshToken old = refreshTokenRepo.findByToken(req.getRefreshToken())
+        .orElseThrow(() -&gt; new InvalidTokenException("Token not found"));
+
+    if (old.isRevoked() || old.getExpiresAt().isBefore(LocalDateTime.now())) {
+        throw new InvalidTokenException("Token expired or revoked");
+    }
+
+    // Token rotation — eski refresh'ni o'chirib, yangi berish
+    old.setRevoked(true);
+    refreshTokenRepo.save(old);
+
+    User user = old.getUser();
+    UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
+
+    String newAccess = jwtService.generateAccessToken(userDetails);
+    String newRefresh = generateAndSaveRefreshToken(user);
+
+    return new TokenResponse(newAccess, newRefresh, "Bearer", 3600);
+}
+
+@PostMapping("/logout")
+public void logout(@RequestBody RefreshRequest req) {
+    refreshTokenRepo.findByToken(req.getRefreshToken())
+        .ifPresent(t -&gt; { t.setRevoked(true); refreshTokenRepo.save(t); });
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>Authorization — URL based</h2>
+    <pre data-filename="UrlAuthorization.java"><code>@Bean
+public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    return http
+        .authorizeHttpRequests(auth -&gt; auth
+            // Public
+            .requestMatchers("/api/auth/**", "/api/public/**").permitAll()
+
+            // HTTP metodga qarab
+            .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
+            .requestMatchers(HttpMethod.POST, "/api/products/**").hasRole("ADMIN")
+            .requestMatchers(HttpMethod.PUT, "/api/products/**").hasRole("ADMIN")
+            .requestMatchers(HttpMethod.DELETE, "/api/products/**").hasRole("ADMIN")
+
+            // Bir nechta role
+            .requestMatchers("/api/orders/**").hasAnyRole("USER", "ADMIN")
+
+            // Custom mantiq
+            .requestMatchers("/api/admin/**").access((auth, ctx) -&gt; {
+                boolean isAdmin = auth.get().getAuthorities().stream()
+                    .anyMatch(a -&gt; a.getAuthority().equals("ROLE_ADMIN"));
+                boolean fromOffice = ctx.getRequest().getRemoteAddr().startsWith("10.");
+                return new AuthorizationDecision(isAdmin &amp;&amp; fromOffice);
+            })
+
+            .anyRequest().authenticated()
+        )
+        .build();
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>Method-level Security</h2>
+    <p>
+      Controller yoki Service metodi darajasida ruxsat tekshirish — granular nazorat uchun.
+    </p>
+    <pre data-filename="MethodSecurity.java"><code>@RestController
+@RequestMapping("/api/users")
+public class UserController {
+
+    // Faqat ADMIN
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping
+    public List&lt;User&gt; getAll() { /* ... */ }
+
+    // ADMIN yoki o'zining ma'lumotini
+    @PreAuthorize("hasRole('ADMIN') or #id == authentication.principal.id")
+    @GetMapping("/{id}")
+    public User get(@PathVariable Long id) { /* ... */ }
+
+    // Bir nechta shart
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER') and hasAuthority('USER_DELETE')")
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable Long id) { /* ... */ }
+
+    // Natijani filter qilish — kerakli element bo'lmasa filter'lab tashlaydi
+    @PostFilter("filterObject.owner.id == authentication.principal.id")
+    @GetMapping("/my-orders")
+    public List&lt;Order&gt; myOrders() { /* ... */ }
+
+    // Method natijasini tekshirish
+    @PostAuthorize("returnObject.owner.id == authentication.principal.id")
+    @GetMapping("/order/{id}")
+    public Order getOrder(@PathVariable Long id) { /* ... */ }
+}
+
+// Yoqish (SecurityConfig'da):
+// @EnableMethodSecurity(prePostEnabled = true)</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>Roles vs Authorities</h2>
+    <div class="theory-box">
+      <p><b>Authority</b> — eng asosiy ruxsat birligi. String formatdagi yorliq: <code>USER_READ</code>, <code>ORDER_DELETE</code>.</p>
+      <p><b>Role</b> — Authority'lar to'plamining nomi. Spring'da odatda <code>ROLE_</code> prefiksi bilan: <code>ROLE_ADMIN</code>, <code>ROLE_USER</code>.</p>
+      <p><b>hasRole('ADMIN')</b> aslida <code>hasAuthority('ROLE_ADMIN')</code> bilan teng.</p>
+    </div>
+    <pre data-filename="RolesAuth.java"><code>// 1. Klassik Role-based — oddiy
+public enum Role { USER, ADMIN, MANAGER }
+
+@PreAuthorize("hasRole('ADMIN')")  // ROLE_ prefiksi avtomatik
+
+// 2. Authority-based — granular
+public enum Permission {
+    USER_READ, USER_WRITE, USER_DELETE,
+    ORDER_READ, ORDER_WRITE
+}
+
+@PreAuthorize("hasAuthority('USER_DELETE')")
+
+// 3. Aralash — eng yaxshi yondashuv
+public enum Role {
+    USER(Set.of(USER_READ, ORDER_READ)),
+    MANAGER(Set.of(USER_READ, ORDER_READ, ORDER_WRITE)),
+    ADMIN(Set.of(USER_READ, USER_WRITE, USER_DELETE, ORDER_READ, ORDER_WRITE));
+
+    private final Set&lt;Permission&gt; permissions;
+}
+
+// loadUserByUsername'da:
+return User.builder()
+    .username(user.getEmail())
+    .password(user.getPasswordHash())
+    .authorities(
+        user.getRoles().stream()
+            .flatMap(r -&gt; Stream.concat(
+                Stream.of(new SimpleGrantedAuthority("ROLE_" + r.name())),
+                r.getPermissions().stream().map(p -&gt; new SimpleGrantedAuthority(p.name()))
+            )).toList()
+    ).build();</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 1</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>Joriy user'ni olish</h2>
+    <p>
+      Controller'da <b>joriy autentifikatsiya qilingan user</b>'ni olish (login qilgan kim?).
+    </p>
+    <pre data-filename="CurrentUser.java"><code>// Usul 1: SecurityContextHolder
+@GetMapping("/me")
+public UserResponse currentUser() {
+    Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    UserDetails user = (UserDetails) auth.getPrincipal();
+    return userService.findByEmail(user.getUsername());
+}
+
+// Usul 2: Method parameter (zamonaviy)
+@GetMapping("/me")
+public UserResponse currentUser(@AuthenticationPrincipal UserDetails user) {
+    return userService.findByEmail(user.getUsername());
+}
+
+// Usul 3: Custom annotation
+@Target(ElementType.PARAMETER)
+@Retention(RetentionPolicy.RUNTIME)
+@AuthenticationPrincipal(expression = "@userService.findByEmail(username)")
+public @interface CurrentUser { }
+
+@GetMapping("/me")
+public UserResponse currentUser(@CurrentUser User user) {
+    return UserResponse.from(user);
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 2</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>Faqat o'z ma'lumotini ko'rish</h2>
+    <p>
+      User faqat o'zining buyurtmalarini ko'ra olsin. Admin esa hammasini.
+    </p>
+    <pre data-filename="OwnDataOnly.java"><code>@RestController
+@RequestMapping("/api/orders")
+public class OrderController {
+
+    @PreAuthorize("hasRole('ADMIN') or #userId == authentication.principal.id")
+    @GetMapping("/user/{userId}")
+    public List&lt;Order&gt; getUserOrders(@PathVariable Long userId) {
+        return service.findByUserId(userId);
+    }
+
+    @PostAuthorize("hasRole('ADMIN') or returnObject.userId == authentication.principal.id")
+    @GetMapping("/{id}")
+    public Order getOrder(@PathVariable Long id) {
+        return service.findById(id);
+    }
+
+    // Service ichida ham — defense in depth
+    @PreAuthorize("@orderSecurity.isOwnerOrAdmin(#id, authentication)")
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable Long id) {
+        service.delete(id);
+    }
+}
+
+@Component("orderSecurity")
+public class OrderSecurityService {
+    public boolean isOwnerOrAdmin(Long orderId, Authentication auth) {
+        if (auth.getAuthorities().stream()
+            .anyMatch(a -&gt; a.getAuthority().equals("ROLE_ADMIN"))) return true;
+
+        UserDetails user = (UserDetails) auth.getPrincipal();
+        return orderRepo.existsByIdAndUserEmail(orderId, user.getUsername());
+    }
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 3</span>
+      <span class="difficulty medium"><span class="dot"></span>Medium</span>
+    </div>
+    <h2>Permission-based access</h2>
+    <p>
+      Granular ruxsatlar: <code>USER_READ</code>, <code>USER_WRITE</code>, <code>USER_DELETE</code>. Har Role o'z permission'lariga ega.
+    </p>
+    <pre data-filename="PermissionBased.java"><code>public enum Permission {
+    USER_READ("user:read"),
+    USER_WRITE("user:write"),
+    USER_DELETE("user:delete"),
+    PRODUCT_READ("product:read"),
+    PRODUCT_WRITE("product:write");
+
+    private final String value;
+}
+
+public enum Role {
+    USER(Set.of(USER_READ, PRODUCT_READ)),
+    EDITOR(Set.of(USER_READ, USER_WRITE, PRODUCT_READ, PRODUCT_WRITE)),
+    ADMIN(Set.of(USER_READ, USER_WRITE, USER_DELETE, PRODUCT_READ, PRODUCT_WRITE));
+
+    private final Set&lt;Permission&gt; permissions;
+}
+
+@RestController
+public class UserController {
+
+    @PreAuthorize("hasAuthority('user:read')")
+    @GetMapping("/api/users")
+    public List&lt;User&gt; list() { /* ... */ }
+
+    @PreAuthorize("hasAuthority('user:write')")
+    @PostMapping("/api/users")
+    public User create(@RequestBody UserRequest req) { /* ... */ }
+
+    @PreAuthorize("hasAuthority('user:delete')")
+    @DeleteMapping("/api/users/{id}")
+    public void delete(@PathVariable Long id) { /* ... */ }
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 4</span>
+      <span class="difficulty hard"><span class="dot"></span>Hard</span>
+    </div>
+    <h2>Multi-tenant security</h2>
+    <p>
+      Bitta API'da ko'p tashkilot. Har user faqat <b>o'z tashkiloti</b>ning ma'lumotini ko'rsin.
+    </p>
+    <pre data-filename="MultiTenant.java"><code>// User entity'ga tenant_id qo'shamiz
+@Entity
+public class User {
+    @Id private Long id;
+    private String email;
+    @Column(name = "tenant_id")
+    private Long tenantId;
+}
+
+// Custom UserDetails — tenant ham bor
+public class CustomUserDetails implements UserDetails {
+    private final User user;
+    public Long getTenantId() { return user.getTenantId(); }
+}
+
+// Hibernate filter — har query'ga avtomatik WHERE qo'shadi
+@Entity
+@FilterDef(name = "tenantFilter", parameters = @ParamDef(name = "tenantId", type = "long"))
+@Filter(name = "tenantFilter", condition = "tenant_id = :tenantId")
+public class Product { /* ... */ }
+
+// Filter ichidagi user uchun tenant'ni o'rnatish
+@Component
+public class TenantFilter extends OncePerRequestFilter {
+    private final EntityManager em;
+
+    @Override
+    protected void doFilterInternal(/* ... */) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null &amp;&amp; auth.getPrincipal() instanceof CustomUserDetails user) {
+            Session session = em.unwrap(Session.class);
+            session.enableFilter("tenantFilter").setParameter("tenantId", user.getTenantId());
+        }
+        chain.doFilter(req, res);
+    }
+}
+
+// Endi har query avtomatik tenant_id bo'yicha filtrlanadi!</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>Exception Handling — 401 va 403</h2>
+    <pre data-filename="ExceptionHandling.java"><code>// 401 — login kerak
+@Component
+@RequiredArgsConstructor
+public class JwtAuthEntryPoint implements AuthenticationEntryPoint {
+    private final ObjectMapper mapper;
+
+    @Override
+    public void commence(HttpServletRequest req, HttpServletResponse res,
+                        AuthenticationException ex) throws IOException {
+        res.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        res.setContentType("application/json");
+        mapper.writeValue(res.getWriter(), Map.of(
+            "status", 401,
+            "error", "Unauthorized",
+            "message", "Authentication required",
+            "path", req.getRequestURI()
+        ));
+    }
+}
+
+// 403 — ruxsat yo'q
+@Component
+@RequiredArgsConstructor
+public class CustomAccessDeniedHandler implements AccessDeniedHandler {
+    private final ObjectMapper mapper;
+
+    @Override
+    public void handle(HttpServletRequest req, HttpServletResponse res,
+                      AccessDeniedException ex) throws IOException {
+        res.setStatus(HttpServletResponse.SC_FORBIDDEN);
+        res.setContentType("application/json");
+        mapper.writeValue(res.getWriter(), Map.of(
+            "status", 403,
+            "error", "Forbidden",
+            "message", "You don't have permission"
+        ));
+    }
+}
+
+// SecurityConfig'ga ulash
+.exceptionHandling(ex -&gt; ex
+    .authenticationEntryPoint(jwtAuthEntryPoint)
+    .accessDeniedHandler(customAccessDeniedHandler))</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>CSRF va CORS</h2>
+    <div class="theory-box">
+      <p><b>CSRF (Cross-Site Request Forgery)</b> — boshqa sayt sizning sayt nomidan request yuborishi.</p>
+      <p><b>Himoya:</b> Token, har request'da yuborilishi kerak. Spring Security default'da yoqilgan.</p>
+      <p><b>Stateless API (JWT) uchun</b> — odatda <code>csrf.disable()</code> qilamiz (Bearer header CSRF'ga immune).</p>
+    </div>
+    <pre data-filename="CsrfCors.java"><code>// API (stateless) uchun CSRF'ni o'chiramiz
+http.csrf(csrf -&gt; csrf.disable());
+
+// Form-based ilova uchun yoqamiz (default)
+http.csrf(csrf -&gt; csrf
+    .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+);
+
+// CORS konfiguratsiyasi
+@Bean
+public CorsConfigurationSource corsConfig() {
+    CorsConfiguration config = new CorsConfiguration();
+    config.setAllowedOrigins(List.of("https://frontend.com"));
+    config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE"));
+    config.setAllowedHeaders(List.of("*"));
+    config.setExposedHeaders(List.of("Authorization", "X-Total-Count"));
+    config.setAllowCredentials(true);
+    config.setMaxAge(3600L);
+
+    UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+    source.registerCorsConfiguration("/**", config);
+    return source;
+}
+
+// SecurityConfig'da:
+http.cors(cors -&gt; cors.configurationSource(corsConfig()));</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>OAuth2 va OpenID Connect</h2>
+    <div class="theory-box">
+      <p><b>OAuth2 (RFC 6749)</b> — uchinchi taraf orqali autentifikatsiya standarti. "Google bilan kirish" — bu OAuth2.</p>
+      <p><b>OpenID Connect (OIDC)</b> — OAuth2 ustiga qurilgan identifikatsiya qatlami.</p>
+      <p>Spring Security ikkalasini ham qo'llab-quvvatlaydi: <code>spring-boot-starter-oauth2-client</code> va <code>oauth2-resource-server</code>.</p>
+    </div>
+    <pre data-filename="OAuth2Login.java"><code>// pom.xml
+&lt;dependency&gt;
+    &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-boot-starter-oauth2-client&lt;/artifactId&gt;
+&lt;/dependency&gt;
+
+// application.yml
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope: openid, profile, email
+          github:
+            client-id: ${GITHUB_CLIENT_ID}
+            client-secret: ${GITHUB_CLIENT_SECRET}
+
+// SecurityConfig
+@Bean
+public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    return http
+        .authorizeHttpRequests(auth -&gt; auth.anyRequest().authenticated())
+        .oauth2Login(oauth2 -&gt; oauth2
+            .defaultSuccessUrl("/dashboard")
+            .userInfoEndpoint(u -&gt; u.userService(customOAuth2UserService))
+        )
+        .build();
+}
+
+// Endpoint'lar avtomatik yaratiladi:
+// /oauth2/authorization/google
+// /login/oauth2/code/google (callback)</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">📝 Amaliy topshiriqlar</span>
+      <span class="difficulty hard"><span class="dot"></span>Mustaqil</span>
+    </div>
+    <h2>10 ta murakkab vazifa</h2>
+    <p>Quyidagi vazifalarni Spring Security bilan bajaring:</p>
+    <ul style="font-size: 16px;">
+      <li>
+        <b>1. To'liq Auth Service.</b> Register, Login, Refresh, Logout, Forgot Password, Change Password — JWT bilan.
+      </li>
+      <li>
+        <b>2. Email verification.</b> Register → email token jo'natish → click → activate. Token expire bilan.
+      </li>
+      <li>
+        <b>3. 2FA (TOTP).</b> Google Authenticator bilan ikki bosqichli autentifikatsiya.
+      </li>
+      <li>
+        <b>4. OAuth2 + custom mapping.</b> Google login, lekin DB'da local user yaratish (CustomOAuth2UserService).
+      </li>
+      <li>
+        <b>5. Rate Limiting.</b> Per-IP va per-user — Bucket4j yoki Redis bilan.
+      </li>
+      <li>
+        <b>6. Audit Logging.</b> Har login attempt, password change, sensitive action'larni alohida jadval'ga yozish.
+      </li>
+      <li>
+        <b>7. Multi-tenancy.</b> Hibernate Filter + JWT'da tenant ID + har query'ga avtomatik filter.
+      </li>
+      <li>
+        <b>8. Session management.</b> Aktiv sessiyalarni ko'rsatish va boshqalarini majburiy chiqarish ("Sign out everywhere else").
+      </li>
+      <li>
+        <b>9. Password policy.</b> Murakkablik, oldingi 5 parol bilan moslik tekshirish, har 90 kun majburiy o'zgartirish.
+      </li>
+      <li>
+        <b>10. API Keys.</b> Server-to-server uchun JWT emas, balki API key (DB'da hashed bo'lib saqlanadi).
+      </li>
+    </ul>
+    <div class="note">
+      Har bir vazifa uchun: <b>OWASP Top 10</b> tahdidlarini hisobga oling, <b>HTTPS only</b>, parol va token'larni log'larda yoki response'da chiqarmang.
+    </div>
+  </section>
+
+  <section class="slide slide-title">
+    <div class="topic-pill">🎯 Yakun</div>
+    <h1>Dars yakuni</h1>
+    <p>
+      Spring Security — endi siz <b>professional darajada</b> Java backend'ni himoyalashni bilasiz. JWT, BCrypt, Authorization va xavfsizlik tamoyillari sizning qo'lingizda.
+    </p>
+    <div class="note">
+      <b>Keyingi mavzu:</b> Professional Backend — File Upload, Email Sending, Redis Cache, Docker, Testing (JUnit, Mockito), CI/CD va Deployment.
+    </div>
+  </section>
+
+</div>
+
+<div class="toast" id="toast">✓ Kod nusxalandi!</div>
+
+<div class="controls">
+  <div class="progress-line" id="progressLine"></div>
+  <button class="nav-arrow" id="prevBtn" onclick="prevSlide()" title="Oldingi (←)">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+  </button>
+  <div class="pagination" id="pagination"></div>
+  <button class="nav-arrow" id="nextBtn" onclick="nextSlide()" title="Keyingi (→)">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+  </button>
+</div>
+
+<script>
+  function wrapCodeBlocks() {
+    document.querySelectorAll('pre').forEach(pre => {
+      if (pre.closest('.code-window')) return;
+      const filename = pre.dataset.filename || 'Example.java';
+      const wrapper = document.createElement('div');
+      wrapper.className = 'code-window';
+      wrapper.innerHTML = `
+        <div class="code-header">
+          <div class="traffic-lights">
+            <span class="light close"></span><span class="light minimize"></span><span class="light maximize"></span>
+          </div>
+          <div class="code-filename">${filename}</div>
+          <div class="code-actions">
+            <button class="code-btn reset-btn">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              Reset
+            </button>
+            <button class="code-btn copy-btn">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+              Copy
+            </button>
+          </div>
+        </div>
+        <div class="code-body"></div>
+      `;
+      pre.setAttribute('contenteditable', 'true');
+      pre.setAttribute('spellcheck', 'false');
+      const original = pre.innerHTML;
+      pre.dataset.original = original;
+      pre.parentNode.insertBefore(wrapper, pre);
+      wrapper.querySelector('.code-body').appendChild(pre);
+      wrapper.querySelector('.copy-btn').addEventListener('click', () => {
+        navigator.clipboard.writeText(pre.textContent).then(() => {
+          const btn = wrapper.querySelector('.copy-btn');
+          btn.classList.add('copied');
+          btn.innerHTML = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg> Nusxalandi`;
+          showToast('✓ Kod nusxalandi!');
+          setTimeout(() => {
+            btn.classList.remove('copied');
+            btn.innerHTML = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg> Copy`;
+          }, 2000);
+        });
+      });
+      wrapper.querySelector('.reset-btn').addEventListener('click', () => {
+        pre.innerHTML = original;
+        showToast('↺ Kod tiklandi');
+      });
+    });
+  }
+  function showToast(message) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.classList.add('show');
+    clearTimeout(window._toastTimer);
+    window._toastTimer = setTimeout(() => toast.classList.remove('show'), 1800);
+  }
+  wrapCodeBlocks();
+
+  function wrapSolutions() {
+    const eyeIcon = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>`;
+    const eyeOffIcon = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"/></svg>`;
+    document.querySelectorAll('.slide').forEach(slide => {
+      if (!slide.querySelector('.problem-header')) return;
+      slide.querySelectorAll('.code-window').forEach(cw => {
+        if (cw.parentNode.classList.contains('solution-content')) return;
+        const wrap = document.createElement('div');
+        wrap.className = 'solution-wrap';
+        const btn = document.createElement('button');
+        btn.className = 'show-solution-btn';
+        btn.innerHTML = eyeIcon + ' Yechimni ko\'rsatish';
+        const content = document.createElement('div');
+        content.className = 'solution-content';
+        cw.parentNode.insertBefore(wrap, cw);
+        content.appendChild(cw);
+        wrap.appendChild(btn);
+        wrap.appendChild(content);
+        btn.addEventListener('click', () => {
+          const isShown = content.classList.toggle('shown');
+          btn.classList.toggle('active', isShown);
+          btn.innerHTML = isShown ? eyeOffIcon + ' Yechimni yashirish' : eyeIcon + ' Yechimni ko\'rsatish';
+        });
+      });
+    });
+  }
+  wrapSolutions();
+
+  const slides = document.querySelectorAll('.slide');
+  const totalSlides = slides.length;
+  const pagination = document.getElementById('pagination');
+  let currentIndex = 0;
+  document.getElementById('totalSlides').textContent = totalSlides;
+  const pageDots = [];
+  for (let i = 0; i < totalSlides; i++) {
+    const dot = document.createElement('button');
+    dot.className = 'page-dot';
+    dot.textContent = String(i + 1).padStart(2, '0');
+    dot.addEventListener('click', () => { currentIndex = i; showSlide(i); });
+    pagination.appendChild(dot);
+    pageDots.push(dot);
+  }
+  function showSlide(index) {
+    slides.forEach(s => s.classList.remove('active'));
+    slides[index].classList.add('active');
+    document.getElementById('currentSlide').textContent = index + 1;
+    pageDots.forEach((d, i) => { d.classList.toggle('active', i === index); d.classList.toggle('visited', i < index); });
+    const percent = ((index + 1) / totalSlides * 100);
+    document.getElementById('progressLine').style.width = percent + '%';
+    document.getElementById('prevBtn').disabled = index === 0;
+    document.getElementById('nextBtn').disabled = index === totalSlides - 1;
+    slides[index].scrollTop = 0;
+    const activeDot = pageDots[index];
+    if (activeDot) activeDot.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+  }
+  function nextSlide() { if (currentIndex < totalSlides - 1) { currentIndex++; showSlide(currentIndex); } }
+  function prevSlide() { if (currentIndex > 0) { currentIndex--; showSlide(currentIndex); } }
+  document.addEventListener('keydown', (e) => {
+    if (e.target.isContentEditable) return;
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') { e.preventDefault(); nextSlide(); }
+    else if (e.key === 'ArrowLeft' || e.key === 'PageUp') { e.preventDefault(); prevSlide(); }
+    else if (e.key === 'Home') { currentIndex = 0; showSlide(0); }
+    else if (e.key === 'End') { currentIndex = totalSlides - 1; showSlide(currentIndex); }
+  });
+  showSlide(0);
+</script>
+
+<script>
+(function(_0x){
+  var _a=String.fromCharCode,
+      _b=[169,32,77,117,97,108,108,105,102,58,32,82,117,115,116,97,109,111,118,32,65,107,111,98,105,114],
+      _c=[95,120,57,52,107,55,116,57,114,53,95,115,105,103],
+      _d=[95,120,57,52,104,53,100,55],
+      _t='',_n='',_h='';
+  for(var i=0;i<_b.length;i++)_t+=_a(_b[i]);
+  for(var i=0;i<_c.length;i++)_n+=_a(_c[i]);
+  for(var i=0;i<_d.length;i++)_h+=_a(_d[i]);
+  function _mk(visible){
+    var d=document.createElement('div');
+    d.setAttribute('data-x',_t);
+    if(visible){
+      d.id=_n; d.textContent=_t;
+      d.style.cssText='position:fixed;bottom:96px;right:16px;z-index:99999;background:rgba(15,15,25,0.75);color:rgba(255,255,255,0.85);padding:6px 14px;border-radius:20px;font-family:system-ui,-apple-system,sans-serif;font-size:11px;font-weight:600;backdrop-filter:blur(10px);border:1px solid rgba(139,92,246,0.3);pointer-events:none;user-select:none;letter-spacing:0.03em;box-shadow:0 4px 12px rgba(0,0,0,0.3);';
+    }else{
+      d.className=_h+Math.random().toString(36).slice(2,7); d.textContent=_t;
+      d.style.cssText='position:absolute;left:-99999px;top:-99999px;opacity:0;pointer-events:none;width:1px;height:1px;overflow:hidden;';
+    }
+    return d;
+  }
+  function _ensure(){
+    if(!document.body)return;
+    if(!document.getElementById(_n)){ document.body.appendChild(_mk(true)); }
+    var hidden=document.querySelectorAll('[class^="'+_h+'"]');
+    if(hidden.length<5){ for(var i=hidden.length;i<5;i++){ document.body.appendChild(_mk(false)); } }
+  }
+  function _setup(){
+    _ensure();
+    try{
+      new MutationObserver(function(muts){
+        for(var i=0;i<muts.length;i++){
+          var m=muts[i];
+          if(m.removedNodes.length>0||m.type==='attributes'){ _ensure(); break; }
+        }
+      }).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['id','class','style']});
+    }catch(e){}
+    setInterval(_ensure,1500);
+  }
+  if(document.body)_setup();
+  else document.addEventListener('DOMContentLoaded',_setup);
+  try{
+    console.log('%c '+_t+' ','background:linear-gradient(135deg,#8b5cf6,#f472b6);color:white;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:bold;');
+    Object.defineProperty(window,_n+'_lock',{value:_t,writable:false,configurable:false});
+  }catch(e){}
+})();
+</script>
+
+</body>
+</html>

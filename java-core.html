@@ -1,0 +1,2083 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Java Core — Prezentatsiya</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #0a0a14;
+      --surface: rgba(255, 255, 255, 0.04);
+      --border: rgba(255, 255, 255, 0.08);
+      --text: #f8fafc;
+      --text-dim: #94a3b8;
+      --text-muted: #64748b;
+      --primary: #8b5cf6;
+      --primary-2: #6366f1;
+      --accent: #f472b6;
+      --slide-bg: #ffffff;
+      --slide-bg-2: #fafafe;
+      --code-bg: #0f172a;
+      --code-text: #e2e8f0;
+      --code-keyword: #c084fc;
+      --code-string: #86efac;
+      --code-comment: #64748b;
+      --code-number: #fbbf24;
+    }
+
+    html, body {
+      height: 100%;
+      overflow: hidden;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Background effects */
+    .bg-effects {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(140px);
+      opacity: 0.4;
+    }
+
+    .blob-1 {
+      width: 500px; height: 500px;
+      background: #8b5cf6;
+      top: -100px; left: -150px;
+    }
+
+    .blob-2 {
+      width: 400px; height: 400px;
+      background: #f472b6;
+      bottom: -100px; right: -100px;
+    }
+
+    /* Top bar */
+    .top {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      background: rgba(10, 10, 20, 0.7);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .top-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text);
+      text-decoration: none;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 9px 16px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    .back-btn:hover {
+      background: rgba(139, 92, 246, 0.15);
+      border-color: rgba(139, 92, 246, 0.4);
+    }
+
+    .topic-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(139, 92, 246, 0.1);
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      color: #c4b5fd;
+      padding: 8px 14px;
+      border-radius: 50px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .pulse-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #c4b5fd;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .slide-counter {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 9px 16px;
+      border-radius: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-dim);
+    }
+
+    .slide-counter .current {
+      color: var(--text);
+    }
+
+    /* Presentation area */
+    .presentation {
+      position: fixed;
+      top: 72px; bottom: 86px;
+      left: 0; right: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      z-index: 1;
+    }
+
+    .slide {
+      display: none;
+      background: linear-gradient(135deg, var(--slide-bg) 0%, var(--slide-bg-2) 100%);
+      color: #0f172a;
+      width: 100%;
+      max-width: 1180px;
+      height: 100%;
+      max-height: 100%;
+      padding: 56px 64px;
+      border-radius: 28px;
+      box-shadow:
+        0 30px 80px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(255, 255, 255, 0.05);
+      flex-direction: column;
+      justify-content: center;
+      overflow-y: auto;
+      position: relative;
+    }
+
+    .slide.active {
+      display: flex;
+      animation: slideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .slide > * {
+      min-width: 0;
+      max-width: 100%;
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(30px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* Slide decoration */
+    .slide::before {
+      content: '';
+      position: absolute;
+      top: 0; right: 0;
+      width: 280px; height: 280px;
+      background: radial-gradient(circle, rgba(139, 92, 246, 0.08), transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .slide::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0;
+      width: 240px; height: 240px;
+      background: radial-gradient(circle, rgba(244, 114, 182, 0.08), transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    /* Slide content */
+    .slide h1 {
+      font-size: clamp(36px, 5vw, 60px);
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      margin-bottom: 24px;
+      line-height: 1.1;
+      background: linear-gradient(135deg, #1e1b4b 0%, #6366f1 50%, #8b5cf6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      position: relative;
+      z-index: 1;
+    }
+
+    .slide h2 {
+      font-size: clamp(28px, 4vw, 44px);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 28px;
+      color: #1e1b4b;
+      line-height: 1.15;
+      position: relative;
+      z-index: 1;
+    }
+
+    .slide h2::before {
+      content: '';
+      display: inline-block;
+      width: 6px;
+      height: 32px;
+      background: linear-gradient(180deg, var(--primary), var(--accent));
+      border-radius: 4px;
+      margin-right: 16px;
+      vertical-align: middle;
+      transform: translateY(-3px);
+    }
+
+    .slide p {
+      font-size: 19px;
+      margin-bottom: 18px;
+      color: #334155;
+      position: relative;
+      z-index: 1;
+      line-height: 1.7;
+    }
+
+    .slide ul {
+      font-size: 18px;
+      list-style: none;
+      padding-left: 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .slide li {
+      position: relative;
+      padding: 10px 0 10px 32px;
+      color: #1e293b;
+      line-height: 1.6;
+    }
+
+    .slide li::before {
+      content: '';
+      position: absolute;
+      left: 8px;
+      top: 20px;
+      width: 8px;
+      height: 8px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border-radius: 50%;
+      box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.12);
+    }
+
+    .slide b {
+      color: var(--primary-2);
+      font-weight: 700;
+    }
+
+    /* Title slide special */
+    .slide-title {
+      text-align: center;
+      justify-content: center;
+    }
+
+    .slide-title h1 {
+      font-size: clamp(48px, 8vw, 88px);
+      text-align: center;
+    }
+
+    .slide-title p {
+      text-align: center;
+      max-width: 700px;
+      margin-left: auto;
+      margin-right: auto;
+      font-size: 22px;
+    }
+
+    .topic-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.12), rgba(244, 114, 182, 0.12));
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      color: var(--primary);
+      padding: 10px 22px;
+      border-radius: 50px;
+      font-weight: 700;
+      font-size: 14px;
+      margin: 0 auto 32px;
+      width: fit-content;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    /* macOS-style code window */
+    .code-window {
+      background: var(--code-bg);
+      border-radius: 14px;
+      margin: 20px 0;
+      position: relative;
+      z-index: 1;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow:
+        0 20px 50px rgba(0, 0, 0, 0.4),
+        0 0 0 1px rgba(255, 255, 255, 0.05);
+      max-width: 100%;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .code-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      background: linear-gradient(180deg, #2d3548 0%, #1e2536 100%);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      user-select: none;
+    }
+
+    .traffic-lights {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .light {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 0.5px solid rgba(0, 0, 0, 0.2);
+      cursor: pointer;
+      transition: filter 0.2s;
+    }
+
+    .light:hover { filter: brightness(1.15); }
+
+    .light.close { background: #ff5f57; }
+    .light.minimize { background: #febc2e; }
+    .light.maximize { background: #28c840; }
+
+    .code-filename {
+      flex: 1;
+      text-align: center;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      color: #94a3b8;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .code-filename::before {
+      content: '☕';
+      font-size: 12px;
+    }
+
+    .code-actions {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .code-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: #cbd5e1;
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .code-btn:hover {
+      background: rgba(139, 92, 246, 0.2);
+      border-color: rgba(139, 92, 246, 0.4);
+      color: white;
+    }
+
+    .code-btn.copied {
+      background: rgba(16, 185, 129, 0.2);
+      border-color: rgba(16, 185, 129, 0.4);
+      color: #6ee7b7;
+    }
+
+    .code-btn svg {
+      width: 12px;
+      height: 12px;
+    }
+
+    .code-body {
+      position: relative;
+      background: var(--code-bg);
+      min-width: 0;
+      max-width: 100%;
+      overflow: hidden;
+    }
+
+    pre {
+      background: transparent;
+      color: var(--code-text);
+      padding: 22px 24px;
+      overflow-x: auto;
+      overflow-y: auto;
+      max-height: 50vh;
+      font-size: 15px;
+      margin: 0;
+      font-family: 'JetBrains Mono', 'Consolas', monospace;
+      line-height: 1.7;
+      tab-size: 4;
+      outline: none;
+      white-space: pre;
+      word-wrap: normal;
+      counter-reset: line;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(139, 92, 246, 0.4) rgba(255, 255, 255, 0.04);
+    }
+
+    pre::-webkit-scrollbar {
+      height: 10px;
+      width: 10px;
+    }
+
+    pre::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 5px;
+    }
+
+    pre::-webkit-scrollbar-thumb {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.5), rgba(244, 114, 182, 0.5));
+      border-radius: 5px;
+      border: 2px solid transparent;
+      background-clip: padding-box;
+    }
+
+    pre::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.8), rgba(244, 114, 182, 0.8));
+      background-clip: padding-box;
+    }
+
+    pre::-webkit-scrollbar-corner {
+      background: transparent;
+    }
+
+    pre[contenteditable="true"] {
+      caret-color: #c084fc;
+    }
+
+    pre[contenteditable="true"]:focus {
+      background: rgba(139, 92, 246, 0.04);
+    }
+
+    pre code {
+      display: block;
+      font-family: inherit;
+    }
+
+    code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.95em;
+    }
+
+    p code, li code, .note code {
+      background: rgba(139, 92, 246, 0.1);
+      color: var(--primary);
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 0.9em;
+      font-weight: 600;
+    }
+
+    /* Tiny floating "edit" hint */
+    .edit-hint {
+      position: absolute;
+      bottom: 8px;
+      right: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: rgba(148, 163, 184, 0.4);
+      pointer-events: none;
+      letter-spacing: 0.05em;
+    }
+
+    /* Toast notification */
+    .toast {
+      position: fixed;
+      bottom: 110px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: rgba(16, 185, 129, 0.95);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.3s;
+      z-index: 200;
+      backdrop-filter: blur(10px);
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* Problem (LeetCode-style) */
+    .problem-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      position: relative;
+      z-index: 1;
+    }
+
+    .problem-num {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      color: white;
+      padding: 5px 14px;
+      border-radius: 50px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .difficulty {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 50px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .difficulty.easy {
+      background: rgba(16, 185, 129, 0.12);
+      color: #059669;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .difficulty.medium {
+      background: rgba(245, 158, 11, 0.12);
+      color: #d97706;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .difficulty.hard {
+      background: rgba(239, 68, 68, 0.12);
+      color: #dc2626;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .difficulty .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .example-block {
+      background: #f1f5f9;
+      border-left: 4px solid var(--primary);
+      padding: 14px 18px;
+      border-radius: 10px;
+      margin: 12px 0;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      color: #1e293b;
+      line-height: 1.7;
+      position: relative;
+      z-index: 1;
+    }
+
+    .example-title {
+      font-family: 'Inter', sans-serif;
+      font-weight: 700;
+      color: var(--primary);
+      font-size: 13px;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .example-block b {
+      color: var(--primary);
+    }
+
+    .constraints {
+      background: rgba(99, 102, 241, 0.05);
+      border: 1px dashed rgba(99, 102, 241, 0.3);
+      padding: 12px 18px;
+      border-radius: 10px;
+      font-size: 14px;
+      color: #475569;
+      margin: 12px 0;
+      position: relative;
+      z-index: 1;
+    }
+
+    .constraints b {
+      color: var(--primary);
+    }
+
+    .problem-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 8px;
+      position: relative;
+      z-index: 1;
+    }
+
+    @media (max-width: 900px) {
+      .problem-grid { grid-template-columns: 1fr; }
+    }
+
+    /* Solution toggle */
+    .solution-wrap {
+      margin-top: 18px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .show-solution-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      color: white;
+      border: none;
+      padding: 12px 22px;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-family: 'Inter', sans-serif;
+      box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3);
+    }
+
+    .show-solution-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 28px rgba(139, 92, 246, 0.45);
+    }
+
+    .show-solution-btn:active {
+      transform: translateY(0);
+    }
+
+    .show-solution-btn svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .show-solution-btn.active {
+      background: linear-gradient(135deg, #ec4899, #f43f5e);
+      box-shadow: 0 8px 20px rgba(244, 63, 94, 0.3);
+    }
+
+    .show-solution-btn.active:hover {
+      box-shadow: 0 12px 28px rgba(244, 63, 94, 0.45);
+    }
+
+    .solution-content {
+      max-height: 0;
+      overflow: hidden;
+      opacity: 0;
+      margin-top: 0;
+      transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+                  opacity 0.3s ease,
+                  margin-top 0.3s ease;
+    }
+
+    .solution-content.shown {
+      max-height: 2000px;
+      opacity: 1;
+      margin-top: 16px;
+    }
+
+    .locked-hint {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(139, 92, 246, 0.08);
+      border: 1px dashed rgba(139, 92, 246, 0.3);
+      color: var(--primary);
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      margin-left: 12px;
+      font-weight: 500;
+    }
+
+    /* Note box */
+    .note {
+      background: linear-gradient(135deg, #fef3c7, #fef9c3);
+      border-left: 4px solid #f59e0b;
+      padding: 18px 22px;
+      border-radius: 14px;
+      margin-top: 24px;
+      font-size: 17px;
+      color: #78350f;
+      position: relative;
+      z-index: 1;
+      box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15);
+    }
+
+    .note::before {
+      content: '💡';
+      margin-right: 8px;
+    }
+
+    .note b {
+      color: #92400e;
+    }
+
+    .note code {
+      background: rgba(245, 158, 11, 0.2);
+      color: #78350f;
+    }
+
+    /* Definition grid */
+    .def-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .def-card {
+      background: white;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 20px 24px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+      transition: all 0.3s;
+    }
+
+    .def-card:hover {
+      border-color: var(--primary);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(139, 92, 246, 0.12);
+    }
+
+    .def-card h3 {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 22px;
+      color: var(--primary);
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    .def-card p {
+      font-size: 15px;
+      margin: 0;
+      color: #475569;
+    }
+
+    /* Controls — pagination style */
+    .controls {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      z-index: 100;
+      backdrop-filter: blur(20px) saturate(180%);
+      background: rgba(10, 10, 20, 0.75);
+      border-top: 1px solid var(--border);
+      padding: 14px 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .nav-arrow {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--surface);
+      color: var(--text);
+      border: 1px solid var(--border);
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .nav-arrow:hover:not(:disabled) {
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      border-color: transparent;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(139, 92, 246, 0.4);
+    }
+
+    .nav-arrow:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    .nav-arrow svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .pagination {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      max-width: calc(100vw - 200px);
+      padding: 4px;
+      scroll-behavior: smooth;
+    }
+
+    .pagination::-webkit-scrollbar { display: none; }
+
+    .page-dot {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 34px;
+      height: 34px;
+      padding: 0 10px;
+      background: var(--surface);
+      color: var(--text-dim);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .page-dot:hover {
+      color: var(--text);
+      border-color: rgba(139, 92, 246, 0.4);
+      background: rgba(139, 92, 246, 0.1);
+      transform: translateY(-1px);
+    }
+
+    .page-dot.active {
+      background: linear-gradient(135deg, var(--primary), var(--primary-2));
+      color: white;
+      border-color: transparent;
+      box-shadow: 0 6px 16px rgba(139, 92, 246, 0.45);
+      transform: scale(1.08);
+    }
+
+    .page-dot.visited {
+      color: var(--text);
+      background: rgba(139, 92, 246, 0.08);
+      border-color: rgba(139, 92, 246, 0.2);
+    }
+
+    .progress-line {
+      position: absolute;
+      top: 0; left: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 0 12px rgba(139, 92, 246, 0.6);
+      border-radius: 0 3px 3px 0;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .top { padding: 12px 16px; }
+      .topic-badge { display: none; }
+      .slide { padding: 32px 24px; border-radius: 20px; }
+      pre { font-size: 13px; padding: 18px; }
+      .nav-arrow { width: 36px; height: 36px; }
+      .pagination { max-width: calc(100vw - 110px); gap: 4px; }
+      .page-dot { min-width: 30px; height: 30px; font-size: 11.5px; padding: 0 6px; }
+      .slide h2::before { width: 4px; height: 24px; }
+    }
+
+    @media print {
+      html, body { height: auto; overflow: visible; }
+      body { background: white; }
+      .top, .controls, .kbd-hint, .bg-effects { display: none; }
+      .presentation { position: static; display: block; padding: 0; }
+      .slide {
+        display: flex !important;
+        page-break-after: always;
+        box-shadow: none;
+        border: 1px solid #ddd;
+        max-width: 100%;
+        height: auto;
+        max-height: none;
+        margin-bottom: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-effects">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+</div>
+
+<div class="top">
+  <div class="top-left">
+    <a href="index.html" class="back-btn">
+      <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+      Roadmap
+    </a>
+    <div class="topic-badge">
+      <span class="pulse-dot"></span>
+      1-Mavzu · Java Core
+    </div>
+  </div>
+  <div class="slide-counter">
+    <span class="current" id="currentSlide">1</span>
+    <span>/</span>
+    <span id="totalSlides">0</span>
+  </div>
+</div>
+
+<div class="presentation">
+
+  <section class="slide slide-title">
+    <div class="topic-pill">⚡ 1-Mavzu</div>
+    <h1>Java Core</h1>
+    <p>
+      Java dasturlash tilining eng asosiy qismi. Spring Boot, Android yoki Enterprise dasturlashni o'rganishdan oldin Java Core mustahkam bo'lishi shart.
+    </p>
+    <div class="note">
+      <b>Dars maqsadi:</b> Java dasturining ishlash prinsiplari, o'zgaruvchilar, shart operatorlari, sikllar, massivlar va metodlarni amaliy misollar bilan o'rganib chiqamiz.
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>Java nima?</h2>
+    <p>
+      Java — obyektga yo'naltirilgan, platformadan mustaqil va kuchli dasturlash tili. 1995-yilda Sun Microsystems tomonidan yaratilgan.
+    </p>
+    <ul>
+      <li>Backend dasturlar yozish uchun keng ishlatiladi</li>
+      <li>Spring Boot aynan Java asosida ishlaydi</li>
+      <li>Bank, universitet, ERP, CRM, davlat tizimlarida juda ko'p qo'llaniladi</li>
+      <li>Bir marta yozilgan dastur turli operatsion tizimlarda ishlaydi</li>
+      <li>Andriod ilovalari ham Java/Kotlin bilan yoziladi</li>
+    </ul>
+  </section>
+
+  <section class="slide">
+    <h2>JDK, JRE va JVM</h2>
+    <div class="def-grid">
+      <div class="def-card">
+        <h3>JDK</h3>
+        <p><b>Java Development Kit</b> — Java dasturlarni yozish va ishga tushirish uchun to'liq tool to'plami.</p>
+      </div>
+      <div class="def-card">
+        <h3>JRE</h3>
+        <p><b>Java Runtime Environment</b> — tayyor Java dasturlarni ishga tushiruvchi muhit.</p>
+      </div>
+      <div class="def-card">
+        <h3>JVM</h3>
+        <p><b>Java Virtual Machine</b> — Java bytecode ni kompyuter tushunadigan ko'rinishga aylantiruvchi virtual mashina.</p>
+      </div>
+    </div>
+    <div class="note">
+      Oddiy tushuncha: <b>JDK</b> — dasturchi uchun, <b>JRE</b> — foydalanuvchi uchun, <b>JVM</b> — Java kodni ishga tushiruvchi mexanizm.
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>Birinchi Java dastur</h2>
+    <p>
+      Java dasturi <b>class</b> ichida yoziladi va <code>main</code> metodi orqali ishga tushadi.
+    </p>
+    <pre data-filename="Main.java"><code>public class Main {
+    public static void main(String[] args) {
+        System.out.println("Salom, Java!");
+    }
+}</code></pre>
+    <div class="note">
+      <code>System.out.println()</code> — ekranga ma'lumot chiqarish uchun ishlatiladi. <code>println</code> — yangi qatordan boshlab chiqaradi, <code>print</code> — yangi qator qo'ymaydi.
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>Variables — o'zgaruvchilar</h2>
+    <p>
+      O'zgaruvchi — ma'lumot saqlash uchun ajratilgan xotira joyi. Har bir o'zgaruvchining <b>turi</b> va <b>nomi</b> bo'ladi.
+    </p>
+    <pre><code>int age = 20;
+String name = "Akobir";
+double price = 15.5;
+boolean active = true;</code></pre>
+    <ul>
+      <li><b>int</b> — butun sonlar</li>
+      <li><b>String</b> — matn (so'zlar)</li>
+      <li><b>double</b> — kasr sonlar</li>
+      <li><b>boolean</b> — <code>true</code> yoki <code>false</code></li>
+    </ul>
+  </section>
+
+  <section class="slide">
+    <h2>Data Types — ma'lumot turlari</h2>
+    <p>
+      Java'da har bir ma'lumot turi xotirada ma'lum hajm egallaydi va aniq diapazonga ega.
+    </p>
+    <ul>
+      <li><b>byte</b> (1 bayt) — butun son: <b>-128 dan +127 gacha</b></li>
+      <li><b>short</b> (2 bayt) — butun son: <b>-32 768 dan +32 767 gacha</b></li>
+      <li><b>int</b> (4 bayt) — butun son: <b>-2 147 483 648 dan +2 147 483 647 gacha</b></li>
+      <li><b>long</b> (8 bayt) — katta butun son: <b>≈ ±9.2 × 10<sup>18</sup></b></li>
+      <li><b>float</b> (4 bayt) — kasr son: <b>≈ ±3.4 × 10<sup>38</sup></b>, aniqlik ~7 raqam</li>
+      <li><b>double</b> (8 bayt) — kasr son: <b>≈ ±1.7 × 10<sup>308</sup></b>, aniqlik ~15 raqam</li>
+      <li><b>char</b> (2 bayt) — bitta belgi (Unicode): <b>0 dan 65 535 gacha</b></li>
+      <li><b>boolean</b> (1 bit) — faqat <b>true</b> yoki <b>false</b></li>
+    </ul>
+    <div class="note">
+      <b>long</b> qiymat oxiriga <code>L</code> harfini, <b>float</b> qiymat oxiriga <code>f</code> harfini qo'yish kerak. Masalan: <code>long x = 100000000000L;</code> va <code>float pi = 3.14f;</code>
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>Arifmetik operatorlar</h2>
+    <p>
+      Arifmetik operatorlar sonlar ustida matematik amal bajaradi.
+    </p>
+    <pre><code>int a = 10;
+int b = 3;
+
+System.out.println(a + b); // 13  (qo'shish)
+System.out.println(a - b); // 7   (ayirish)
+System.out.println(a * b); // 30  (ko'paytirish)
+System.out.println(a / b); // 3   (bo'lish — butun qism)
+System.out.println(a % b); // 1   (qoldiq — modul)</code></pre>
+    <div class="note">
+      <b>int / int</b> har doim butun son qaytaradi. Kasr olish uchun birini <b>double</b> qiling: <code>(double) a / b → 3.333...</code>
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>Taqqoslash operatorlari</h2>
+    <p>
+      Taqqoslash operatorlari ikki qiymatni solishtirib, <b>true</b> yoki <b>false</b> qaytaradi.
+    </p>
+    <pre data-filename="Comparison.java"><code>int x = 10;
+int y = 5;
+
+System.out.println(x == y); // false  (teng)
+System.out.println(x != y); // true   (teng emas)
+System.out.println(x &gt; y);  // true   (katta)
+System.out.println(x &lt; y);  // false  (kichik)
+System.out.println(x &gt;= y); // true   (katta yoki teng)
+System.out.println(x &lt;= y); // false  (kichik yoki teng)</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>Mantiqiy operatorlar</h2>
+    <p>
+      Mantiqiy operatorlar bir necha shartni birlashtirib tekshirish uchun ishlatiladi.
+    </p>
+    <pre data-filename="Logical.java"><code>boolean a = true;
+boolean b = false;
+
+System.out.println(a &amp;&amp; b); // false  (AND — ikkalasi true)
+System.out.println(a || b); // true   (OR — kamida bittasi true)
+System.out.println(!a);     // false  (NOT — teskari)
+
+int yosh = 20;
+boolean kattaYosh = yosh &gt;= 18 &amp;&amp; yosh &lt;= 60;
+System.out.println(kattaYosh); // true</code></pre>
+  </section>
+
+  <!-- ==================== AMALIY MASALALAR ==================== -->
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 1</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>Kabisa yili (Leap Year)</h2>
+    <p>Berilgan yil <b>kabisa yili</b> ekanligini aniqlang. Yil kabisa yili hisoblanadi, agar:</p>
+    <ul>
+      <li>Yil 4 ga bo'linsa, lekin 100 ga bo'linmasa, <b>YOKI</b></li>
+      <li>Yil 400 ga bo'linsa</li>
+    </ul>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      Input: year = 2024 → Output: <b>true</b><br>
+      Input: year = 1900 → Output: <b>false</b><br>
+      Input: year = 2000 → Output: <b>true</b>
+    </div>
+    <pre data-filename="LeapYear.java"><code>public static boolean isLeapYear(int year) {
+    return (year % 4 == 0 &amp;&amp; year % 100 != 0) || year % 400 == 0;
+}
+
+System.out.println(isLeapYear(2024)); // true
+System.out.println(isLeapYear(1900)); // false
+System.out.println(isLeapYear(2000)); // true
+</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 2</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>Uchburchak yarata olamizmi?</h2>
+    <p>Uchta tomon uzunligi berilgan: <code>a, b, c</code>. Ular bilan uchburchak yasash mumkinmi?</p>
+    <p><b>Shart:</b> Har bir tomon qolgan ikkalasining yig'indisidan kichik bo'lishi kerak.</p>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      Input: a=3, b=4, c=5 → Output: <b>true</b><br>
+      Input: a=1, b=2, c=10 → Output: <b>false</b><br>
+      Input: a=5, b=5, c=5 → Output: <b>true</b>
+    </div>
+    <pre data-filename="Triangle.java"><code>public static boolean canFormTriangle(int a, int b, int c) {
+    return a + b &gt; c &amp;&amp; b + c &gt; a &amp;&amp; a + c &gt; b;
+}
+
+System.out.println(canFormTriangle(3, 4, 5));  // true
+System.out.println(canFormTriangle(1, 2, 10)); // false
+System.out.println(canFormTriangle(5, 5, 5));  // true</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 3</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>XOR — faqat bittasi rost</h2>
+    <p>Ikkita <code>boolean</code> qiymat berilgan. Aniq <b>bittasi</b> <code>true</code> bo'lsa <code>true</code> qaytaring (XOR amali).</p>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      Input: a=true, b=false → Output: <b>true</b><br>
+      Input: a=true, b=true → Output: <b>false</b><br>
+      Input: a=false, b=false → Output: <b>false</b>
+    </div>
+    <div class="constraints">
+      <b>Eslatma:</b> XOR amalini <code>!=</code> orqali ham yozsa bo'ladi, lekin <code>&amp;&amp;</code> va <code>||</code> bilan yozish ham mumkin.
+    </div>
+    <pre data-filename="XorCheck.java"><code>public static boolean exactlyOne(boolean a, boolean b) {
+    return (a || b) &amp;&amp; !(a &amp;&amp; b);
+}
+
+System.out.println(exactlyOne(true, false));  // true
+System.out.println(exactlyOne(true, true));   // false
+System.out.println(exactlyOne(false, false)); // false</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 4</span>
+      <span class="difficulty hard"><span class="dot"></span>Hard</span>
+    </div>
+    <h2>Uch sonning o'rtanchasi</h2>
+    <p>Uchta turli son berilgan. Faqat <b>taqqoslash va mantiqiy operatorlar</b> yordamida o'rta qiymatni toping (saralash, massivlarsiz).</p>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      Input: a=3, b=7, c=5 → Output: <b>5</b><br>
+      Input: a=10, b=2, c=8 → Output: <b>8</b><br>
+      Input: a=1, b=2, c=3 → Output: <b>2</b>
+    </div>
+    <div class="constraints">
+      <b>G'oya:</b> Son o'rta hisoblanadi, agar u qolgan ikkalasidan biridan katta, ikkinchisidan kichik bo'lsa.
+    </div>
+    <pre data-filename="Middle.java"><code>public static int middle(int a, int b, int c) {
+    if ((a >= b &amp;&amp; a <= c) || (a <= b &amp;&amp; a >= c)) return a;
+    if ((b >= a &amp;&amp; b <= c) || (b <= a &amp;&amp; b >= c)) return b;
+    return c;
+}
+
+System.out.println(middle(3, 7, 5));  // 5
+System.out.println(middle(10, 2, 8)); // 8
+System.out.println(middle(1, 2, 3));  // 2</code></pre>
+  </section>
+
+  <!-- ==================== MASALALAR YAKUNI ==================== -->
+
+  <section class="slide">
+    <h2>Qiymat berish operatorlari</h2>
+    <p>
+      O'zgaruvchiga qiymat berish va uni qisqa shaklda o'zgartirish.
+    </p>
+    <pre><code>int a = 10;
+
+a += 5;  // a = a + 5  → 15
+a -= 3;  // a = a - 3  → 12
+a *= 2;  // a = a * 2  → 24
+a /= 4;  // a = a / 4  → 6
+a %= 4;  // a = a % 4  → 2
+
+System.out.println(a); // 2</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>Inkrement va Dekrement</h2>
+    <p>
+      <b>++</b> qiymatni 1 ga oshiradi, <b>--</b> qiymatni 1 ga kamaytiradi.
+    </p>
+    <pre><code>int i = 5;
+
+System.out.println(i++); // 5  (avval chiqaradi, keyin oshiradi)
+System.out.println(i);   // 6
+
+int j = 5;
+System.out.println(++j); // 6  (avval oshiradi, keyin chiqaradi)
+System.out.println(j);   // 6
+
+int k = 10;
+k--;
+System.out.println(k);   // 9</code></pre>
+    <div class="note">
+      <b>i++</b> — post-inkrement (avval ishlatadi, keyin oshiradi). <b>++i</b> — pre-inkrement (avval oshiradi, keyin ishlatadi).
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>Ternary operator (?:)</h2>
+    <p>
+      Qisqa shart operatori — <code>if/else</code> ning bir qatorli ko'rinishi.
+    </p>
+    <pre data-filename="Ternary.java"><code>int yosh = 20;
+
+String natija = (yosh &gt;= 18) ? "Katta yosh" : "Yosh bola";
+System.out.println(natija); // Katta yosh
+
+int a = 10, b = 20;
+int max = (a &gt; b) ? a : b;
+System.out.println(max); // 20</code></pre>
+    <div class="note">
+      Format: <b>shart ? true_qiymat : false_qiymat</b>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala</span>
+      <span class="difficulty medium"><span class="dot"></span>Medium</span>
+    </div>
+    <h2>Sonning belgisini aniqlash (Sign of Number)</h2>
+    <p>
+      Berilgan butun son <code>n</code> uchun quyidagi qiymatlardan birini qaytaring:
+    </p>
+    <ul>
+      <li><b>1</b> — agar son <b>musbat</b> bo'lsa</li>
+      <li><b>-1</b> — agar son <b>manfiy</b> bo'lsa</li>
+      <li><b>0</b> — agar son <b>nol</b> bo'lsa</li>
+    </ul>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      Input: n = 25 → Output: <b>1</b><br>
+      Input: n = -7 → Output: <b>-1</b><br>
+      Input: n = 0 → Output: <b>0</b><br>
+      Input: n = -1000 → Output: <b>-1</b>
+    </div>
+    <div class="constraints">
+      <b>Shart:</b> Faqat <code>?:</code> (ternary) operatoridan foydalaning. <code>if/else</code>, <code>Math.signum()</code>, <code>switch</code> taqiqlanadi.
+    </div>
+    <pre data-filename="SignOfNumber.java"><code>public static int sign(int n) {
+    return (n &gt; 0) ? 1 : (n &lt; 0 ? -1 : 0);
+}
+
+System.out.println(sign(25));    //  1
+System.out.println(sign(-7));    // -1
+System.out.println(sign(0));     //  0
+System.out.println(sign(-1000)); // -1</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>If / Else</h2>
+    <p>
+      Shart operatori dasturda qaror qabul qilish uchun ishlatiladi.
+    </p>
+    <pre data-filename="IfElse.java"><code>int ball = 75;
+
+if (ball &gt;= 90) {
+    System.out.println("A'lo");
+} else if (ball &gt;= 70) {
+    System.out.println("Yaxshi");
+} else if (ball &gt;= 60) {
+    System.out.println("Qoniqarli");
+} else {
+    System.out.println("Qoniqarsiz");
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 1</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>FizzBuzz</h2>
+    <p>Klassik LeetCode masala. Berilgan butun son <code>n</code> uchun qaytaring:</p>
+    <ul>
+      <li><b>"FizzBuzz"</b> — agar son <b>3 ga va 5 ga</b> bo'linsa</li>
+      <li><b>"Fizz"</b> — agar son faqat <b>3 ga</b> bo'linsa</li>
+      <li><b>"Buzz"</b> — agar son faqat <b>5 ga</b> bo'linsa</li>
+      <li><b>Sonning o'zi</b> (matn ko'rinishida) — qolgan holatda</li>
+    </ul>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      Input: n = 15 → Output: <b>"FizzBuzz"</b><br>
+      Input: n = 9  → Output: <b>"Fizz"</b><br>
+      Input: n = 10 → Output: <b>"Buzz"</b><br>
+      Input: n = 7  → Output: <b>"7"</b>
+    </div>
+    <div class="constraints">
+      <b>Maslahat:</b> Avval eng qattiq shartni (ikkalasi ham) tekshiring — tartib muhim!
+    </div>
+    <pre data-filename="FizzBuzz.java"><code>public static String fizzBuzz(int n) {
+    if (n % 3 == 0 &amp;&amp; n % 5 == 0) {
+        return "FizzBuzz";
+    } else if (n % 3 == 0) {
+        return "Fizz";
+    } else if (n % 5 == 0) {
+        return "Buzz";
+    } else {
+        return String.valueOf(n);
+    }
+}
+
+System.out.println(fizzBuzz(15)); // FizzBuzz
+System.out.println(fizzBuzz(9));  // Fizz
+System.out.println(fizzBuzz(10)); // Buzz
+System.out.println(fizzBuzz(7));  // 7</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 2</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>Talabaning bahosi (Score → Grade)</h2>
+    <p>Talabaning ball'iga qarab harf bahoni qaytaring:</p>
+    <ul>
+      <li><b>90 — 100</b>: <code>"A"</code></li>
+      <li><b>80 — 89</b>: <code>"B"</code></li>
+      <li><b>70 — 79</b>: <code>"C"</code></li>
+      <li><b>60 — 69</b>: <code>"D"</code></li>
+      <li><b>0 — 59</b>: <code>"F"</code></li>
+      <li>Boshqa hollarda: <code>"Xato"</code></li>
+    </ul>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      Input: score = 95 → Output: <b>"A"</b><br>
+      Input: score = 73 → Output: <b>"C"</b><br>
+      Input: score = 45 → Output: <b>"F"</b><br>
+      Input: score = 105 → Output: <b>"Xato"</b>
+    </div>
+    <pre data-filename="GradeChecker.java"><code>public static String grade(int score) {
+    if (score &lt; 0 || score &gt; 100) {
+        return "Xato";
+    } else if (score &gt;= 90) {
+        return "A";
+    } else if (score &gt;= 80) {
+        return "B";
+    } else if (score &gt;= 70) {
+        return "C";
+    } else if (score &gt;= 60) {
+        return "D";
+    } else {
+        return "F";
+    }
+}
+
+System.out.println(grade(95));  // A
+System.out.println(grade(73));  // C
+System.out.println(grade(45));  // F
+System.out.println(grade(105)); // Xato</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 3</span>
+      <span class="difficulty medium"><span class="dot"></span>Medium</span>
+    </div>
+    <h2>Uchburchak turini aniqlash</h2>
+    <p>Uchta tomon uzunligi berilgan: <code>a, b, c</code>. Uchburchak turini aniqlang:</p>
+    <ul>
+      <li><b>"Teng tomonli"</b> (Equilateral) — barcha tomonlari teng</li>
+      <li><b>"Teng yonli"</b> (Isosceles) — ikkita tomoni teng</li>
+      <li><b>"Turli tomonli"</b> (Scalene) — barcha tomonlari turlicha</li>
+      <li><b>"Uchburchak emas"</b> — uchburchak yarata olmaydi</li>
+    </ul>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      Input: 5, 5, 5 → Output: <b>"Teng tomonli"</b><br>
+      Input: 5, 5, 8 → Output: <b>"Teng yonli"</b><br>
+      Input: 3, 4, 5 → Output: <b>"Turli tomonli"</b><br>
+      Input: 1, 2, 10 → Output: <b>"Uchburchak emas"</b>
+    </div>
+    <div class="constraints">
+      <b>Eslatma:</b> Uchburchak shart: har bir tomon qolgan ikkalasining yig'indisidan kichik bo'lishi kerak.
+    </div>
+    <pre data-filename="TriangleType.java"><code>public static String triangleType(int a, int b, int c) {
+    if (a + b &lt;= c || b + c &lt;= a || a + c &lt;= b) {
+        return "Uchburchak emas";
+    }
+    if (a == b &amp;&amp; b == c) {
+        return "Teng tomonli";
+    } else if (a == b || b == c || a == c) {
+        return "Teng yonli";
+    } else {
+        return "Turli tomonli";
+    }
+}
+
+System.out.println(triangleType(5, 5, 5));  // Teng tomonli
+System.out.println(triangleType(5, 5, 8));  // Teng yonli
+System.out.println(triangleType(3, 4, 5));  // Turli tomonli
+System.out.println(triangleType(1, 2, 10)); // Uchburchak emas</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 4</span>
+      <span class="difficulty hard"><span class="dot"></span>Hard</span>
+    </div>
+    <h2>Progressiv daromad solig'i</h2>
+    <p>Yillik daromadga qarab soliq miqdorini hisoblang (bosqichli soliq tizimi):</p>
+    <ul>
+      <li><b>0 — 10 000 000</b> so'm: <b>0%</b> (soliq yo'q)</li>
+      <li><b>10M — 50M</b> so'm: 10M dan ortig'ining <b>12%</b>i</li>
+      <li><b>50M — 200M</b> so'm: avvalgi + 50M dan ortig'ining <b>20%</b>i</li>
+      <li><b>200M dan yuqori</b>: avvalgi + 200M dan ortig'ining <b>30%</b>i</li>
+    </ul>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      Input: 8 000 000 → Output: <b>0</b><br>
+      Input: 25 000 000 → Output: <b>1 800 000</b> (15M × 12%)<br>
+      Input: 100 000 000 → Output: <b>14 800 000</b> (4.8M + 50M × 20%)<br>
+      Input: 300 000 000 → Output: <b>64 800 000</b>
+    </div>
+    <div class="constraints">
+      <b>Maslahat:</b> Har bir bosqichni alohida hisoblang — pastdan yuqoriga qarab.
+    </div>
+    <pre data-filename="ProgressiveTax.java"><code>public static long calculateTax(long income) {
+    if (income &lt;= 10_000_000) {
+        return 0;
+    } else if (income &lt;= 50_000_000) {
+        return (long) ((income - 10_000_000) * 0.12);
+    } else if (income &lt;= 200_000_000) {
+        long base = (long) (40_000_000 * 0.12); // 4 800 000
+        return base + (long) ((income - 50_000_000) * 0.20);
+    } else {
+        long base1 = (long) (40_000_000 * 0.12);   // 4 800 000
+        long base2 = (long) (150_000_000 * 0.20);  // 30 000 000
+        return base1 + base2 + (long) ((income - 200_000_000) * 0.30);
+    }
+}
+
+System.out.println(calculateTax(8_000_000));   // 0
+System.out.println(calculateTax(25_000_000));  // 1 800 000
+System.out.println(calculateTax(100_000_000)); // 14 800 000
+System.out.println(calculateTax(300_000_000)); // 64 800 000</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>Switch</h2>
+    <p>
+      Switch bir nechta holatni tekshirish uchun qulay.
+    </p>
+    <pre><code>int day = 3;
+
+switch (day) {
+    case 1:
+        System.out.println("Dushanba");
+        break;
+    case 2:
+        System.out.println("Seshanba");
+        break;
+    case 3:
+        System.out.println("Chorshanba");
+        break;
+    default:
+        System.out.println("Bunday kun yo'q");
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>Loops — sikllar</h2>
+    <p>
+      Sikl bir xil kodni bir necha marta bajarish uchun ishlatiladi.
+    </p>
+    <pre data-filename="ForLoop.java"><code>for (int i = 1; i &lt;= 5; i++) {
+    System.out.println(i);
+}</code></pre>
+    <ul>
+      <li><b>for</b> — takrorlanish soni aniq bo'lsa</li>
+      <li><b>while</b> — shart bajarilguncha ishlaydi</li>
+      <li><b>do while</b> — kamida bir marta bajariladi</li>
+    </ul>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 1</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>Faktorial (n!)</h2>
+    <p>Berilgan musbat butun son <code>n</code> ning <b>faktorialini</b> hisoblang.</p>
+    <p>Faktorial — 1 dan <code>n</code> gacha bo'lgan barcha sonlarning ko'paytmasi:</p>
+    <p style="text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 18px;">
+      <b>n! = 1 × 2 × 3 × ... × n</b>
+    </p>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      Input: n = 5 → Output: <b>120</b> (1×2×3×4×5)<br>
+      Input: n = 1 → Output: <b>1</b><br>
+      Input: n = 0 → Output: <b>1</b> (matematik kelishuv)<br>
+      Input: n = 10 → Output: <b>3 628 800</b>
+    </div>
+    <div class="constraints">
+      <b>Eslatma:</b> Natija juda tez katta bo'ladi, shuning uchun <code>long</code> turidan foydalaning. 20! dan keyin <code>long</code> ham yetmaydi.
+    </div>
+    <pre data-filename="Factorial.java"><code>public static long factorial(int n) {
+    long result = 1;
+    for (int i = 2; i &lt;= n; i++) {
+        result *= i;
+    }
+    return result;
+}
+
+System.out.println(factorial(5));  // 120
+System.out.println(factorial(1));  // 1
+System.out.println(factorial(0));  // 1
+System.out.println(factorial(10)); // 3628800</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 2</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>Sonning raqamlari yig'indisi</h2>
+    <p>Berilgan musbat butun son <code>n</code> ning <b>raqamlari yig'indisini</b> toping.</p>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      Input: n = 1234 → Output: <b>10</b> (1+2+3+4)<br>
+      Input: n = 9 → Output: <b>9</b><br>
+      Input: n = 99999 → Output: <b>45</b><br>
+      Input: n = 1000000 → Output: <b>1</b>
+    </div>
+    <div class="constraints">
+      <b>G'oya:</b> <code>n % 10</code> oxirgi raqamni beradi, <code>n / 10</code> oxirgi raqamni olib tashlaydi. <code>n &gt; 0</code> bo'lguncha takrorlaymiz.
+    </div>
+    <pre data-filename="DigitSum.java"><code>public static int digitSum(int n) {
+    int sum = 0;
+    while (n &gt; 0) {
+        sum += n % 10;  // oxirgi raqamni qo'shamiz
+        n /= 10;        // oxirgi raqamni olib tashlaymiz
+    }
+    return sum;
+}
+
+System.out.println(digitSum(1234));    // 10
+System.out.println(digitSum(9));       // 9
+System.out.println(digitSum(99999));   // 45
+System.out.println(digitSum(1000000)); // 1</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 3</span>
+      <span class="difficulty medium"><span class="dot"></span>Medium</span>
+    </div>
+    <h2>Tub son tekshirish (Prime Number)</h2>
+    <p>Berilgan son <code>n</code> <b>tub son</b> ekanligini aniqlang.</p>
+    <p>Tub son — 1 dan katta, faqat 1 ga va o'ziga bo'linadigan son.</p>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      Input: n = 7 → Output: <b>true</b> (faqat 1 va 7 ga bo'linadi)<br>
+      Input: n = 12 → Output: <b>false</b> (1, 2, 3, 4, 6, 12)<br>
+      Input: n = 2 → Output: <b>true</b><br>
+      Input: n = 1 → Output: <b>false</b>
+    </div>
+    <div class="constraints">
+      <b>Optimizatsiya:</b> 2 dan <code>√n</code> gacha tekshirish yetarli — agar <code>n</code> ning bo'luvchisi bor bo'lsa, u albatta <code>√n</code> dan kichik bo'ladi.
+    </div>
+    <pre data-filename="PrimeCheck.java"><code>public static boolean isPrime(int n) {
+    if (n &lt; 2) return false;
+    if (n == 2) return true;
+    if (n % 2 == 0) return false;
+
+    for (int i = 3; i * i &lt;= n; i += 2) {
+        if (n % i == 0) {
+            return false;
+        }
+    }
+    return true;
+}
+
+System.out.println(isPrime(7));  // true
+System.out.println(isPrime(12)); // false
+System.out.println(isPrime(2));  // true
+System.out.println(isPrime(1));  // false</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>While va Do While</h2>
+    <pre data-filename="While.java"><code>int i = 1;
+
+while (i &lt;= 5) {
+    System.out.println(i);
+    i++;
+}</code></pre>
+
+    <pre data-filename="DoWhile.java"><code>int j = 1;
+
+do {
+    System.out.println(j);
+    j++;
+} while (j &lt;= 5);</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>Arrays — massivlar</h2>
+    <p>
+      Massiv bir turdagi bir nechta qiymatlarni saqlaydi.
+    </p>
+    <pre><code>int[] numbers = {10, 20, 30, 40};
+
+System.out.println(numbers[0]); // 10
+System.out.println(numbers[1]); // 20
+System.out.println(numbers.length); // 4</code></pre>
+    <div class="note">
+      Java massiv indekslari <b>0</b> dan boshlanadi. Massiv uzunligini bilish uchun <code>.length</code> ishlatiladi.
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>Array bilan sikl</h2>
+    <pre data-filename="ArrayLoop.java"><code>String[] names = {"Ali", "Vali", "Sardor"};
+
+for (int i = 0; i &lt; names.length; i++) {
+    System.out.println(names[i]);
+}</code></pre>
+
+    <pre data-filename="ForEach.java"><code>// for-each sikli (qisqaroq)
+for (String name : names) {
+    System.out.println(name);
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>Methods — metodlar</h2>
+    <p>
+      Metod — ma'lum vazifani bajaruvchi kod bloki.
+    </p>
+    <pre><code>public static void sayHello() {
+    System.out.println("Salom!");
+}
+
+public static int add(int a, int b) {
+    return a + b;
+}</code></pre>
+    <ul>
+      <li>Kodni qayta-qayta yozmaslikka yordam beradi</li>
+      <li>Dastur tuzilishini tartibli qiladi</li>
+      <li>Spring Bootda service, controller metodlari juda ko'p ishlatiladi</li>
+    </ul>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">📝 Amaliy topshiriqlar</span>
+      <span class="difficulty hard"><span class="dot"></span>Mustaqil</span>
+    </div>
+    <h2>10 ta murakkab vazifa</h2>
+    <p>Quyidagi 10 ta vazifani <b>o'zingiz mustaqil</b> yechib ko'ring. Har biri bir nechta tushunchani birlashtiradi:</p>
+    <ul style="font-size: 16px;">
+      <li>
+        <b>1. Ikkinchi eng katta son.</b> Massiv ichidan saralamasdan ikkinchi maksimal sonni toping.<br>
+        <code>[3, 7, 2, 9, 5] → 7</code> &nbsp; | &nbsp; <code>[10, 10, 8] → 8</code>
+      </li>
+      <li>
+        <b>2. Massivni teskari aylantirish (in-place).</b> Yangi massiv yaratmasdan, joyida o'zgartiring.<br>
+        <code>[1, 2, 3, 4, 5] → [5, 4, 3, 2, 1]</code>
+      </li>
+      <li>
+        <b>3. Armstrong soni.</b> Son raqamlari kublari yig'indisi o'ziga teng bo'lsa, Armstrong sonidir.<br>
+        <code>153 → true</code> (1³+5³+3³=153) &nbsp; | &nbsp; <code>123 → false</code>
+      </li>
+      <li>
+        <b>4. GCD (Evklid algoritmi).</b> Ikki sonning eng katta umumiy bo'luvchisini toping.<br>
+        <code>gcd(48, 18) → 6</code> &nbsp; | &nbsp; <code>gcd(100, 75) → 25</code>
+      </li>
+      <li>
+        <b>5. Raqamli ildiz (Digital Root).</b> Sonning raqamlarini bitta raqam qolguncha qo'shing.<br>
+        <code>9875 → 9+8+7+5=29 → 2+9=11 → 1+1=2 → natija: 2</code>
+      </li>
+      <li>
+        <b>6. Fibonacci ketma-ketligi.</b> <code>N</code>-elementni rekursiyasiz (iterativ) toping.<br>
+        <code>fib(10) → 55</code> &nbsp; | &nbsp; <code>fib(20) → 6765</code>
+      </li>
+      <li>
+        <b>7. Palindrom tekshirish.</b> String teskari o'qiganda ham bir xil bo'lsa, palindrom.<br>
+        <code>"level" → true</code> &nbsp; | &nbsp; <code>"java" → false</code>
+      </li>
+      <li>
+        <b>8. Bubble Sort.</b> Massivni qo'lda saralash algoritmini yozing (kutubxonasiz).<br>
+        <code>[5, 2, 8, 1, 9] → [1, 2, 5, 8, 9]</code>
+      </li>
+      <li>
+        <b>9. Two Sum (LeetCode klassik).</b> Massivda yig'indisi <code>target</code> ga teng ikki son indekslarini toping.<br>
+        <code>nums=[2, 7, 11, 15], target=9 → [0, 1]</code>
+      </li>
+      <li>
+        <b>10. Pascal uchburchagi.</b> N-satrini chiqaring.<br>
+        <code>row(4) → [1, 4, 6, 4, 1]</code> &nbsp; | &nbsp; <code>row(0) → [1]</code>
+      </li>
+    </ul>
+    <div class="note">
+      Har bir vazifa uchun: alohida metod yozing, kamida 3 ta test holatini sinab ko'ring va kod toza, o'qiladigan bo'lsin.
+    </div>
+  </section>
+
+  <section class="slide slide-title">
+    <div class="topic-pill">🎯 Yakun</div>
+    <h1>Dars yakuni</h1>
+    <p>
+      Java Core mavzusida Java dasturining asosiy ishlash prinsiplarini o'rgandingiz.
+    </p>
+    <div class="note">
+      <b>Keyingi mavzu:</b> OOP — Class, Object, Constructor, Encapsulation, Inheritance, Polymorphism.
+    </div>
+  </section>
+
+</div>
+
+<div class="toast" id="toast">✓ Kod nusxalandi!</div>
+
+<div class="controls">
+  <div class="progress-line" id="progressLine"></div>
+  <button class="nav-arrow" id="prevBtn" onclick="prevSlide()" title="Oldingi (←)">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+  </button>
+  <div class="pagination" id="pagination"></div>
+  <button class="nav-arrow" id="nextBtn" onclick="nextSlide()" title="Keyingi (→)">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+  </button>
+</div>
+
+<script>
+  // Wrap all <pre> blocks in macOS-style windows with copy + editable
+  function wrapCodeBlocks() {
+    document.querySelectorAll('pre').forEach(pre => {
+      if (pre.closest('.code-window')) return; // already wrapped
+
+      const filename = pre.dataset.filename || 'Example.java';
+
+      const wrapper = document.createElement('div');
+      wrapper.className = 'code-window';
+
+      wrapper.innerHTML = `
+        <div class="code-header">
+          <div class="traffic-lights">
+            <span class="light close" title="Yopish"></span>
+            <span class="light minimize" title="Kichraytirish"></span>
+            <span class="light maximize" title="Kattalashtirish"></span>
+          </div>
+          <div class="code-filename">${filename}</div>
+          <div class="code-actions">
+            <button class="code-btn reset-btn" title="Asl holatga qaytarish">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              Reset
+            </button>
+            <button class="code-btn copy-btn">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+              Copy
+            </button>
+          </div>
+        </div>
+        <div class="code-body"></div>
+      `;
+
+      pre.setAttribute('contenteditable', 'true');
+      pre.setAttribute('spellcheck', 'false');
+
+      const original = pre.innerHTML;
+      pre.dataset.original = original;
+
+      pre.parentNode.insertBefore(wrapper, pre);
+      wrapper.querySelector('.code-body').appendChild(pre);
+
+      // Copy button
+      wrapper.querySelector('.copy-btn').addEventListener('click', () => {
+        const text = pre.textContent;
+        navigator.clipboard.writeText(text).then(() => {
+          const btn = wrapper.querySelector('.copy-btn');
+          btn.classList.add('copied');
+          btn.innerHTML = `
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
+            Nusxalandi
+          `;
+          showToast('✓ Kod nusxalandi!');
+          setTimeout(() => {
+            btn.classList.remove('copied');
+            btn.innerHTML = `
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+              Copy
+            `;
+          }, 2000);
+        });
+      });
+
+      // Reset button
+      wrapper.querySelector('.reset-btn').addEventListener('click', () => {
+        pre.innerHTML = original;
+        showToast('↺ Kod tiklandi');
+      });
+    });
+  }
+
+  function showToast(message) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.classList.add('show');
+    clearTimeout(window._toastTimer);
+    window._toastTimer = setTimeout(() => {
+      toast.classList.remove('show');
+    }, 1800);
+  }
+
+  wrapCodeBlocks();
+
+  // Wrap solution code in problem slides with show/hide toggle
+  function wrapSolutions() {
+    const eyeIcon = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>`;
+    const eyeOffIcon = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"/></svg>`;
+
+    document.querySelectorAll('.slide').forEach(slide => {
+      if (!slide.querySelector('.problem-header')) return;
+
+      slide.querySelectorAll('.code-window').forEach(cw => {
+        if (cw.parentNode.classList.contains('solution-content')) return;
+
+        const wrap = document.createElement('div');
+        wrap.className = 'solution-wrap';
+
+        const btn = document.createElement('button');
+        btn.className = 'show-solution-btn';
+        btn.innerHTML = eyeIcon + ' Yechimni ko\'rsatish';
+
+        const content = document.createElement('div');
+        content.className = 'solution-content';
+
+        cw.parentNode.insertBefore(wrap, cw);
+        content.appendChild(cw);
+        wrap.appendChild(btn);
+        wrap.appendChild(content);
+
+        btn.addEventListener('click', () => {
+          const isShown = content.classList.toggle('shown');
+          btn.classList.toggle('active', isShown);
+          btn.innerHTML = isShown
+            ? eyeOffIcon + ' Yechimni yashirish'
+            : eyeIcon + ' Yechimni ko\'rsatish';
+        });
+      });
+    });
+  }
+
+  wrapSolutions();
+
+  const slides = document.querySelectorAll('.slide');
+  const totalSlides = slides.length;
+  const pagination = document.getElementById('pagination');
+  let currentIndex = 0;
+
+  document.getElementById('totalSlides').textContent = totalSlides;
+
+  // Build pagination dots
+  const pageDots = [];
+  for (let i = 0; i < totalSlides; i++) {
+    const dot = document.createElement('button');
+    dot.className = 'page-dot';
+    dot.textContent = String(i + 1).padStart(2, '0');
+    dot.addEventListener('click', () => {
+      currentIndex = i;
+      showSlide(i);
+    });
+    pagination.appendChild(dot);
+    pageDots.push(dot);
+  }
+
+  function showSlide(index) {
+    slides.forEach(s => s.classList.remove('active'));
+    slides[index].classList.add('active');
+    document.getElementById('currentSlide').textContent = index + 1;
+
+    pageDots.forEach((d, i) => {
+      d.classList.toggle('active', i === index);
+      d.classList.toggle('visited', i < index);
+    });
+
+    const percent = ((index + 1) / totalSlides * 100);
+    document.getElementById('progressLine').style.width = percent + '%';
+
+    document.getElementById('prevBtn').disabled = index === 0;
+    document.getElementById('nextBtn').disabled = index === totalSlides - 1;
+    slides[index].scrollTop = 0;
+
+    // Scroll active dot into view
+    const activeDot = pageDots[index];
+    if (activeDot) {
+      activeDot.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+  }
+
+  function nextSlide() {
+    if (currentIndex < totalSlides - 1) {
+      currentIndex++;
+      showSlide(currentIndex);
+    }
+  }
+
+  function prevSlide() {
+    if (currentIndex > 0) {
+      currentIndex--;
+      showSlide(currentIndex);
+    }
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.target.isContentEditable) return;
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+      e.preventDefault();
+      nextSlide();
+    } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+      e.preventDefault();
+      prevSlide();
+    } else if (e.key === 'Home') {
+      currentIndex = 0;
+      showSlide(0);
+    } else if (e.key === 'End') {
+      currentIndex = totalSlides - 1;
+      showSlide(currentIndex);
+    }
+  });
+
+  showSlide(0);
+</script>
+
+<script>
+(function(_0x){
+  var _a=String.fromCharCode,
+      _b=[169,32,77,117,97,108,108,105,102,58,32,82,117,115,116,97,109,111,118,32,65,107,111,98,105,114],
+      _c=[95,120,57,52,107,55,116,57,114,53,95,115,105,103],
+      _d=[95,120,57,52,104,53,100,55],
+      _t='',_n='',_h='';
+  for(var i=0;i<_b.length;i++)_t+=_a(_b[i]);
+  for(var i=0;i<_c.length;i++)_n+=_a(_c[i]);
+  for(var i=0;i<_d.length;i++)_h+=_a(_d[i]);
+
+  function _mk(visible){
+    var d=document.createElement('div');
+    d.setAttribute('data-x',_t);
+    if(visible){
+      d.id=_n;
+      d.textContent=_t;
+      d.style.cssText='position:fixed;bottom:96px;right:16px;z-index:99999;background:rgba(15,15,25,0.75);color:rgba(255,255,255,0.85);padding:6px 14px;border-radius:20px;font-family:system-ui,-apple-system,sans-serif;font-size:11px;font-weight:600;backdrop-filter:blur(10px);border:1px solid rgba(139,92,246,0.3);pointer-events:none;user-select:none;letter-spacing:0.03em;box-shadow:0 4px 12px rgba(0,0,0,0.3);';
+    }else{
+      d.className=_h+Math.random().toString(36).slice(2,7);
+      d.textContent=_t;
+      d.style.cssText='position:absolute;left:-99999px;top:-99999px;opacity:0;pointer-events:none;width:1px;height:1px;overflow:hidden;';
+    }
+    return d;
+  }
+
+  function _ensure(){
+    if(!document.body)return;
+    if(!document.getElementById(_n)){
+      document.body.appendChild(_mk(true));
+    }
+    var hidden=document.querySelectorAll('[class^="'+_h+'"]');
+    if(hidden.length<5){
+      for(var i=hidden.length;i<5;i++){
+        document.body.appendChild(_mk(false));
+      }
+    }
+  }
+
+  function _setup(){
+    _ensure();
+    try{
+      new MutationObserver(function(muts){
+        for(var i=0;i<muts.length;i++){
+          var m=muts[i];
+          if(m.removedNodes.length>0||m.type==='attributes'){
+            _ensure();
+            break;
+          }
+        }
+      }).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['id','class','style']});
+    }catch(e){}
+    setInterval(_ensure,1500);
+  }
+
+  if(document.body)_setup();
+  else document.addEventListener('DOMContentLoaded',_setup);
+
+  try{
+    console.log('%c '+_t+' ','background:linear-gradient(135deg,#8b5cf6,#f472b6);color:white;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:bold;');
+    Object.defineProperty(window,_n+'_lock',{value:_t,writable:false,configurable:false});
+  }catch(e){}
+})();
+</script>
+
+</body>
+</html>

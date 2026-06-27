@@ -1,0 +1,1567 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OOP — Prezentatsiya</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a14;
+      --surface: rgba(255, 255, 255, 0.04);
+      --border: rgba(255, 255, 255, 0.08);
+      --text: #f8fafc;
+      --text-dim: #94a3b8;
+      --text-muted: #64748b;
+      --primary: #8b5cf6;
+      --primary-2: #6366f1;
+      --accent: #f472b6;
+      --slide-bg: #ffffff;
+      --slide-bg-2: #fafafe;
+      --code-bg: #0f172a;
+      --code-text: #e2e8f0;
+    }
+
+    html, body { height: 100%; overflow: hidden; }
+    body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased; }
+
+    .bg-effects { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+    .blob { position: absolute; border-radius: 50%; filter: blur(140px); opacity: 0.4; }
+    .blob-1 { width: 500px; height: 500px; background: #8b5cf6; top: -100px; left: -150px; }
+    .blob-2 { width: 400px; height: 400px; background: #f472b6; bottom: -100px; right: -100px; }
+
+    .top { position: fixed; top: 0; left: 0; right: 0; z-index: 100; backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); background: rgba(10, 10, 20, 0.7); border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+    .top-left { display: flex; align-items: center; gap: 14px; }
+    .back-btn { display: inline-flex; align-items: center; gap: 8px; color: var(--text); text-decoration: none; background: var(--surface); border: 1px solid var(--border); padding: 9px 16px; border-radius: 10px; font-weight: 600; font-size: 14px; transition: all 0.2s; }
+    .back-btn:hover { background: rgba(139, 92, 246, 0.15); border-color: rgba(139, 92, 246, 0.4); }
+    .topic-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); color: #c4b5fd; padding: 8px 14px; border-radius: 50px; font-size: 12px; font-weight: 600; }
+    .pulse-dot { width: 6px; height: 6px; border-radius: 50%; background: #c4b5fd; animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+    .slide-counter { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--border); padding: 9px 16px; border-radius: 10px; font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 600; color: var(--text-dim); }
+    .slide-counter .current { color: var(--text); }
+
+    .presentation { position: fixed; top: 72px; bottom: 86px; left: 0; right: 0; display: flex; align-items: center; justify-content: center; padding: 24px; z-index: 1; }
+    .slide { display: none; background: linear-gradient(135deg, var(--slide-bg) 0%, var(--slide-bg-2) 100%); color: #0f172a; width: 100%; max-width: 1180px; height: 100%; max-height: 100%; padding: 56px 64px; border-radius: 28px; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05); flex-direction: column; justify-content: center; overflow-y: auto; position: relative; }
+    .slide.active { display: flex; animation: slideIn 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+    .slide > * { min-width: 0; max-width: 100%; }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(30px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    .slide::before { content: ''; position: absolute; top: 0; right: 0; width: 280px; height: 280px; background: radial-gradient(circle, rgba(139, 92, 246, 0.08), transparent 70%); border-radius: 50%; pointer-events: none; }
+    .slide::after { content: ''; position: absolute; bottom: 0; left: 0; width: 240px; height: 240px; background: radial-gradient(circle, rgba(244, 114, 182, 0.08), transparent 70%); border-radius: 50%; pointer-events: none; }
+
+    .slide h1 { font-size: clamp(36px, 5vw, 60px); font-weight: 900; letter-spacing: -0.03em; margin-bottom: 24px; line-height: 1.1; background: linear-gradient(135deg, #1e1b4b 0%, #6366f1 50%, #8b5cf6 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; position: relative; z-index: 1; }
+    .slide h2 { font-size: clamp(28px, 4vw, 44px); font-weight: 800; letter-spacing: -0.02em; margin-bottom: 28px; color: #1e1b4b; line-height: 1.15; position: relative; z-index: 1; }
+    .slide h2::before { content: ''; display: inline-block; width: 6px; height: 32px; background: linear-gradient(180deg, var(--primary), var(--accent)); border-radius: 4px; margin-right: 16px; vertical-align: middle; transform: translateY(-3px); }
+    .slide p { font-size: 19px; margin-bottom: 18px; color: #334155; position: relative; z-index: 1; line-height: 1.7; }
+    .slide ul { font-size: 18px; list-style: none; padding-left: 0; position: relative; z-index: 1; }
+    .slide li { position: relative; padding: 10px 0 10px 32px; color: #1e293b; line-height: 1.6; }
+    .slide li::before { content: ''; position: absolute; left: 8px; top: 20px; width: 8px; height: 8px; background: linear-gradient(135deg, var(--primary), var(--accent)); border-radius: 50%; box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.12); }
+    .slide b { color: var(--primary-2); font-weight: 700; }
+
+    .slide-title { text-align: center; justify-content: center; }
+    .slide-title h1 { font-size: clamp(48px, 8vw, 88px); text-align: center; }
+    .slide-title p { text-align: center; max-width: 700px; margin-left: auto; margin-right: auto; font-size: 22px; }
+    .topic-pill { display: inline-flex; align-items: center; gap: 10px; background: linear-gradient(135deg, rgba(139, 92, 246, 0.12), rgba(244, 114, 182, 0.12)); border: 1px solid rgba(139, 92, 246, 0.3); color: var(--primary); padding: 10px 22px; border-radius: 50px; font-weight: 700; font-size: 14px; margin: 0 auto 32px; width: fit-content; text-transform: uppercase; letter-spacing: 0.08em; }
+
+    /* macOS-style code window */
+    .code-window { background: var(--code-bg); border-radius: 14px; margin: 20px 0; position: relative; z-index: 1; border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.05); max-width: 100%; min-width: 0; display: flex; flex-direction: column; overflow: hidden; }
+    .code-header { display: flex; align-items: center; gap: 12px; padding: 12px 16px; background: linear-gradient(180deg, #2d3548 0%, #1e2536 100%); border-bottom: 1px solid rgba(255, 255, 255, 0.08); user-select: none; }
+    .traffic-lights { display: flex; gap: 8px; align-items: center; }
+    .light { width: 12px; height: 12px; border-radius: 50%; border: 0.5px solid rgba(0, 0, 0, 0.2); cursor: pointer; transition: filter 0.2s; }
+    .light:hover { filter: brightness(1.15); }
+    .light.close { background: #ff5f57; }
+    .light.minimize { background: #febc2e; }
+    .light.maximize { background: #28c840; }
+    .code-filename { flex: 1; text-align: center; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; color: #94a3b8; font-weight: 500; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .code-filename::before { content: '☕'; font-size: 12px; }
+    .code-actions { display: flex; gap: 6px; align-items: center; }
+    .code-btn { display: inline-flex; align-items: center; gap: 5px; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.08); color: #cbd5e1; padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: 'Inter', sans-serif; }
+    .code-btn:hover { background: rgba(139, 92, 246, 0.2); border-color: rgba(139, 92, 246, 0.4); color: white; }
+    .code-btn.copied { background: rgba(16, 185, 129, 0.2); border-color: rgba(16, 185, 129, 0.4); color: #6ee7b7; }
+    .code-btn svg { width: 12px; height: 12px; }
+    .code-body { position: relative; background: var(--code-bg); min-width: 0; max-width: 100%; overflow: hidden; }
+
+    pre { background: transparent; color: var(--code-text); padding: 22px 24px; overflow-x: auto; overflow-y: auto; max-height: 50vh; font-size: 15px; margin: 0; font-family: 'JetBrains Mono', 'Consolas', monospace; line-height: 1.7; tab-size: 4; outline: none; white-space: pre; word-wrap: normal; scrollbar-width: thin; scrollbar-color: rgba(139, 92, 246, 0.4) rgba(255, 255, 255, 0.04); }
+    pre::-webkit-scrollbar { height: 10px; width: 10px; }
+    pre::-webkit-scrollbar-track { background: rgba(255, 255, 255, 0.04); border-radius: 5px; }
+    pre::-webkit-scrollbar-thumb { background: linear-gradient(135deg, rgba(139, 92, 246, 0.5), rgba(244, 114, 182, 0.5)); border-radius: 5px; border: 2px solid transparent; background-clip: padding-box; }
+    pre::-webkit-scrollbar-thumb:hover { background: linear-gradient(135deg, rgba(139, 92, 246, 0.8), rgba(244, 114, 182, 0.8)); background-clip: padding-box; }
+    pre[contenteditable="true"] { caret-color: #c084fc; }
+    pre[contenteditable="true"]:focus { background: rgba(139, 92, 246, 0.04); }
+    pre code { display: block; font-family: inherit; }
+    code { font-family: 'JetBrains Mono', monospace; font-size: 0.95em; }
+    p code, li code, .note code, td code { background: rgba(139, 92, 246, 0.1); color: var(--primary); padding: 2px 8px; border-radius: 6px; font-size: 0.9em; font-weight: 600; }
+
+    .toast { position: fixed; bottom: 110px; left: 50%; transform: translateX(-50%) translateY(20px); background: rgba(16, 185, 129, 0.95); color: white; padding: 10px 20px; border-radius: 10px; font-size: 13px; font-weight: 600; box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4); opacity: 0; pointer-events: none; transition: all 0.3s; z-index: 200; backdrop-filter: blur(10px); }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* Problem */
+    .problem-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; position: relative; z-index: 1; }
+    .problem-num { display: inline-flex; align-items: center; gap: 6px; background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: white; padding: 5px 14px; border-radius: 50px; font-size: 12px; font-weight: 700; letter-spacing: 0.05em; font-family: 'JetBrains Mono', monospace; }
+    .difficulty { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 50px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+    .difficulty.easy { background: rgba(16, 185, 129, 0.12); color: #059669; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .difficulty.medium { background: rgba(245, 158, 11, 0.12); color: #d97706; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .difficulty.hard { background: rgba(239, 68, 68, 0.12); color: #dc2626; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .difficulty .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+    .example-block { background: #f1f5f9; border-left: 4px solid var(--primary); padding: 14px 18px; border-radius: 10px; margin: 12px 0; font-family: 'JetBrains Mono', monospace; font-size: 14px; color: #1e293b; line-height: 1.7; position: relative; z-index: 1; }
+    .example-title { font-family: 'Inter', sans-serif; font-weight: 700; color: var(--primary); font-size: 13px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .example-block b { color: var(--primary); }
+    .constraints { background: rgba(99, 102, 241, 0.05); border: 1px dashed rgba(99, 102, 241, 0.3); padding: 12px 18px; border-radius: 10px; font-size: 14px; color: #475569; margin: 12px 0; position: relative; z-index: 1; }
+    .constraints b { color: var(--primary); }
+
+    /* Solution toggle */
+    .solution-wrap { margin-top: 18px; position: relative; z-index: 1; }
+    .show-solution-btn { display: inline-flex; align-items: center; gap: 10px; background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: white; border: none; padding: 12px 22px; border-radius: 12px; font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.3s; font-family: 'Inter', sans-serif; box-shadow: 0 8px 20px rgba(139, 92, 246, 0.3); }
+    .show-solution-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(139, 92, 246, 0.45); }
+    .show-solution-btn svg { width: 16px; height: 16px; }
+    .show-solution-btn.active { background: linear-gradient(135deg, #ec4899, #f43f5e); box-shadow: 0 8px 20px rgba(244, 63, 94, 0.3); }
+    .solution-content { max-height: 0; overflow: hidden; opacity: 0; margin-top: 0; transition: max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease, margin-top 0.3s ease; }
+    .solution-content.shown { max-height: 2500px; opacity: 1; margin-top: 16px; }
+
+    /* Note box */
+    .note { background: linear-gradient(135deg, #fef3c7, #fef9c3); border-left: 4px solid #f59e0b; padding: 18px 22px; border-radius: 14px; margin-top: 24px; font-size: 17px; color: #78350f; position: relative; z-index: 1; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.15); }
+    .note::before { content: '💡'; margin-right: 8px; }
+    .note b { color: #92400e; }
+    .note code { background: rgba(245, 158, 11, 0.2); color: #78350f; }
+
+    /* Def grid */
+    .def-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-top: 16px; position: relative; z-index: 1; }
+    .def-card { background: white; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px 24px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04); transition: all 0.3s; }
+    .def-card:hover { border-color: var(--primary); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(139, 92, 246, 0.12); }
+    .def-card h3 { font-family: 'JetBrains Mono', monospace; font-size: 22px; color: var(--primary); margin-bottom: 8px; font-weight: 700; }
+    .def-card p { font-size: 15px; margin: 0; color: #475569; }
+
+    /* Comparison table */
+    .compare-table { width: 100%; border-collapse: collapse; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); position: relative; z-index: 1; margin-top: 12px; }
+    .compare-table th { background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: white; padding: 14px 16px; text-align: left; font-weight: 700; font-size: 14px; }
+    .compare-table td { padding: 12px 16px; border-bottom: 1px solid #e2e8f0; font-size: 15px; color: #334155; }
+    .compare-table tr:last-child td { border-bottom: none; }
+    .compare-table tr:hover td { background: #f8fafc; }
+
+    /* Controls */
+    .controls { position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; backdrop-filter: blur(20px) saturate(180%); background: rgba(10, 10, 20, 0.75); border-top: 1px solid var(--border); padding: 14px 20px; display: flex; justify-content: center; align-items: center; gap: 12px; }
+    .nav-arrow { display: inline-flex; align-items: center; justify-content: center; background: var(--surface); color: var(--text); border: 1px solid var(--border); width: 38px; height: 38px; border-radius: 10px; cursor: pointer; transition: all 0.2s; flex-shrink: 0; }
+    .nav-arrow:hover:not(:disabled) { background: linear-gradient(135deg, var(--primary), var(--primary-2)); border-color: transparent; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(139, 92, 246, 0.4); }
+    .nav-arrow:disabled { opacity: 0.3; cursor: not-allowed; }
+    .nav-arrow svg { width: 16px; height: 16px; }
+    .pagination { display: flex; align-items: center; gap: 6px; overflow-x: auto; scrollbar-width: none; max-width: calc(100vw - 200px); padding: 4px; scroll-behavior: smooth; }
+    .pagination::-webkit-scrollbar { display: none; }
+    .page-dot { display: inline-flex; align-items: center; justify-content: center; min-width: 34px; height: 34px; padding: 0 10px; background: var(--surface); color: var(--text-dim); border: 1px solid var(--border); border-radius: 9px; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; font-weight: 600; cursor: pointer; transition: all 0.2s; flex-shrink: 0; }
+    .page-dot:hover { color: var(--text); border-color: rgba(139, 92, 246, 0.4); background: rgba(139, 92, 246, 0.1); transform: translateY(-1px); }
+    .page-dot.active { background: linear-gradient(135deg, var(--primary), var(--primary-2)); color: white; border-color: transparent; box-shadow: 0 6px 16px rgba(139, 92, 246, 0.45); transform: scale(1.08); }
+    .page-dot.visited { color: var(--text); background: rgba(139, 92, 246, 0.08); border-color: rgba(139, 92, 246, 0.2); }
+    .progress-line { position: absolute; top: 0; left: 0; height: 3px; background: linear-gradient(90deg, var(--primary), var(--accent)); transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 0 12px rgba(139, 92, 246, 0.6); border-radius: 0 3px 3px 0; }
+
+    @media (max-width: 768px) {
+      .top { padding: 12px 16px; }
+      .topic-badge { display: none; }
+      .slide { padding: 32px 24px; border-radius: 20px; }
+      pre { font-size: 13px; padding: 18px; }
+      .nav-arrow { width: 36px; height: 36px; }
+      .pagination { max-width: calc(100vw - 110px); gap: 4px; }
+      .page-dot { min-width: 30px; height: 30px; font-size: 11.5px; padding: 0 6px; }
+      .slide h2::before { width: 4px; height: 24px; }
+    }
+    @media print {
+      html, body { height: auto; overflow: visible; }
+      body { background: white; }
+      .top, .controls, .bg-effects { display: none; }
+      .presentation { position: static; display: block; padding: 0; }
+      .slide { display: flex !important; page-break-after: always; box-shadow: none; border: 1px solid #ddd; max-width: 100%; height: auto; max-height: none; margin-bottom: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-effects">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+</div>
+
+<div class="top">
+  <div class="top-left">
+    <a href="index.html" class="back-btn">
+      <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+      Roadmap
+    </a>
+    <div class="topic-badge">
+      <span class="pulse-dot"></span>
+      2-Mavzu · OOP
+    </div>
+  </div>
+  <div class="slide-counter">
+    <span class="current" id="currentSlide">1</span>
+    <span>/</span>
+    <span id="totalSlides">0</span>
+  </div>
+</div>
+
+<div class="presentation">
+
+  <section class="slide slide-title">
+    <div class="topic-pill">⚡ 2-Mavzu</div>
+    <h1>OOP</h1>
+    <p>
+      <b>Object-Oriented Programming</b> — obyektga yo'naltirilgan dasturlash. Real dunyo obyektlarini kodda tasvirlash usuli.
+    </p>
+    <div class="note">
+      <b>Dars maqsadi:</b> Class va Object, Constructor, Encapsulation, Inheritance, Polymorphism, Abstraction, Interface va SOLID tamoyillarini real misollar bilan o'rganib chiqamiz.
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>OOP nima?</h2>
+    <p>
+      OOP — kodni <b>real dunyo obyektlari</b> ko'rinishida tashkil etish usuli. Bu paradigma katta loyihalarni boshqarish va kengaytirishni osonlashtiradi.
+    </p>
+    <ul>
+      <li>Kodni <b>qayta foydalanish</b> oson (reusability)</li>
+      <li><b>Kengaytirish</b> oson — yangi xususiyatlar qo'shish</li>
+      <li>Kodni <b>boshqarish va saqlash</b> oson (maintainability)</li>
+      <li>Real dunyo modeli bilan moslashadi — odamlar uchun tushunarli</li>
+      <li>Spring, Android, Enterprise — barcha katta Java loyihalari OOP da yoziladi</li>
+    </ul>
+    <div class="note">
+      OOP <b>4 ta asosiy ustun</b>ga tayanadi: <b>Encapsulation, Inheritance, Polymorphism, Abstraction</b>.
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>Class, Object, Instance</h2>
+    <div class="def-grid">
+      <div class="def-card">
+        <h3>Class</h3>
+        <p><b>Sinf</b> — obyekt yaratish uchun shablon (chizmasi). U xususiyatlar va xatti-harakatlarni belgilaydi.</p>
+      </div>
+      <div class="def-card">
+        <h3>Object</h3>
+        <p><b>Obyekt</b> — class dan yaratilgan real "narsa". Xotirada joy egallaydi va o'z qiymatlariga ega.</p>
+      </div>
+      <div class="def-card">
+        <h3>Instance</h3>
+        <p><b>Nusxa</b> — class ning konkret nusxasi. "Object" va "instance" amalda sinonim sifatida ishlatiladi.</p>
+      </div>
+    </div>
+    <div class="note">
+      <b>Analogiya:</b> Class — uy chizmasi, Object — chizma asosida qurilgan haqiqiy uy. Bitta chizmadan ko'p uy qurish mumkin.
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>Birinchi class — Car</h2>
+    <p>Class <code>class</code> kalit so'zi bilan e'lon qilinadi. Obyekt <code>new</code> orqali yaratiladi.</p>
+    <pre data-filename="Car.java"><code>public class Car {
+    String brand;
+    String color;
+    int year;
+}
+
+// Foydalanish
+public class Main {
+    public static void main(String[] args) {
+        Car myCar = new Car();
+        myCar.brand = "Toyota";
+        myCar.color = "Qora";
+        myCar.year = 2024;
+
+        System.out.println(myCar.brand + " " + myCar.year);
+        // Toyota 2024
+    }
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>Fields — atributlar</h2>
+    <p>
+      Class ichidagi o'zgaruvchilar <b>field</b> (atribut) deyiladi. Har bir obyekt o'z field qiymatlariga ega bo'ladi.
+    </p>
+    <ul>
+      <li><b>Default qiymatlar:</b> <code>int = 0</code>, <code>double = 0.0</code>, <code>boolean = false</code>, <code>String = null</code></li>
+      <li><b>Access modifierlar:</b> <code>public</code>, <code>private</code>, <code>protected</code>, default</li>
+      <li>Field'lar class scope'da yashaydi — barcha metodlar ko'ra oladi</li>
+    </ul>
+    <pre data-filename="Student.java"><code>public class Student {
+    public String name;        // hamma ko'radi
+    private int age;           // faqat class ichida
+    protected double gpa;      // shu paket + meros oluvchilar
+    String university;         // default — faqat shu paket
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>Constructor</h2>
+    <p>
+      <b>Constructor</b> — obyekt yaratilganda avtomatik chaqiriladigan maxsus metod. Field'larga boshlang'ich qiymat berish uchun ishlatiladi.
+    </p>
+    <pre data-filename="Person.java"><code>public class Person {
+    String name;
+    int age;
+
+    // Default constructor (parametrsiz)
+    public Person() {
+        this.name = "Noma'lum";
+        this.age = 0;
+    }
+
+    // Parameterized constructor
+    public Person(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+}
+
+// Foydalanish
+Person p1 = new Person();              // Default
+Person p2 = new Person("Akobir", 22);  // Parameterized</code></pre>
+    <div class="note">
+      Constructor <b>class nomi bilan bir xil</b> va <b>return turi yo'q</b> (hatto void ham). Bir nechta constructor — bu <b>constructor overloading</b>.
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>this kalit so'zi</h2>
+    <p>
+      <code>this</code> — <b>joriy obyektga</b> ishora qiluvchi havola. Asosan field va parametr nomlari mos kelganda kerak bo'ladi.
+    </p>
+    <pre data-filename="Book.java"><code>public class Book {
+    String title;
+    String author;
+
+    public Book(String title, String author) {
+        this.title = title;     // this.title — class field
+        this.author = author;   // title — parametr
+    }
+
+    public void info() {
+        System.out.println(this.title + " by " + this.author);
+    }
+}
+
+Book b = new Book("Java", "Akobir");
+b.info(); // Java by Akobir</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>Methods — metodlar</h2>
+    <p>
+      <b>Method</b> — class ichidagi xatti-harakat. Obyekt nima qila olishini belgilaydi.
+    </p>
+    <pre data-filename="Calculator.java"><code>public class Calculator {
+    // Instance method (obyektga tegishli)
+    public int add(int a, int b) {
+        return a + b;
+    }
+
+    // Static method (class ga tegishli)
+    public static int multiply(int a, int b) {
+        return a * b;
+    }
+}
+
+// Foydalanish
+Calculator calc = new Calculator();
+System.out.println(calc.add(2, 3));         // Instance: 5
+System.out.println(Calculator.multiply(4, 5)); // Static: 20</code></pre>
+    <div class="note">
+      <b>Instance method</b> — obyekt orqali chaqiriladi (<code>obj.method()</code>). <b>Static method</b> — class orqali (<code>ClassName.method()</code>).
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>Encapsulation — ma'lumotni himoyalash</h2>
+    <p>
+      <b>Encapsulation</b> — OOP ning birinchi ustuni. Field'larni <code>private</code> qilib, ularga faqat <b>getter</b> va <b>setter</b> orqali ruxsat beriladi.
+    </p>
+    <pre data-filename="Account.java"><code>public class Account {
+    private double balance;  // tashqi kod ko'rmaydi
+
+    public double getBalance() {
+        return balance;
+    }
+
+    public void setBalance(double balance) {
+        if (balance &gt;= 0) {        // validatsiya!
+            this.balance = balance;
+        }
+    }
+}
+
+Account acc = new Account();
+acc.setBalance(1000);           // OK
+acc.setBalance(-50);            // E'tiborsiz qoldiriladi
+System.out.println(acc.getBalance()); // 1000</code></pre>
+    <div class="note">
+      <b>Foyda:</b> Ma'lumot xavfsiz, validatsiya qilinadi, kelajakda kodni o'zgartirish oson.
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 1</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>Bank Account (Encapsulation)</h2>
+    <p>
+      <code>BankAccount</code> klassini yarating. <b>balance</b> field private bo'lsin.
+      Ikkita metod yozing:
+    </p>
+    <ul>
+      <li><code>deposit(amount)</code> — pul qo'shish (faqat musbat son)</li>
+      <li><code>withdraw(amount)</code> — pul yechish (faqat balansda yetarli bo'lsa)</li>
+    </ul>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      acc.deposit(1000) → balance = 1000<br>
+      acc.deposit(-50) → e'tiborsiz<br>
+      acc.withdraw(300) → balance = 700<br>
+      acc.withdraw(2000) → e'tiborsiz (balans yetmaydi)
+    </div>
+    <pre data-filename="BankAccount.java"><code>public class BankAccount {
+    private double balance;
+
+    public double getBalance() {
+        return balance;
+    }
+
+    public void deposit(double amount) {
+        if (amount &gt; 0) {
+            balance += amount;
+        }
+    }
+
+    public boolean withdraw(double amount) {
+        if (amount &gt; 0 &amp;&amp; amount &lt;= balance) {
+            balance -= amount;
+            return true;
+        }
+        return false;
+    }
+}
+
+// Test
+BankAccount acc = new BankAccount();
+acc.deposit(1000);
+acc.withdraw(300);
+System.out.println(acc.getBalance()); // 700</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 2</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>Person validatsiyasi</h2>
+    <p><code>Person</code> klassi quyidagi qoidalar bilan ishlasin:</p>
+    <ul>
+      <li><b>name</b> — bo'sh string bo'lmasin</li>
+      <li><b>age</b> — 0 dan 120 gacha bo'lsin</li>
+      <li><b>email</b> — kamida <code>@</code> belgisini saqlasin</li>
+    </ul>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      p.setName("") → e'tiborsiz<br>
+      p.setAge(25) → OK<br>
+      p.setAge(-5) → e'tiborsiz<br>
+      p.setEmail("test@mail.com") → OK
+    </div>
+    <pre data-filename="Person.java"><code>public class Person {
+    private String name;
+    private int age;
+    private String email;
+
+    public void setName(String name) {
+        if (name != null &amp;&amp; !name.isEmpty()) {
+            this.name = name;
+        }
+    }
+
+    public void setAge(int age) {
+        if (age &gt;= 0 &amp;&amp; age &lt;= 120) {
+            this.age = age;
+        }
+    }
+
+    public void setEmail(String email) {
+        if (email != null &amp;&amp; email.contains("@")) {
+            this.email = email;
+        }
+    }
+
+    public String getName() { return name; }
+    public int getAge() { return age; }
+    public String getEmail() { return email; }
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 3</span>
+      <span class="difficulty medium"><span class="dot"></span>Medium</span>
+    </div>
+    <h2>Counter (chegaralar bilan)</h2>
+    <p>
+      <code>Counter</code> klassi yarating. Boshlang'ich qiymat, minimal va maksimal chegara bilan ishlasin.
+    </p>
+    <ul>
+      <li><code>increment()</code> — 1 ga oshiradi (max'dan oshmaydi)</li>
+      <li><code>decrement()</code> — 1 ga kamaytiradi (min'dan kichik bo'lmaydi)</li>
+      <li><code>reset()</code> — boshlang'ich qiymatga qaytaradi</li>
+    </ul>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      new Counter(0, 5, 0) → value = 0<br>
+      increment() × 7 → value = 5 (chegaraga yetdi)<br>
+      decrement() × 3 → value = 2<br>
+      reset() → value = 0
+    </div>
+    <pre data-filename="Counter.java"><code>public class Counter {
+    private int value;
+    private final int min;
+    private final int max;
+    private final int initial;
+
+    public Counter(int min, int max, int initial) {
+        this.min = min;
+        this.max = max;
+        this.initial = initial;
+        this.value = initial;
+    }
+
+    public void increment() {
+        if (value &lt; max) value++;
+    }
+
+    public void decrement() {
+        if (value &gt; min) value--;
+    }
+
+    public void reset() {
+        value = initial;
+    }
+
+    public int getValue() {
+        return value;
+    }
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 4</span>
+      <span class="difficulty hard"><span class="dot"></span>Hard</span>
+    </div>
+    <h2>Vault — parolli omborxona</h2>
+    <p>
+      <code>Vault</code> klassi parol bilan himoyalanadi. <b>3 ta noto'g'ri urinishdan</b> keyin omborxona <b>bloklanadi</b>.
+    </p>
+    <ul>
+      <li><code>unlock(password)</code> — to'g'ri bo'lsa <code>true</code></li>
+      <li>3 ta xato → <b>bloklash</b> (boshqa hech qachon ochilmaydi)</li>
+      <li>To'g'ri parol — urinishlar hisoblagichi <b>nolga</b> qaytsin</li>
+    </ul>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      v = new Vault("1234")<br>
+      v.unlock("0000") → false (urinish 1)<br>
+      v.unlock("1111") → false (urinish 2)<br>
+      v.unlock("1234") → true (urinishlar reset)<br>
+      v.unlock("a") → false (1)<br>
+      v.unlock("b") → false (2)<br>
+      v.unlock("c") → false (3 — BLOKLANDI)
+    </div>
+    <pre data-filename="Vault.java"><code>public class Vault {
+    private final String password;
+    private int attempts = 0;
+    private boolean locked = false;
+    private static final int MAX_ATTEMPTS = 3;
+
+    public Vault(String password) {
+        this.password = password;
+    }
+
+    public boolean unlock(String input) {
+        if (locked) return false;
+
+        if (password.equals(input)) {
+            attempts = 0;
+            return true;
+        }
+
+        attempts++;
+        if (attempts &gt;= MAX_ATTEMPTS) {
+            locked = true;
+        }
+        return false;
+    }
+
+    public boolean isLocked() {
+        return locked;
+    }
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>Inheritance — meros olish</h2>
+    <p>
+      <b>Inheritance</b> — OOP ning ikkinchi ustuni. Bir class boshqa class'dan field va metodlarini <b>meros olishi</b> mumkin.
+    </p>
+    <pre data-filename="Animal.java"><code>public class Animal {
+    String name;
+
+    public void eat() {
+        System.out.println(name + " ovqat yeyapti");
+    }
+}
+
+// Dog — Animal'dan meros oladi
+public class Dog extends Animal {
+    public void bark() {
+        System.out.println(name + " vovillayapti");
+    }
+}
+
+Dog d = new Dog();
+d.name = "Rex";
+d.eat();   // Rex ovqat yeyapti (Animal'dan)
+d.bark();  // Rex vovillayapti (Dog'niki)</code></pre>
+    <div class="note">
+      Java'da <b>faqat 1 ta</b> parent class bo'lishi mumkin (single inheritance). Lekin <b>bir nechta interface</b>'dan meros olish mumkin.
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>super kalit so'zi</h2>
+    <p>
+      <code>super</code> — <b>parent class'ga</b> ishora. Constructor'da yoki parent metodga murojaat qilishda ishlatiladi.
+    </p>
+    <pre data-filename="Employee.java"><code>public class Person {
+    String name;
+
+    public Person(String name) {
+        this.name = name;
+    }
+
+    public void greet() {
+        System.out.println("Salom, men " + name);
+    }
+}
+
+public class Employee extends Person {
+    double salary;
+
+    public Employee(String name, double salary) {
+        super(name);          // parent constructor chaqirish
+        this.salary = salary;
+    }
+
+    public void greet() {
+        super.greet();        // parent metodga murojaat
+        System.out.println("Oyligim: " + salary);
+    }
+}</code></pre>
+    <div class="note">
+      <code>super()</code> chaqiruvi constructor'da <b>birinchi qator</b> bo'lishi kerak.
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>Method Overriding</h2>
+    <p>
+      <b>Overriding</b> — child class parent class metodini <b>qayta yozadi</b>. Bir xil signature kerak.
+    </p>
+    <pre data-filename="Override.java"><code>public class Shape {
+    public double area() {
+        return 0;
+    }
+}
+
+public class Circle extends Shape {
+    double radius;
+
+    @Override
+    public double area() {
+        return Math.PI * radius * radius;
+    }
+}
+
+public class Square extends Shape {
+    double side;
+
+    @Override
+    public double area() {
+        return side * side;
+    }
+}</code></pre>
+    <div class="note">
+      <code>@Override</code> annotatsiyasi — kompilyator bizning override qilayotganimizni tekshiradi. <b>Xato bo'lsa, ogohlantiradi</b> (masalan, parent metod nomi xato bo'lsa).
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala</span>
+      <span class="difficulty medium"><span class="dot"></span>Medium</span>
+    </div>
+    <h2>Shape iyerarxiyasi</h2>
+    <p>
+      Abstract <code>Shape</code> klassidan <code>Circle</code>, <code>Rectangle</code>, <code>Triangle</code> hosil qiling. Har biri o'z <code>area()</code> va <code>perimeter()</code> metodini implementatsiya qilsin.
+    </p>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      Circle(5) → area = 78.54, perimeter = 31.42<br>
+      Rectangle(4, 6) → area = 24, perimeter = 20<br>
+      Triangle(3, 4, 5) → area = 6, perimeter = 12
+    </div>
+    <div class="constraints">
+      <b>Maslahat:</b> Uchburchak yuzasi Geron formulasi orqali: <code>S = √(p(p-a)(p-b)(p-c))</code>, <code>p</code> — yarim perimetr.
+    </div>
+    <pre data-filename="Shapes.java"><code>public class Shape {
+    public double area() { return 0; }
+    public double perimeter() { return 0; }
+}
+
+public class Circle extends Shape {
+    double r;
+    public Circle(double r) { this.r = r; }
+
+    @Override public double area() { return Math.PI * r * r; }
+    @Override public double perimeter() { return 2 * Math.PI * r; }
+}
+
+public class Rectangle extends Shape {
+    double w, h;
+    public Rectangle(double w, double h) { this.w = w; this.h = h; }
+
+    @Override public double area() { return w * h; }
+    @Override public double perimeter() { return 2 * (w + h); }
+}
+
+public class Triangle extends Shape {
+    double a, b, c;
+    public Triangle(double a, double b, double c) {
+        this.a = a; this.b = b; this.c = c;
+    }
+
+    @Override public double area() {
+        double p = perimeter() / 2;
+        return Math.sqrt(p * (p-a) * (p-b) * (p-c));
+    }
+    @Override public double perimeter() { return a + b + c; }
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>Polymorphism — "bir necha shaklda"</h2>
+    <p>
+      <b>Polymorphism</b> — OOP ning uchinchi ustuni. Bitta interface, lekin turli xil amalga oshirish.
+    </p>
+    <ul>
+      <li><b>Runtime polymorphism</b> — <code>@Override</code> orqali (asosiy)</li>
+      <li><b>Compile-time polymorphism</b> — overloading (bir xil nomda, turli parametrlar)</li>
+      <li>Parent turida child obyekt — <b>upcasting</b></li>
+    </ul>
+    <pre data-filename="Polymorphism.java"><code>Shape[] shapes = {
+    new Circle(5),
+    new Rectangle(4, 6),
+    new Triangle(3, 4, 5)
+};
+
+for (Shape s : shapes) {
+    System.out.println(s.area());
+    // 78.54
+    // 24.0
+    // 6.0
+}</code></pre>
+    <div class="note">
+      Bu yerda <code>s.area()</code> — har bir obyekt <b>o'zining</b> area() metodini chaqiradi (runtime'da aniqlanadi). Bu polymorphism kuchidir.
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>instanceof va casting</h2>
+    <p>
+      <code>instanceof</code> — obyekt qaysi class turiga tegishliligini tekshiradi.
+    </p>
+    <pre data-filename="InstanceOf.java"><code>Shape s = new Circle(5);
+
+if (s instanceof Circle) {
+    Circle c = (Circle) s;  // downcasting
+    System.out.println("Radius: " + c.r);
+}
+
+// Java 16+ qisqaroq versiyasi (pattern matching)
+if (s instanceof Circle c) {
+    System.out.println("Radius: " + c.r);
+}</code></pre>
+    <div class="note">
+      <b>Upcasting</b> (child → parent) — har doim xavfsiz. <b>Downcasting</b> (parent → child) — xavfli, oldindan <code>instanceof</code> bilan tekshiring.
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 1</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>Animal Sounds</h2>
+    <p>
+      <code>Animal</code> abstract metod <code>makeSound()</code> ga ega. <code>Dog</code>, <code>Cat</code>, <code>Cow</code> — har biri o'z ovozini qaytarsin.
+    </p>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      new Dog().makeSound() → "Vov-vov!"<br>
+      new Cat().makeSound() → "Miyov!"<br>
+      new Cow().makeSound() → "Muuu!"
+    </div>
+    <pre data-filename="Animals.java"><code>public class Animal {
+    public String makeSound() {
+        return "...";
+    }
+}
+
+public class Dog extends Animal {
+    @Override
+    public String makeSound() { return "Vov-vov!"; }
+}
+
+public class Cat extends Animal {
+    @Override
+    public String makeSound() { return "Miyov!"; }
+}
+
+public class Cow extends Animal {
+    @Override
+    public String makeSound() { return "Muuu!"; }
+}
+
+// Polymorphism
+Animal[] zoo = { new Dog(), new Cat(), new Cow() };
+for (Animal a : zoo) {
+    System.out.println(a.makeSound());
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 2</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>Employee Bonus</h2>
+    <p>
+      <code>Employee</code> klassida <code>calculateBonus()</code> metodi bor. Lavozimga qarab har xil bonus:
+    </p>
+    <ul>
+      <li><b>Manager:</b> oyligning <b>20%</b>i</li>
+      <li><b>Developer:</b> oyligning <b>15%</b>i</li>
+      <li><b>Intern:</b> bonus yo'q (0)</li>
+    </ul>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      Manager(5000).calculateBonus() → 1000<br>
+      Developer(4000).calculateBonus() → 600<br>
+      Intern(1000).calculateBonus() → 0
+    </div>
+    <pre data-filename="Employees.java"><code>public class Employee {
+    double salary;
+    public Employee(double s) { this.salary = s; }
+
+    public double calculateBonus() { return 0; }
+}
+
+public class Manager extends Employee {
+    public Manager(double s) { super(s); }
+
+    @Override
+    public double calculateBonus() { return salary * 0.20; }
+}
+
+public class Developer extends Employee {
+    public Developer(double s) { super(s); }
+
+    @Override
+    public double calculateBonus() { return salary * 0.15; }
+}
+
+public class Intern extends Employee {
+    public Intern(double s) { super(s); }
+    // bonus = 0 (parent'dan keladi)
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 3</span>
+      <span class="difficulty medium"><span class="dot"></span>Medium</span>
+    </div>
+    <h2>Total Area Calculator</h2>
+    <p>
+      Shapes massivi berilgan. <b>Polymorphism</b> dan foydalanib, ularning <b>umumiy yuzasini</b> qaytaring.
+    </p>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      [Circle(2), Rectangle(3,4), Triangle(3,4,5)]<br>
+      → 12.57 + 12 + 6 = <b>30.57</b>
+    </div>
+    <div class="constraints">
+      <b>Maslahat:</b> Faqat parent <code>Shape</code> turidan foydalaning — child obyektlar <code>area()</code> ni o'zlari override qilishadi.
+    </div>
+    <pre data-filename="AreaCalculator.java"><code>public class AreaCalculator {
+    public static double totalArea(Shape[] shapes) {
+        double total = 0;
+        for (Shape s : shapes) {
+            total += s.area();  // polymorphism!
+        }
+        return total;
+    }
+}
+
+// Test
+Shape[] shapes = {
+    new Circle(2),
+    new Rectangle(3, 4),
+    new Triangle(3, 4, 5)
+};
+System.out.println(AreaCalculator.totalArea(shapes));
+// 30.57...</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 4</span>
+      <span class="difficulty hard"><span class="dot"></span>Hard</span>
+    </div>
+    <h2>Payment Processor</h2>
+    <p>
+      Turli to'lov turlari uchun yagona protsessor yarating. Har bir tur <b>komissiya</b> oladi:
+    </p>
+    <ul>
+      <li><b>CashPayment</b>: 0%</li>
+      <li><b>CardPayment</b>: 1.5%</li>
+      <li><b>CryptoPayment</b>: 0.5% (lekin minimal $1)</li>
+    </ul>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      Cash(100).process() → 100<br>
+      Card(100).process() → 98.5<br>
+      Crypto(100).process() → 99.5<br>
+      Crypto(50).process() → 49 (minimal $1 komissiya)
+    </div>
+    <pre data-filename="Payment.java"><code>public abstract class Payment {
+    protected double amount;
+    public Payment(double amount) { this.amount = amount; }
+
+    public abstract double fee();
+
+    public double process() {
+        return amount - fee();
+    }
+}
+
+public class CashPayment extends Payment {
+    public CashPayment(double a) { super(a); }
+    @Override public double fee() { return 0; }
+}
+
+public class CardPayment extends Payment {
+    public CardPayment(double a) { super(a); }
+    @Override public double fee() { return amount * 0.015; }
+}
+
+public class CryptoPayment extends Payment {
+    public CryptoPayment(double a) { super(a); }
+    @Override public double fee() {
+        return Math.max(amount * 0.005, 1);
+    }
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>Abstract class</h2>
+    <p>
+      <b>Abstract class</b> — to'liq bo'lmagan class. <code>new</code> bilan yarata bo'lmaydi.
+    </p>
+    <pre data-filename="Abstract.java"><code>public abstract class Vehicle {
+    String brand;
+
+    // oddiy metod (implementatsiya bor)
+    public void start() {
+        System.out.println(brand + " ishga tushdi");
+    }
+
+    // abstract metod (implementatsiya yo'q)
+    public abstract void move();
+}
+
+// Child class abstract metodni IMPLEMENT qilishi shart
+public class Car extends Vehicle {
+    @Override
+    public void move() {
+        System.out.println(brand + " yo'l bo'ylab ketmoqda");
+    }
+}
+
+// Vehicle v = new Vehicle(); // XATO! abstract instantsiyalanmaydi
+Car c = new Car();
+c.brand = "Toyota";
+c.start();  // Toyota ishga tushdi
+c.move();   // Toyota yo'l bo'ylab ketmoqda</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>Interface</h2>
+    <p>
+      <b>Interface</b> — kontrakt. Class qanday metodlarni qo'llab-quvvatlashi kerakligini belgilaydi. <code>implements</code> bilan ishlatiladi.
+    </p>
+    <pre data-filename="Interface.java"><code>public interface Drawable {
+    void draw();  // public abstract default
+}
+
+public interface Printable {
+    void print();
+}
+
+// Bir nechta interface'ni implement qilish mumkin
+public class Document implements Drawable, Printable {
+    String content;
+
+    @Override
+    public void draw() {
+        System.out.println("Hujjat chizilmoqda...");
+    }
+
+    @Override
+    public void print() {
+        System.out.println("Chop etilmoqda: " + content);
+    }
+}</code></pre>
+    <div class="note">
+      Java 8+ dan boshlab interface'da <b>default</b> va <b>static</b> metodlar ham bo'lishi mumkin. Java'da <b>multiple inheritance</b> faqat interface orqali amalga oshiriladi.
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>Interface vs Abstract class</h2>
+    <table class="compare-table">
+      <thead>
+        <tr><th>Xususiyat</th><th>Abstract class</th><th>Interface</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Kalit so'z</td><td><code>abstract class</code></td><td><code>interface</code></td></tr>
+        <tr><td>Meros</td><td><code>extends</code> (1 ta)</td><td><code>implements</code> (ko'p)</td></tr>
+        <tr><td>Constructor</td><td>Bor</td><td>Yo'q</td></tr>
+        <tr><td>Field'lar</td><td>Har xil</td><td>Faqat <code>public static final</code></td></tr>
+        <tr><td>Metod tanasi</td><td>Bor (oddiy + abstract)</td><td>Bor (default + static, Java 8+)</td></tr>
+        <tr><td>Qachon ishlatish</td><td>Umumiy bazaviy mantiq bor bo'lsa</td><td>Faqat kontrakt kerak bo'lsa</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 1</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>Printable Interface</h2>
+    <p>
+      <code>Printable</code> interface'ini yarating — bitta metod: <code>print()</code>. Uni <code>Book</code>, <code>Magazine</code>, <code>Newspaper</code> klasslari implement qilsin.
+    </p>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      new Book("Java").print() → "Kitob: Java"<br>
+      new Magazine("Tech").print() → "Jurnal: Tech"<br>
+      new Newspaper("Daily").print() → "Gazeta: Daily"
+    </div>
+    <pre data-filename="Printable.java"><code>public interface Printable {
+    void print();
+}
+
+public class Book implements Printable {
+    String title;
+    public Book(String title) { this.title = title; }
+
+    @Override
+    public void print() {
+        System.out.println("Kitob: " + title);
+    }
+}
+
+public class Magazine implements Printable {
+    String name;
+    public Magazine(String name) { this.name = name; }
+
+    @Override
+    public void print() {
+        System.out.println("Jurnal: " + name);
+    }
+}
+
+public class Newspaper implements Printable {
+    String name;
+    public Newspaper(String name) { this.name = name; }
+
+    @Override
+    public void print() {
+        System.out.println("Gazeta: " + name);
+    }
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 2</span>
+      <span class="difficulty easy"><span class="dot"></span>Easy</span>
+    </div>
+    <h2>Comparable Items</h2>
+    <p>
+      <code>Item</code> klassini Java'ning <code>Comparable</code> interface'ini implement qiladigan qilib yarating — narxiga qarab tartibga solinishi mumkin.
+    </p>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      List = [Item("Olma", 5), Item("Banan", 3), Item("Anjir", 8)]<br>
+      Sort → [Banan(3), Olma(5), Anjir(8)]
+    </div>
+    <pre data-filename="Item.java"><code>import java.util.*;
+
+public class Item implements Comparable&lt;Item&gt; {
+    String name;
+    double price;
+
+    public Item(String name, double price) {
+        this.name = name;
+        this.price = price;
+    }
+
+    @Override
+    public int compareTo(Item other) {
+        return Double.compare(this.price, other.price);
+    }
+
+    @Override
+    public String toString() {
+        return name + "(" + price + ")";
+    }
+}
+
+// Test
+List&lt;Item&gt; items = new ArrayList&lt;&gt;();
+items.add(new Item("Olma", 5));
+items.add(new Item("Banan", 3));
+items.add(new Item("Anjir", 8));
+
+Collections.sort(items);
+System.out.println(items);
+// [Banan(3.0), Olma(5.0), Anjir(8.0)]</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">⚡ Masala 3</span>
+      <span class="difficulty medium"><span class="dot"></span>Medium</span>
+    </div>
+    <h2>Discount Strategy</h2>
+    <p>
+      <code>DiscountStrategy</code> interface'i. 3 ta turli strategiya:
+    </p>
+    <ul>
+      <li><b>NoDiscount</b>: 0%</li>
+      <li><b>PercentDiscount(p)</b>: <code>p</code>% chegirma</li>
+      <li><b>FixedDiscount(amount)</b>: aniq summa chegirma</li>
+    </ul>
+    <div class="example-block">
+      <div class="example-title">Misol</div>
+      100 + NoDiscount → 100<br>
+      100 + PercentDiscount(20) → 80<br>
+      100 + FixedDiscount(15) → 85
+    </div>
+    <div class="constraints">
+      <b>Maslahat:</b> Bu <b>Strategy pattern</b> — algoritmni runtime'da almashtirish mumkin.
+    </div>
+    <pre data-filename="DiscountStrategy.java"><code>public interface DiscountStrategy {
+    double apply(double price);
+}
+
+public class NoDiscount implements DiscountStrategy {
+    @Override
+    public double apply(double price) { return price; }
+}
+
+public class PercentDiscount implements DiscountStrategy {
+    private double percent;
+    public PercentDiscount(double p) { this.percent = p; }
+
+    @Override
+    public double apply(double price) {
+        return price * (1 - percent / 100);
+    }
+}
+
+public class FixedDiscount implements DiscountStrategy {
+    private double amount;
+    public FixedDiscount(double a) { this.amount = a; }
+
+    @Override
+    public double apply(double price) {
+        return Math.max(0, price - amount);
+    }
+}
+
+// Foydalanish
+DiscountStrategy strategy = new PercentDiscount(20);
+double finalPrice = strategy.apply(100); // 80</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>SOLID — toza kod tamoyillari</h2>
+    <p>
+      <b>SOLID</b> — Robert Martin (Uncle Bob) tomonidan ishlab chiqilgan 5 ta OOP tamoyili. Toza, kengaytiriladigan kod yozish uchun.
+    </p>
+    <ul>
+      <li><b>S</b>RP — Single Responsibility Principle (Bitta mas'uliyat)</li>
+      <li><b>O</b>CP — Open/Closed Principle (Ochiq/Yopiq)</li>
+      <li><b>L</b>SP — Liskov Substitution Principle (Liskov almashinishi)</li>
+      <li><b>I</b>SP — Interface Segregation Principle (Interface'larni ajratish)</li>
+      <li><b>D</b>IP — Dependency Inversion Principle (Bog'liqlikni teskarisi)</li>
+    </ul>
+    <div class="note">
+      SOLID — qoidalar emas, <b>yo'l-yo'riqlar</b>. Spring Framework butunlay SOLID asosida tuzilgan.
+    </div>
+  </section>
+
+  <section class="slide">
+    <h2>SRP &amp; OCP</h2>
+    <p><b>SRP — Single Responsibility:</b> Har bir class faqat <b>bitta sababga ko'ra</b> o'zgarishi kerak. Bitta vazifani bajarsin.</p>
+    <pre data-filename="SRP.java"><code>// YOMON: bir class 2 ta vazifa qiladi
+class User {
+    void save() { /* DB'ga yozish */ }
+    void sendEmail() { /* email yuborish */ }
+}
+
+// YAXSHI: har biri o'z vazifasi
+class User { /* ma'lumotlar */ }
+class UserRepository { void save(User u) {} }
+class EmailService { void send(User u) {} }</code></pre>
+    <p style="margin-top: 20px;"><b>OCP — Open/Closed:</b> Class <b>kengayishga ochiq</b>, lekin <b>o'zgartirishga yopiq</b> bo'lsin. Yangi xususiyat qo'shganda eski kodni o'zgartirmaslik kerak.</p>
+    <pre data-filename="OCP.java"><code>// Discount qo'shganda Shape klassini o'zgartirmaymiz —
+// yangi DiscountStrategy implementatsiyasi qo'shamiz</code></pre>
+  </section>
+
+  <section class="slide">
+    <h2>LSP, ISP, DIP</h2>
+    <p><b>LSP — Liskov Substitution:</b> Child obyekt parent o'rnida ishlatilganda kod buzilmasligi kerak.</p>
+    <pre data-filename="LSP.java"><code>// YOMON
+class Bird { void fly() {} }
+class Ostrich extends Bird { /* tuyaqush ucha olmaydi! */ }
+
+// YAXSHI: turlarga bo'lib chiqamiz
+interface FlyingBird { void fly(); }
+class Sparrow implements FlyingBird {}
+class Ostrich {} // alohida</code></pre>
+    <p style="margin-top: 14px;"><b>ISP — Interface Segregation:</b> Katta interface'larni <b>kichik, maxsus</b> interface'larga bo'ling.</p>
+    <p style="margin-top: 14px;"><b>DIP — Dependency Inversion:</b> Konkret klasslarga emas, <b>abstraksiyalarga</b> bog'laning.</p>
+    <pre data-filename="DIP.java"><code>// YOMON
+class Service { MySqlDb db = new MySqlDb(); }
+
+// YAXSHI
+class Service {
+    Database db;
+    Service(Database db) { this.db = db; } // any DB
+}</code></pre>
+  </section>
+
+  <section class="slide">
+    <div class="problem-header">
+      <span class="problem-num">📝 Amaliy topshiriqlar</span>
+      <span class="difficulty hard"><span class="dot"></span>Mustaqil</span>
+    </div>
+    <h2>10 ta murakkab vazifa</h2>
+    <p>Quyidagi 10 ta vazifani <b>o'zingiz mustaqil</b> yechib ko'ring. Har biri bir nechta OOP tushunchasini birlashtiradi:</p>
+    <ul style="font-size: 16px;">
+      <li>
+        <b>1. Library tizimi.</b> <code>Book</code>, <code>Library</code> klasslari. Kitob qo'shish, qidirish, o'chirish.<br>
+        <code>lib.add(book) → true</code> &nbsp; | &nbsp; <code>lib.findByTitle("Java") → Book</code>
+      </li>
+      <li>
+        <b>2. Hotel reservatsiya.</b> <code>Room</code>, <code>Reservation</code>, <code>Hotel</code>. Xona band qilish, bo'shatish.<br>
+        <code>hotel.book(roomNo, date) → Reservation</code>
+      </li>
+      <li>
+        <b>3. Bank account ierarxiyasi.</b> <code>Account</code> abstract, <code>SavingsAccount</code> (foiz), <code>CheckingAccount</code> (overdraft).<br>
+        <code>savings.addInterest() → balance += balance * 0.05</code>
+      </li>
+      <li>
+        <b>4. Employee payroll.</b> <code>Employee</code>, <code>Manager</code>, <code>Developer</code>, <code>Intern</code>. Har birining <code>calculatePay()</code>.<br>
+        <code>manager.calculatePay() → baseSalary + bonus</code>
+      </li>
+      <li>
+        <b>5. Online store cart.</b> <code>Product</code>, <code>CartItem</code>, <code>ShoppingCart</code>. Qo'shish, o'chirish, total hisoblash.<br>
+        <code>cart.getTotal() → sum of (qty * price)</code>
+      </li>
+      <li>
+        <b>6. Animal kingdom.</b> <code>Animal</code> abstract → <code>Mammal</code>, <code>Bird</code>, <code>Fish</code>. Har biri o'z xususiyatlari bilan.<br>
+        Interface'lar: <code>CanSwim</code>, <code>CanFly</code>, <code>CanRun</code>
+      </li>
+      <li>
+        <b>7. Vehicle fleet.</b> <code>Vehicle</code> abstract → <code>Car</code>, <code>Truck</code>, <code>Motorcycle</code>. Yoqilg'i sarfi va tezlik farqi.<br>
+        <code>fleet.totalFuelConsumption() → ...</code>
+      </li>
+      <li>
+        <b>8. School management.</b> <code>Person</code> → <code>Student</code>, <code>Teacher</code>. <code>School</code> klassi.<br>
+        <code>student.gpa</code>, <code>teacher.subject</code>, <code>school.addPerson(p)</code>
+      </li>
+      <li>
+        <b>9. Game character.</b> <code>Character</code> abstract → <code>Warrior</code>, <code>Mage</code>, <code>Archer</code>. <code>attack()</code> har xil.<br>
+        Interface'lar: <code>Healable</code>, <code>Defendable</code>
+      </li>
+      <li>
+        <b>10. Notification system.</b> <code>Notifier</code> interface → <code>EmailNotifier</code>, <code>SmsNotifier</code>, <code>PushNotifier</code>. Strategy pattern.<br>
+        <code>service.notify(user, message)</code>
+      </li>
+    </ul>
+    <div class="note">
+      Har bir vazifa uchun: <b>SOLID tamoyillariga rioya qiling</b>, encapsulation, inheritance va polymorphism'dan keng foydalaning.
+    </div>
+  </section>
+
+  <section class="slide slide-title">
+    <div class="topic-pill">🎯 Yakun</div>
+    <h1>Dars yakuni</h1>
+    <p>
+      OOP mavzusida Java'ning eng muhim qismini o'rgandingiz — endi katta loyihalarni qura olasiz.
+    </p>
+    <div class="note">
+      <b>Keyingi mavzu:</b> Collections Framework — List, Set, Map, HashMap, ArrayList va boshqa kuchli vositalar.
+    </div>
+  </section>
+
+</div>
+
+<div class="toast" id="toast">✓ Kod nusxalandi!</div>
+
+<div class="controls">
+  <div class="progress-line" id="progressLine"></div>
+  <button class="nav-arrow" id="prevBtn" onclick="prevSlide()" title="Oldingi (←)">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
+  </button>
+  <div class="pagination" id="pagination"></div>
+  <button class="nav-arrow" id="nextBtn" onclick="nextSlide()" title="Keyingi (→)">
+    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+  </button>
+</div>
+
+<script>
+  function wrapCodeBlocks() {
+    document.querySelectorAll('pre').forEach(pre => {
+      if (pre.closest('.code-window')) return;
+      const filename = pre.dataset.filename || 'Example.java';
+      const wrapper = document.createElement('div');
+      wrapper.className = 'code-window';
+      wrapper.innerHTML = `
+        <div class="code-header">
+          <div class="traffic-lights">
+            <span class="light close"></span>
+            <span class="light minimize"></span>
+            <span class="light maximize"></span>
+          </div>
+          <div class="code-filename">${filename}</div>
+          <div class="code-actions">
+            <button class="code-btn reset-btn">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              Reset
+            </button>
+            <button class="code-btn copy-btn">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+              Copy
+            </button>
+          </div>
+        </div>
+        <div class="code-body"></div>
+      `;
+      pre.setAttribute('contenteditable', 'true');
+      pre.setAttribute('spellcheck', 'false');
+      const original = pre.innerHTML;
+      pre.dataset.original = original;
+      pre.parentNode.insertBefore(wrapper, pre);
+      wrapper.querySelector('.code-body').appendChild(pre);
+
+      wrapper.querySelector('.copy-btn').addEventListener('click', () => {
+        navigator.clipboard.writeText(pre.textContent).then(() => {
+          const btn = wrapper.querySelector('.copy-btn');
+          btn.classList.add('copied');
+          btn.innerHTML = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg> Nusxalandi`;
+          showToast('✓ Kod nusxalandi!');
+          setTimeout(() => {
+            btn.classList.remove('copied');
+            btn.innerHTML = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg> Copy`;
+          }, 2000);
+        });
+      });
+
+      wrapper.querySelector('.reset-btn').addEventListener('click', () => {
+        pre.innerHTML = original;
+        showToast('↺ Kod tiklandi');
+      });
+    });
+  }
+
+  function showToast(message) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.classList.add('show');
+    clearTimeout(window._toastTimer);
+    window._toastTimer = setTimeout(() => toast.classList.remove('show'), 1800);
+  }
+
+  wrapCodeBlocks();
+
+  function wrapSolutions() {
+    const eyeIcon = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>`;
+    const eyeOffIcon = `<svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21"/></svg>`;
+    document.querySelectorAll('.slide').forEach(slide => {
+      if (!slide.querySelector('.problem-header')) return;
+      slide.querySelectorAll('.code-window').forEach(cw => {
+        if (cw.parentNode.classList.contains('solution-content')) return;
+        const wrap = document.createElement('div');
+        wrap.className = 'solution-wrap';
+        const btn = document.createElement('button');
+        btn.className = 'show-solution-btn';
+        btn.innerHTML = eyeIcon + ' Yechimni ko\'rsatish';
+        const content = document.createElement('div');
+        content.className = 'solution-content';
+        cw.parentNode.insertBefore(wrap, cw);
+        content.appendChild(cw);
+        wrap.appendChild(btn);
+        wrap.appendChild(content);
+        btn.addEventListener('click', () => {
+          const isShown = content.classList.toggle('shown');
+          btn.classList.toggle('active', isShown);
+          btn.innerHTML = isShown
+            ? eyeOffIcon + ' Yechimni yashirish'
+            : eyeIcon + ' Yechimni ko\'rsatish';
+        });
+      });
+    });
+  }
+
+  wrapSolutions();
+
+  const slides = document.querySelectorAll('.slide');
+  const totalSlides = slides.length;
+  const pagination = document.getElementById('pagination');
+  let currentIndex = 0;
+
+  document.getElementById('totalSlides').textContent = totalSlides;
+
+  const pageDots = [];
+  for (let i = 0; i < totalSlides; i++) {
+    const dot = document.createElement('button');
+    dot.className = 'page-dot';
+    dot.textContent = String(i + 1).padStart(2, '0');
+    dot.addEventListener('click', () => {
+      currentIndex = i;
+      showSlide(i);
+    });
+    pagination.appendChild(dot);
+    pageDots.push(dot);
+  }
+
+  function showSlide(index) {
+    slides.forEach(s => s.classList.remove('active'));
+    slides[index].classList.add('active');
+    document.getElementById('currentSlide').textContent = index + 1;
+    pageDots.forEach((d, i) => {
+      d.classList.toggle('active', i === index);
+      d.classList.toggle('visited', i < index);
+    });
+    const percent = ((index + 1) / totalSlides * 100);
+    document.getElementById('progressLine').style.width = percent + '%';
+    document.getElementById('prevBtn').disabled = index === 0;
+    document.getElementById('nextBtn').disabled = index === totalSlides - 1;
+    slides[index].scrollTop = 0;
+    const activeDot = pageDots[index];
+    if (activeDot) {
+      activeDot.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+    }
+  }
+
+  function nextSlide() {
+    if (currentIndex < totalSlides - 1) { currentIndex++; showSlide(currentIndex); }
+  }
+  function prevSlide() {
+    if (currentIndex > 0) { currentIndex--; showSlide(currentIndex); }
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.target.isContentEditable) return;
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+      e.preventDefault(); nextSlide();
+    } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+      e.preventDefault(); prevSlide();
+    } else if (e.key === 'Home') { currentIndex = 0; showSlide(0); }
+    else if (e.key === 'End') { currentIndex = totalSlides - 1; showSlide(currentIndex); }
+  });
+
+  showSlide(0);
+</script>
+
+<script>
+(function(_0x){
+  var _a=String.fromCharCode,
+      _b=[169,32,77,117,97,108,108,105,102,58,32,82,117,115,116,97,109,111,118,32,65,107,111,98,105,114],
+      _c=[95,120,57,52,107,55,116,57,114,53,95,115,105,103],
+      _d=[95,120,57,52,104,53,100,55],
+      _t='',_n='',_h='';
+  for(var i=0;i<_b.length;i++)_t+=_a(_b[i]);
+  for(var i=0;i<_c.length;i++)_n+=_a(_c[i]);
+  for(var i=0;i<_d.length;i++)_h+=_a(_d[i]);
+
+  function _mk(visible){
+    var d=document.createElement('div');
+    d.setAttribute('data-x',_t);
+    if(visible){
+      d.id=_n;
+      d.textContent=_t;
+      d.style.cssText='position:fixed;bottom:96px;right:16px;z-index:99999;background:rgba(15,15,25,0.75);color:rgba(255,255,255,0.85);padding:6px 14px;border-radius:20px;font-family:system-ui,-apple-system,sans-serif;font-size:11px;font-weight:600;backdrop-filter:blur(10px);border:1px solid rgba(139,92,246,0.3);pointer-events:none;user-select:none;letter-spacing:0.03em;box-shadow:0 4px 12px rgba(0,0,0,0.3);';
+    }else{
+      d.className=_h+Math.random().toString(36).slice(2,7);
+      d.textContent=_t;
+      d.style.cssText='position:absolute;left:-99999px;top:-99999px;opacity:0;pointer-events:none;width:1px;height:1px;overflow:hidden;';
+    }
+    return d;
+  }
+
+  function _ensure(){
+    if(!document.body)return;
+    if(!document.getElementById(_n)){ document.body.appendChild(_mk(true)); }
+    var hidden=document.querySelectorAll('[class^="'+_h+'"]');
+    if(hidden.length<5){
+      for(var i=hidden.length;i<5;i++){ document.body.appendChild(_mk(false)); }
+    }
+  }
+
+  function _setup(){
+    _ensure();
+    try{
+      new MutationObserver(function(muts){
+        for(var i=0;i<muts.length;i++){
+          var m=muts[i];
+          if(m.removedNodes.length>0||m.type==='attributes'){ _ensure(); break; }
+        }
+      }).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['id','class','style']});
+    }catch(e){}
+    setInterval(_ensure,1500);
+  }
+
+  if(document.body)_setup();
+  else document.addEventListener('DOMContentLoaded',_setup);
+
+  try{
+    console.log('%c '+_t+' ','background:linear-gradient(135deg,#8b5cf6,#f472b6);color:white;padding:10px 20px;border-radius:8px;font-size:14px;font-weight:bold;');
+    Object.defineProperty(window,_n+'_lock',{value:_t,writable:false,configurable:false});
+  }catch(e){}
+})();
+</script>
+
+</body>
+</html>
